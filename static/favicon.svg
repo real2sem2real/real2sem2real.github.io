@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Real2Sem2Real">
+  <rect width="64" height="64" rx="14" fill="#0062d6"/>
+  <!-- one demonstrated object (solid) and its digital cousins (faded), side by side -->
+  <rect x="11" y="20" width="14" height="24" rx="4" fill="#ffffff"/>
+  <rect x="29" y="22" width="11" height="22" rx="3.5" fill="#ffffff" opacity="0.7"/>
+  <rect x="44" y="25" width="9" height="19" rx="3" fill="#ffffff" opacity="0.45"/>
+</svg>

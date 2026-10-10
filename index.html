@@ -1,212 +1,557 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Real2Sem2Real</title>
-<meta name="description" content="Real2Sem2Real: 3D semantic augmentations for robot learning from a single human RGB demonstration.">
+<meta name="description" content="3D Semantic Augmentations for Robot Learning from a Single Human RGB Demonstration">
 <meta property="og:title" content="Real2Sem2Real">
 <meta property="og:description" content="One human RGB video becomes thousands of robot demonstrations across the object instances of a category.">
-<meta property="og:image" content="static/img/task_visualization.png">
+<meta property="og:image" content="static/images/task_visualization.png">
+<link rel="icon" type="image/svg+xml" href="static/favicon.svg">
+<script>
+  // set the theme before first paint so there is no flash of the wrong one
+  (function(){try{var t=localStorage.getItem('theme');
+    if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #fcfcfb; --surface: #ffffff; --ink: #141413; --ink-2: #4f4e49; --ink-3: #807e77;
-    --line: #e6e5e0; --accent: #3c5fc4; --accent-ink: #ffffff; --chip: #f1f0ec;
+  /* Layout and styling follow the VisTacAlign project page (vis-tac-align.github.io) so the two read as siblings. */
+  :root{
+    --bg:#e8f0fb; --ink:#2e2d29; --muted:#5d6370; --line:#cfdcef; --surface:#fbfdff;
+    --accent:#0062d6; --g1:#0062d6; --g2:#2f92ff; --g3:#00c2ff;
+    --grad:linear-gradient(115deg,var(--g1) 0%,var(--g2) 46%,var(--g3) 100%);
+    --green:#2f8f5b; --red:#c0392b; --orange:#d98324;
+    /* one colour per method, the same as in every chart image on this page */
+    --teleop:#d9a441; --r2r2r:#16a083; --ours:#3c5fc4;
+    --sans:'DM Sans',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --col:720px;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #161615; --surface: #1e1e1c; --ink: #f2f1ec; --ink-2: #c3c2b9; --ink-3: #8f8d85;
-      --line: #33322f; --accent: #7d98e8; --accent-ink: #10131c; --chip: #262624;
-    }
+  /* light is the default; dark is opt-in via the header toggle */
+  :root[data-theme="dark"]{
+    --bg:#060a14; --ink:#f5f5f7; --muted:#a1a1a6; --line:#27324a; --surface:#0f1622;
+    --accent:#2997ff; --g1:#2997ff; --g2:#5ac8fa; --g3:#64d2ff; --green:#5fd08f; --red:#ff7b6b; --orange:#f0a04b;
+    --teleop:#d9a441; --r2r2r:#1fb894; --ours:#6f8fe6;
   }
-  :root[data-theme="dark"] {
-    --bg: #161615; --surface: #1e1e1c; --ink: #f2f1ec; --ink-2: #c3c2b9; --ink-3: #8f8d85;
-    --line: #33322f; --accent: #7d98e8; --accent-ink: #10131c; --chip: #262624;
+  *{box-sizing:border-box}
+  body::before{content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
+    background:
+      radial-gradient(900px 620px at 12% -8%, rgba(0,113,227,.26), transparent 64%),
+      radial-gradient(760px 560px at 92% 12%, rgba(0,194,255,.22), transparent 66%),
+      radial-gradient(1000px 700px at 50% 108%, rgba(47,146,255,.22), transparent 68%);}
+  :root[data-theme="dark"] body::before{
+    background:
+      radial-gradient(900px 620px at 12% -8%, rgba(41,151,255,.34), transparent 64%),
+      radial-gradient(760px 560px at 92% 12%, rgba(100,210,255,.22), transparent 66%),
+      radial-gradient(1000px 700px at 50% 108%, rgba(41,151,255,.24), transparent 68%);}
+  html{scroll-behavior:smooth; scroll-padding-top:28px}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:15.5px;
+       font-weight:400; line-height:1.7; font-synthesis:none;
+       -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+  p{margin:0 0 16px}
+  b{font-weight:600}
+
+  .topbar{height:3px; background:var(--grad)}
+  .header{display:flex; align-items:center; justify-content:space-between; gap:16px;
+          padding:14px clamp(20px,4.5vw,56px); border-bottom:1px solid var(--line)}
+  .header .brand{font-weight:600; font-size:15px; letter-spacing:-.01em}
+  .header .pills{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
+  .pill{font-size:13px; font-weight:500; background:var(--surface); color:var(--ink);
+        border-radius:40px; padding:7px 14px; white-space:nowrap}
+  .pill small{font-size:12px; font-weight:400; color:var(--muted)}
+  #theme{flex:none; background:var(--surface); border:0; color:var(--muted); width:32px; height:32px;
+         border-radius:40px; cursor:pointer; display:grid; place-items:center; padding:0}
+  #theme:hover{color:var(--ink)}
+  #theme svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.9;
+             stroke-linecap:round; stroke-linejoin:round}
+  #theme .moon{display:none}
+  :root[data-theme="dark"] #theme .sun{display:none}
+  :root[data-theme="dark"] #theme .moon{display:block}
+
+  #chapters{display:none}
+  @media (min-width:1180px){
+    #chapters{display:block; position:fixed; left:clamp(18px,2.4vw,44px); top:108px; width:150px; z-index:5}
+    #chapters a{display:grid; grid-template-columns:24px 1fr; align-items:baseline; padding:7px 0;
+                font-size:12.5px; line-height:1.35; color:var(--muted)}
+    #chapters a i{font-style:normal; font-size:10.5px; opacity:.75; font-variant-numeric:tabular-nums}
+    #chapters a:hover{color:var(--ink); text-decoration:none}
+    #chapters a.on{color:var(--accent); font-weight:600}
   }
-  * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font: 17px/1.6 ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  }
-  main { max-width: 980px; margin: 0 auto; padding: 0 16px 64px; }
-  header.hero { text-align: center; padding: 56px 0 24px; }
-  h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.02em; }
-  .subtitle { font-size: clamp(1.05rem, 2.6vw, 1.35rem); color: var(--ink-2); max-width: 760px; margin: 0 auto 22px; }
-  .links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 999px;
-    background: var(--accent); color: var(--accent-ink); text-decoration: none; font-weight: 600; font-size: 0.95rem;
-  }
-  .btn[aria-disabled="true"] { background: var(--chip); color: var(--ink-3); cursor: default; }
-  section { margin-top: 56px; }
-  h2 { font-size: 1.6rem; margin: 0 0 14px; letter-spacing: -0.01em; }
-  h3 { font-size: 1.15rem; margin: 28px 0 8px; }
-  p { margin: 0 0 14px; color: var(--ink-2); }
-  p strong, li strong { color: var(--ink); }
-  figure { margin: 18px 0 8px; }
-  figure img {
-    width: 100%; height: auto; display: block; border-radius: 10px; background: #ffffff;
-    border: 1px solid var(--line);
-  }
-  figcaption { font-size: 0.9rem; color: var(--ink-3); margin-top: 8px; line-height: 1.5; }
-  .narrow { max-width: 640px; margin-left: auto; margin-right: auto; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
-  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
-  .steps { list-style: none; padding: 0; margin: 18px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-  @media (max-width: 820px) { .steps { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 480px) { .steps { grid-template-columns: 1fr; } }
-  .steps li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; font-size: 0.93rem; color: var(--ink-2); }
-  .steps li b { display: block; color: var(--ink); margin-bottom: 4px; }
-  .table-wrap { overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
-  th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
-  th:first-child, td:first-child { text-align: left; }
-  th { color: var(--ink-2); font-weight: 600; }
-  td.best { font-weight: 700; color: var(--ink); }
-  pre {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px;
-    overflow-x: auto; font-size: 0.85rem; color: var(--ink-2);
-  }
-  footer { text-align: center; color: var(--ink-3); font-size: 0.85rem; margin-top: 64px; }
-  .theme-toggle {
-    position: fixed; top: 12px; right: 12px; border: 1px solid var(--line); background: var(--surface);
-    color: var(--ink-2); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 0.85rem; cursor: pointer;
+
+  .wrap{max-width:calc(var(--col) + 40px); margin:0 auto; padding:0 20px}
+  header{text-align:center; padding:clamp(40px,7vh,68px) 0 30px}
+  h1{font-weight:500; letter-spacing:-.025em; line-height:1.2; margin:0 0 20px;
+     font-size:clamp(1.7rem,3.6vw,2.3rem); text-wrap:balance}
+  h1 .name, .stat .v{background:var(--grad); -webkit-background-clip:text; background-clip:text;
+                     color:transparent; -webkit-text-fill-color:transparent}
+  .stat .v small{-webkit-text-fill-color:var(--muted)}
+  .authors{font-size:15.5px; margin:0 0 4px}
+  .venue{font-size:13.5px; color:var(--muted); margin:0}
+
+  /* wide figure: wider than the reading column, clear of the chapter list */
+  .wide{display:block; width:min(880px, 100vw - 40px); margin-left:50%; transform:translateX(-50%)}
+  @media (min-width:1180px){ .wide{width:min(880px, 100vw - 440px)} }
+  .checks{margin:0 0 6px; padding:0 0 0 20px}
+  .checks li{margin:0 0 7px; padding-left:4px}
+  .checks li::marker{color:var(--accent)}
+
+  section{padding:clamp(44px,7vh,68px) 0 0; margin-top:clamp(44px,7vh,68px); border-top:1px solid var(--line)}
+  .eyebrow{font-size:12px; font-weight:600; letter-spacing:.08em; color:var(--accent); margin:0 0 8px;
+           font-variant-numeric:tabular-nums}
+  h2{font-weight:500; letter-spacing:-.02em; line-height:1.2; color:var(--accent);
+     font-size:clamp(1.5rem,3vw,1.9rem); margin:0 0 20px; text-wrap:balance}
+  h3{font-weight:500; font-size:1.25rem; letter-spacing:-.01em; line-height:1.3; margin:44px 0 10px;
+     color:var(--accent)}
+
+  figure{margin:24px 0 8px}
+  figure img, figure video{width:100%; height:auto; display:block; border-radius:10px;
+                           border:1px solid var(--line); background:#fff}
+  figure.narrow{max-width:560px; margin-left:auto; margin-right:auto}
+  figcaption, .hero-cap{font-size:13px; color:var(--muted); margin-top:12px; line-height:1.65}
+  figcaption b, .hero-cap b{color:var(--ink)}
+
+  .stats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:30px 0 0;
+         border:1px solid var(--line); border-radius:10px; background:var(--surface)}
+  .stat{padding:16px 16px 15px; border-left:1px solid var(--line)}
+  .stat:first-child{border-left:0}
+  .stat .v{font-size:22px; font-weight:500; letter-spacing:-.02em; line-height:1.15; color:var(--accent);
+           font-variant-numeric:tabular-nums}
+  .stat .v small{font-size:14px; font-weight:400; color:var(--muted)}
+  .stat .l{font-size:12.5px; color:var(--muted); margin-top:6px; line-height:1.5}
+
+  .pull, .takeaway{border-left:2px solid var(--accent); padding:2px 0 2px 16px; margin:22px 0}
+  .pull{font-size:17px; line-height:1.55}
+
+  .cards, .limits{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:22px 0}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
+  .card .n{font-size:11.5px; color:var(--accent); letter-spacing:.06em; font-weight:600; margin-bottom:4px;
+           text-transform:uppercase}
+  .card .t{font-weight:600; margin-bottom:5px}
+  .card p{font-size:13.5px; margin:0; color:var(--muted); line-height:1.65}
+
+  details.more{margin:12px 0}
+  details.more > summary{background:var(--surface); border-radius:10px; padding:11px 16px; font-size:13px;
+                         color:var(--ink); font-weight:500}
+  details.more[open] > summary{margin-bottom:14px}
+  summary{cursor:pointer; list-style:none; display:flex; gap:10px; align-items:baseline}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+"; color:var(--muted); flex:none; width:10px; text-align:center}
+  details[open] > summary::before{content:"\2212"}
+  summary:hover{color:var(--accent)}
+  #qa details{border-top:1px solid var(--line); padding:15px 0}
+  #qa details:last-of-type{border-bottom:1px solid var(--line)}
+  #qa summary{font-weight:500}
+  #qa details p{margin:12px 0 2px; padding-left:20px; font-size:14.5px; color:var(--muted)}
+
+  .tablewrap{overflow-x:auto; margin:18px 0; -webkit-overflow-scrolling:touch}
+  table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:440px}
+  th,td{padding:9px 12px 9px 0; text-align:left; border-bottom:1px solid var(--line)}
+  th{font-weight:600; white-space:nowrap; border-bottom-color:var(--ink)}
+  td.num, th.num{text-align:right; padding-right:0; padding-left:12px; font-variant-numeric:tabular-nums}
+  td.best{font-weight:600; color:var(--accent)}
+  caption{caption-side:bottom; text-align:left; font-size:12.5px; color:var(--muted); padding-top:10px;
+          line-height:1.6}
+
+  /* bar charts: one card per task, one row per method (data in the script at the bottom) */
+  .chart{margin:22px 0 10px}
+  .chart .legend{display:flex; gap:6px 18px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); margin-bottom:10px}
+  .chart .legend i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px}
+  .chart .teleop{background:var(--teleop)} .chart .r2r2r{background:var(--r2r2r)} .chart .ours{background:var(--ours)}
+  .chart .groups{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px}
+  .chart .group{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 16px 16px}
+  .chart .glabel{font-size:12.5px; font-weight:600; margin-bottom:12px}
+  .chart .row{margin-top:11px}
+  .chart .rl{display:flex; justify-content:space-between; gap:10px; font-size:12.5px; line-height:1.3; margin-bottom:5px}
+  .chart .rl span{flex:none; color:var(--muted); font-variant-numeric:tabular-nums}
+  .chart .track{height:12px; background:color-mix(in srgb, var(--line) 55%, transparent); border-radius:3px; overflow:hidden}
+  .chart .fill{height:100%; border-radius:3px; min-width:2px}
+  .chart .pending .rl span{font-style:italic}
+  .chart .axis{font-size:12px; color:var(--muted); margin-top:10px; line-height:1.6}
+
+  footer{border-top:1px solid var(--line); margin-top:clamp(52px,8vh,84px); padding:26px 0 52px;
+         font-size:12.5px; color:var(--muted); text-align:center}
+
+  @media (max-width:620px){
+    body{font-size:15px}
+    .cards, .limits{grid-template-columns:1fr}
+    .stats{grid-template-columns:1fr 1fr}
+    .stat:nth-child(odd){border-left:0}
+    .stat:nth-child(n+3){border-top:1px solid var(--line)}
+    .header .brand{display:none}
+    .header .pills{flex-wrap:nowrap; justify-content:space-between; width:100%}
+    #theme{margin-left:auto}
+    table{min-width:0; font-size:12.5px}
+    th{white-space:normal}
+    th,td{padding:8px 8px 8px 0}
+    td.num, th.num{padding-left:6px}
   }
 </style>
 </head>
 <body>
-<button class="theme-toggle" type="button" aria-label="Toggle light and dark mode">Theme</button>
-<main>
 
-<header class="hero">
-  <h1>Real2Sem2Real</h1>
-  <p class="subtitle">3D Semantic Augmentations for Robot Learning from a Single Human RGB Demonstration</p>
-  <div class="links">
-    <a class="btn" aria-disabled="true">Paper (coming soon)</a>
-    <a class="btn" aria-disabled="true">Code (coming soon)</a>
+<div class="topbar"></div>
+<div class="header">
+  <span class="brand">Real2Sem2Real</span>
+  <div class="pills">
+    <span class="pill">Paper <small>&middot; coming soon</small></span>
+    <span class="pill">Code <small>&middot; coming soon</small></span>
+    <button id="theme" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.3M12 19.3v2.3M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.4 12h2.3M19.3 12h2.3M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
+      <svg class="moon" viewBox="0 0 24 24"><path d="M20.5 14.5A8.6 8.6 0 0 1 9.5 3.5a8.6 8.6 0 1 0 11 11z"/></svg>
+    </button>
   </div>
+</div>
+
+<nav id="chapters" aria-label="Sections">
+  <a href="#top"><i>00</i>Overview</a>
+  <a href="#motivation"><i>01</i>Motivation</a>
+  <a href="#method"><i>02</i>Method</a>
+  <a href="#tracking"><i>03</i>Tracking</a>
+  <a href="#results"><i>04</i>Results</a>
+  <a href="#hardware"><i>05</i>Hardware</a>
+  <a href="#limitations"><i>06</i>Limitations</a>
+  <a href="#qa"><i>07</i>Q&amp;A</a>
+  <!-- When supplementary figures land, add:  <a href="#supplementary"><i>06</i>Supplementary</a>  and renumber -->
+</nav>
+
+<div class="wrap">
+
+<header id="top">
+  <h1><span class="name">Real2Sem2Real:</span> 3D Semantic Augmentations for Robot Learning from a Single Human RGB Demonstration</h1>
+  <p class="authors">Anonymous Authors</p>
 </header>
 
-<figure>
-  <img src="static/img/task_visualization.png" alt="Four tasks shown as a human demonstration, then executed by an xArm7 and a Franka Panda: placing a mug on a coffee machine, pouring a mug into a bowl, hanging a mug on a mug tree, and a drill pick and place." loading="eager">
-  <figcaption>One human RGB video per task (left) becomes the training data for policies on two robots, an xArm7 and a Franka Panda. The four tasks: placing a mug on a coffee machine, pouring a mug into a bowl, hanging a mug on a mug tree, and picking and placing a drill.</figcaption>
-</figure>
+<div class="hero">
+  <figure class="wide">
+    <img src="static/images/task_visualization.png" alt="Four tasks, each shown as a single human demonstration and then executed by an xArm7 and a Franka Panda: placing a mug on a coffee machine, pouring a mug into a bowl, hanging a mug on a mug tree, and a drill pick and place.">
+  </figure>
+  <p>Teleoperation pays for every demonstration, and every new object instance pays again. Real2Sem2Real turns
+  <b>one human RGB video</b> into thousands of robot demonstrations across the object instances of a category,
+  with no depth sensor and no teleoperation. It tracks the demonstrated objects, generates
+  <b>digital cousins</b> of them from photographs, aligns the cousins to the demonstration by their semantics,
+  and replays the demonstration for every cousin pairing in simulation.</p>
+  <ul class="checks">
+    <li>One monocular RGB video per task, no depth and no teleoperation</li>
+    <li>Digital cousins generated from one or a few photographs</li>
+    <li>Semantic alignment of whole objects and of functional regions such as a coffee machine's tray</li>
+    <li>Evaluated on two robots and four tasks</li>
+  </ul>
+  <div class="stats hero-stats">
+    <div class="stat"><div class="v">62 <small>&rarr;</small> 90<small>%</small></div>
+      <div class="l">Mug placement on the xArm7, teleoperation vs Real2Sem2Real</div></div>
+    <div class="stat"><div class="v">36 <small>&rarr;</small> 90<small>%</small></div>
+      <div class="l">Same task, one object pair (R2R2R) vs digital cousins</div></div>
+    <div class="stat"><div class="v">7 <small>/</small> 7</div>
+      <div class="l">Task&ndash;robot pairs where cousins beat R2R2R</div></div>
+    <div class="stat"><div class="v">0.68 <small>&rarr;</small> 0.91</div>
+      <div class="l">Object tracking IoU, WARPED vs ours</div></div>
+  </div>
+</div>
 
-<section id="abstract" class="narrow">
-  <h2>Abstract</h2>
-  <p>Learning from human video is a promising way to teach robots, as it scales easily and needs no robot hardware. Existing methods, however, require depth sensing, overlay the robot onto 2D video, or generate data only for the objects that were demonstrated.</p>
-  <p>Real2Sem2Real turns a single monocular RGB video of a human demonstration into thousands of robot demonstrations across the object instances of a category. It tracks the SE(3) pose of each object through the video with DINOv3-distilled Gaussian splats, outperforming WARPED and FoundationPose with estimated metric depth. It aligns <strong>digital cousins</strong>, each generated from a single or a few photographs, to the demonstrated objects with a semantic alignment that matches whole objects such as mugs as well as the functional regions of placement objects such as a coffee machine's tray or a bowl, and it recovers a robot grasp from the demonstrator's hand. The transferred demonstrations are generated in IsaacSim, with kinematic replay, or MuJoCo, with contact physics.</p>
-  <p>On two real robots, a vision-language-action policy trained on data from one human video performs on par with, and often better than, policies trained on teleoperated demonstrations across diverse object instances and four tasks. The semantics of vision foundation models thus come as a present, turning one human demonstration into category-level robot data.</p>
+
+<section id="motivation">
+  <div class="eyebrow">01</div>
+  <h2>Why one human video?</h2>
+  <p>A person can demonstrate a task with a phone camera in seconds. Turning that video into robot training data
+  has meant either a depth sensor, overlaying a robot onto 2D video, or generating data only for the exact objects
+  that were demonstrated. A policy trained on one mug and one coffee machine does not transfer to the next mug.</p>
+  <p>Existing real-to-sim pipelines also break at three recurring points: the object track drifts, the
+  recovered grasp collides with the object, and the reconstructed meshes look nothing like the real scene.</p>
+  <figure>
+    <img src="static/images/common_failure_modes.png" loading="lazy" alt="Three rows of failure modes, tracking issues, grasp failures and unrealistic meshes, comparing the real frame, previous methods, and Real2Sem2Real.">
+    <figcaption><b>Common failure modes.</b> Across tracking, grasping and meshes, previous methods degrade while
+    Real2Sem2Real stays faithful to the real observation.</figcaption>
+  </figure>
 </section>
 
 <section id="method">
-  <h2>Method</h2>
-  <figure>
-    <img src="static/img/pipeline.png" alt="Pipeline in four panels: a single human RGB demonstration with the recovered hand mesh, a generated library of 16 cousin mugs and 9 cousin coffee machines, robot demonstrations rendered in simulation along the tracked trajectory, and the deployed policy succeeding on in- and out-of-distribution mugs and machines." loading="lazy">
-    <figcaption>From a single human demonstration with no teleoperation, we recover the mug's trajectory, generate a 16 × 9 library of cousin mugs and coffee machines, and render thousands of robot demonstrations in simulation. The resulting policy succeeds on both in-distribution and out-of-distribution objects.</figcaption>
+  <div class="eyebrow">02</div>
+  <h2>How does Real2Sem2Real work?</h2>
+  <figure class="wide">
+    <img src="static/images/pipeline.png" loading="lazy" alt="Pipeline in four panels: a single human RGB demonstration with the recovered hand mesh, a generated library of 16 cousin mugs and 9 cousin coffee machines, robot demonstrations rendered in simulation along the tracked trajectory, and the deployed policy succeeding on in- and out-of-distribution mugs and machines.">
   </figure>
-  <ol class="steps">
-    <li><b>1. Track</b>An RGB-only 4D object tracker built on DINO-distilled Gaussian splats follows every object through the human video.</li>
-    <li><b>2. Generate cousins</b>Digital cousins of each object are generated from one or a few photographs.</li>
-    <li><b>3. Align semantically</b>Cousins are aligned to the demonstrated objects by matching whole objects and the functional regions where objects are placed.</li>
-    <li><b>4. Render and train</b>The demonstration is replayed for every cousin pairing in IsaacSim or MuJoCo, and a VLA policy is trained on the result.</li>
-  </ol>
+  <p class="hero-cap"><b>Method overview.</b> From a single human demonstration with no teleoperation, we recover the
+  mug's trajectory, generate a 16&nbsp;&times;&nbsp;9 library of cousin mugs and coffee machines, and render thousands
+  of robot demonstrations in simulation. The resulting policy succeeds on in- and out-of-distribution objects.</p>
+  <div class="cards">
+    <div class="card"><div class="n">Step 1</div><div class="t">Track</div>
+      <p>An RGB-only 4D tracker built on DINO-distilled Gaussian splats follows each object's pose through the human
+      video.</p></div>
+    <div class="card"><div class="n">Step 2</div><div class="t">Generate cousins</div>
+      <p>SAM3 and SAM3D turn one or a few photographs and a text prompt into a cousin splat and mesh. The photos can
+      come from the real world, an online store, or an image generator.</p></div>
+    <div class="card"><div class="n">Step 3</div><div class="t">Align by semantics</div>
+      <p>DINOv3 features distilled into every splat align each cousin to the demonstrated object, by the whole
+      object for a mug and by the functional region, such as the tray, for a coffee machine.</p></div>
+    <div class="card"><div class="n">Step 4</div><div class="t">Generate and train</div>
+      <p>The demonstration is replayed for every cousin pairing in IsaacSim, with kinematic replay, or MuJoCo, with
+      contact physics, and a VLA policy is trained on the result.</p></div>
+  </div>
+
+  <details class="more"><summary>Recovering the robot grasp from the human hand</summary>
+  <figure>
+    <img src="static/images/hamer_motion_transfer.png" loading="lazy" alt="Left, real frames of a single human demonstration and the recovered HaMeR hand mesh at three timesteps; right, the grasp retargeted to the robot gripper across mug and coffee-machine pairs.">
+    <figcaption><b>Demo-to-robot motion transfer.</b> HaMeR recovers the articulated hand at each timestep. The
+    grasp is retargeted to the robot gripper and re-rendered across every mug and coffee-machine combination.</figcaption>
+  </figure>
+  </details>
+
+  <details class="more"><summary>Aligning the simulated camera to the real one</summary>
+  <figure>
+    <img src="static/images/camera_optimization.png" loading="lazy" alt="A real camera frame, the rendered robot from the original camera pose overlaid with visible misalignment, and the rendered robot after camera optimization overlaid with close alignment.">
+    <figcaption><b>Camera alignment.</b> Starting from a coarse camera pose, the rendered robot is compared against
+    the real image and the pose is optimized until the render matches the real view.</figcaption>
+  </figure>
+  </details>
 </section>
 
-<section id="components">
-  <h2>Components</h2>
-
-  <h3>Robust tracking, grasps, and meshes</h3>
-  <figure>
-    <img src="static/img/common_failure_modes.png" alt="Three rows of failure modes, tracking issues, grasp failures and unrealistic meshes, comparing the real frame, previous methods, and Real2Sem2Real." loading="lazy">
-    <figcaption>Across three recurring failure modes, tracking drift, grasp collisions, and unrealistic meshes, previous methods degrade while Real2Sem2Real stays faithful to the real observation.</figcaption>
-  </figure>
-  <div class="table-wrap">
-    <table aria-label="Object tracking accuracy">
-      <caption style="caption-side: bottom; text-align: left; font-size: 0.85rem; color: var(--ink-3); padding-top: 8px;">Object tracking accuracy on the seven objects of the four tasks, mean per-frame mask IoU (higher is better). FoundationPose is RGB-D by design; here it receives raw monocular metric depth, the only condition that uses nothing of ours.</caption>
-      <thead><tr><th>Object</th><th>Ours</th><th>WARPED</th><th>FoundationPose (raw depth)</th></tr></thead>
+<section id="tracking">
+  <div class="eyebrow">03</div>
+  <h2>How well do we track objects?</h2>
+  <p>Every later stage depends on the object track, so we compare against the two closest alternatives on the seven
+  objects of our four tasks. Every method gets the same object model, and every method is scored by per-frame mask
+  IoU against the same SAM2 masks.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Object</th><th class="num">Ours</th><th class="num">WARPED</th><th class="num">FoundationPose</th></tr></thead>
       <tbody>
-        <tr><td>Mug (to coffee machine)</td><td class="best">0.949</td><td>0.890</td><td>0.820</td></tr>
-        <tr><td>Coffee machine</td><td class="best">0.916</td><td>0.894</td><td>0.814</td></tr>
-        <tr><td>Mug (to tree)</td><td class="best">0.904</td><td>0.000</td><td>0.210</td></tr>
-        <tr><td>Tree stand</td><td class="best">0.840</td><td>0.712</td><td>0.295</td></tr>
-        <tr><td>Mug (pour)</td><td class="best">0.935</td><td>0.900</td><td>0.245</td></tr>
-        <tr><td>Bowl (pour)</td><td class="best">0.982</td><td>0.849</td><td>0.450</td></tr>
-        <tr><td>Drill</td><td class="best">0.864</td><td>0.525</td><td>0.704</td></tr>
-        <tr><td><strong>Mean</strong></td><td class="best">0.913</td><td>0.681</td><td>0.505</td></tr>
+        <tr><td>Mug, to coffee machine</td><td class="num best">0.949</td><td class="num">0.890</td><td class="num">0.820</td></tr>
+        <tr><td>Coffee machine</td><td class="num best">0.916</td><td class="num">0.894</td><td class="num">0.814</td></tr>
+        <tr><td>Mug, to tree</td><td class="num best">0.904</td><td class="num">0.000</td><td class="num">0.210</td></tr>
+        <tr><td>Tree stand</td><td class="num best">0.840</td><td class="num">0.712</td><td class="num">0.295</td></tr>
+        <tr><td>Mug, pour</td><td class="num best">0.935</td><td class="num">0.900</td><td class="num">0.245</td></tr>
+        <tr><td>Bowl, pour</td><td class="num best">0.982</td><td class="num">0.849</td><td class="num">0.450</td></tr>
+        <tr><td>Drill</td><td class="num best">0.864</td><td class="num">0.525</td><td class="num">0.704</td></tr>
+        <tr><td><b>Mean</b></td><td class="num best">0.913</td><td class="num">0.681</td><td class="num">0.505</td></tr>
       </tbody>
+      <caption>Mean per-frame mask IoU, higher is better. FoundationPose is RGB-D by design; this column gives it raw
+      monocular metric depth, the only condition that uses nothing of ours.</caption>
     </table>
   </div>
-
-  <div class="grid2">
-    <div>
-      <h3>Demo-to-robot motion transfer</h3>
-      <figure>
-        <img src="static/img/hamer_motion_transfer.png" alt="Left, real frames of a single human demonstration and the recovered HaMeR hand mesh at three timesteps; right, the grasp retargeted to the robot gripper across mug and coffee-machine pairs." loading="lazy">
-        <figcaption>HaMeR recovers the articulated hand at each timestep. The grasp is retargeted to the robot gripper and re-rendered across every mug and coffee-machine combination.</figcaption>
-      </figure>
-    </div>
-    <div>
-      <h3>Camera alignment</h3>
-      <figure>
-        <img src="static/img/camera_optimization.png" alt="A real camera frame, the rendered robot from the original camera pose overlaid with misalignment, and the rendered robot after camera optimization overlaid with close alignment." loading="lazy">
-        <figcaption>Starting from a coarse camera pose, the rendered scene is compared against the real image and the pose is optimized until the render matches the real view.</figcaption>
-      </figure>
-    </div>
+  <details class="more"><summary>FoundationPose with calibrated depth</summary>
+  <p>We also give FoundationPose depth calibrated against our own splat, rendered at our tracker's poses. These
+  conditions borrow distance from our tracker, so they are upper bounds on FoundationPose rather than independent
+  results, and our tracker still leads.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Object</th><th class="num">Ours</th><th class="num">Per-frame fit</th><th class="num">Per-video fit</th><th class="num">Raw depth</th></tr></thead>
+      <tbody>
+        <tr><td>Mug, to coffee machine</td><td class="num best">0.949</td><td class="num">0.872</td><td class="num">0.897</td><td class="num">0.820</td></tr>
+        <tr><td>Coffee machine</td><td class="num best">0.916</td><td class="num">0.864</td><td class="num">0.872</td><td class="num">0.814</td></tr>
+        <tr><td>Mug, to tree</td><td class="num best">0.904</td><td class="num">0.888</td><td class="num">0.864</td><td class="num">0.210</td></tr>
+        <tr><td>Tree stand</td><td class="num best">0.840</td><td class="num">0.759</td><td class="num">0.757</td><td class="num">0.295</td></tr>
+        <tr><td>Mug, pour</td><td class="num best">0.935</td><td class="num">0.895</td><td class="num">0.579</td><td class="num">0.245</td></tr>
+        <tr><td>Bowl, pour</td><td class="num best">0.982</td><td class="num">0.963</td><td class="num">0.972</td><td class="num">0.450</td></tr>
+        <tr><td>Drill</td><td class="num best">0.864</td><td class="num">0.826</td><td class="num">0.819</td><td class="num">0.704</td></tr>
+        <tr><td><b>Mean</b></td><td class="num best">0.913</td><td class="num">0.867</td><td class="num">0.823</td><td class="num">0.505</td></tr>
+      </tbody>
+      <caption>FoundationPose columns use the best depth source for each condition.</caption>
+    </table>
   </div>
+  </details>
 </section>
 
 <section id="results">
-  <h2>Results</h2>
-  <p>We fine-tune the π<sub>0.5</sub> vision-language-action model on three kinds of data and evaluate on real robots: <strong>teleoperation</strong> (150 real demonstrations across several objects), <strong>R2R2R</strong> (2,000 generated episodes of the single demonstrated object pair, following Real2Render2Real), and <strong>Real2Sem2Real</strong> (2,000 generated episodes across digital cousins). The charts label our method SAP.</p>
+  <div class="eyebrow">04</div>
+  <h2>How well does it work?</h2>
+  <p>We fine-tune the &pi;<sub>0.5</sub> vision-language-action model on three kinds of data and evaluate on real
+  robots: <b>teleoperation</b>, 150 real demonstrations collected across several objects; <b>R2R2R</b>, 2,000
+  generated episodes of the single demonstrated object pair, following Real2Render2Real; and
+  <b>Real2Sem2Real</b>, 2,000 generated episodes across digital cousins.</p>
+
+  <h3>xArm7</h3>
+  <div class="chart" data-chart="xarm7"></div>
+  <h3>Franka Panda</h3>
+  <div class="chart" data-chart="panda"></div>
+  <p class="takeaway">Digital cousins beat a single object pair on every task and robot evaluated so far, by 28
+  to 54 points, and match or beat teleoperation on most, with no human time beyond the one demonstration.</p>
+
+  <details class="more"><summary>Full results table</summary>
+  <div class="tablewrap">
+    <table id="results-table"></table>
+  </div>
+  </details>
+
+  <h3>Object diversity is what transfers</h3>
   <figure class="narrow">
-    <img src="static/img/hardware_setup.png" alt="The two robots used for evaluation, a UFactory xArm7 and a Franka Emika Panda, each with a parallel-jaw gripper, on the mug-to-coffee-machine task." loading="lazy">
-    <figcaption>Evaluation hardware: a UFactory xArm7 (a) and a Franka Emika Panda (b). A single external RGB camera is the policy's only image input.</figcaption>
+    <img src="static/images/diversity_source.png" loading="lazy" alt="Bar chart for mug-to-coffee-machine placement comparing training on one object pair against several objects, for teleoperated and generated data, on both robots.">
+    <figcaption><b>Object diversity versus data source.</b> Training on the single demonstrated mug and machine
+    transfers poorly whether the data is teleoperated or generated. Several objects help either way, and cousins
+    let generated data cover them.</figcaption>
   </figure>
 
-  <div class="grid2">
-    <figure>
-      <img src="static/img/success_rates.png" alt="Grouped bar chart of real-robot success rate per task for teleop, R2R2R and SAP on the xArm7 and the Franka Panda." loading="lazy">
-      <figcaption><strong>Success rate per task.</strong> Real2Sem2Real (SAP) beats R2R2R on every task and robot evaluated so far, and matches or beats teleoperation on most. Whiskers give the Wilson 95% interval; Panda hanging is still being evaluated.</figcaption>
-    </figure>
-    <figure>
-      <img src="static/img/diversity_source.png" alt="Bar chart for mug-to-coffee-machine placement comparing one object pair against several objects, for teleoperated and generated data, on both robots." loading="lazy">
-      <figcaption><strong>Object diversity matters.</strong> On mug-to-coffee-machine placement, training on one object pair transfers poorly whether the data is teleoperated or generated. Cousins let generated data cover the category.</figcaption>
-    </figure>
-  </div>
-  <div class="grid2">
-    <figure>
-      <img src="static/img/data_scaling.png" alt="Line chart of success against the number of training episodes on a log scale, for teleop on several objects, SAP across cousins, teleop on one pair, and R2R2R on one pair." loading="lazy">
-      <figcaption><strong>Scaling with data.</strong> On the xArm7, R2R2R levels off below 40%, while Real2Sem2Real keeps improving with more generated episodes and passes the largest teleoperated set.</figcaption>
-    </figure>
-    <figure>
-      <img src="static/img/scaling_comparison.png" alt="Log-log plot of demonstrations produced against wall-clock time for teleoperation with 1, 10 and 100 operators and for R2R2R and SAP with 1 and 100 GPUs." loading="lazy">
-      <figcaption><strong>Data at no human cost.</strong> Teleoperation grows linearly with human time; generated data scales with GPUs after a short one-time setup.</figcaption>
-    </figure>
+  <h3>More generated data keeps helping</h3>
+  <figure class="narrow">
+    <img src="static/images/data_scaling.png" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, Real2Sem2Real across cousins, teleoperation on one pair, and R2R2R on one pair.">
+    <figcaption><b>Success against training-set size</b> on xArm7 placement. R2R2R levels off below 40%, while
+    Real2Sem2Real keeps improving and passes the largest teleoperated set. The charts label our method SAP.</figcaption>
+  </figure>
+
+  <details class="more"><summary>What the data costs to collect</summary>
+  <figure>
+    <img src="static/images/scaling_comparison.png" loading="lazy" alt="Log-log plot of demonstrations produced against wall-clock time for teleoperation with 1, 10 and 100 operators and for R2R2R and SAP with 1 and 100 GPUs.">
+    <figcaption><b>Demonstrations against wall-clock time.</b> Teleoperation grows linearly with human time.
+    Generated data needs a short one-time setup and then scales with GPUs.</figcaption>
+  </figure>
+  </details>
+</section>
+
+<section id="hardware">
+  <div class="eyebrow">05</div>
+  <h2>Hardware</h2>
+  <figure>
+    <img src="static/images/hardware_setup.png" loading="lazy" alt="The two evaluation robots, a UFactory xArm7 and a Franka Emika Panda, each with a parallel-jaw gripper, a coffee machine, a mug and an external RGB camera.">
+    <figcaption><b>Setup.</b> A UFactory xArm7 (a) and a Franka Emika Panda (b), each with its native parallel-jaw
+    gripper. A single external RGB camera provides the policy's only image input.</figcaption>
+  </figure>
+</section>
+
+<!--
+  SUPPLEMENTARY FIGURES (website only). Copy this block above the Limitations section, add the nav link
+  at the top, and renumber the eyebrows. Each extra figure can be a plain <figure> or sit inside a
+  <details class="more"> panel so the page stays short. Put the image in static/images/.
+
+<section id="supplementary">
+  <div class="eyebrow">06</div>
+  <h2>Supplementary results</h2>
+  <p>Figures that do not fit in the paper.</p>
+  <figure>
+    <img src="static/images/YOUR_FIGURE.png" loading="lazy" alt="Describe what the figure shows.">
+    <figcaption><b>Title.</b> One or two sentences on what to take from it.</figcaption>
+  </figure>
+</section>
+-->
+
+<section id="limitations">
+  <div class="eyebrow">06</div>
+  <h2>Limitations</h2>
+  <div class="limits">
+    <div class="card"><div class="t">A photo per cousin</div>
+      <p>Every cousin needs at least one photograph. Generating a category from text alone is future work.</p></div>
+    <div class="card"><div class="t">A known supporting surface</div>
+      <p>Monocular depth is up to scale, which we resolve per scene from the recovered ground plane, so the
+      demonstration must take place on a known supporting surface.</p></div>
+    <div class="card"><div class="t">A clean grasp in the video</div>
+      <p>Grasp recovery needs a moment where the hand holds the object rigidly. Sliding or tool use without a
+      grasp falls outside its scope.</p></div>
+    <div class="card"><div class="t">Rigid objects only</div>
+      <p>Articulated objects such as drawers, doors and cabinets are the natural next step.</p></div>
   </div>
 </section>
 
-<section id="citation" class="narrow">
-  <h2>Citation</h2>
-  <p>BibTeX will be posted with the paper.</p>
+<section id="qa">
+  <div class="eyebrow">07</div>
+  <h2>Q&amp;A</h2>
+
+  <details><summary>Why use RGB video only?</summary>
+  <p>A phone always has a camera, but not always a depth camera. Working from RGB alone means any phone video of a
+  person doing the task can become robot data.</p></details>
+
+  <details><summary>What is a digital cousin?</summary>
+  <p>A 3D model of another object of the same category, such as a different mug, generated from one or a few
+  photographs and a text prompt. SAM3 segments the object and SAM3D generates a splat and a textured mesh; ten
+  cousins take about seven minutes on one GPU. The photos can be taken in the real world, found in an online
+  store, or generated by an image model.</p></details>
+
+  <details><summary>How is this different from Real2Render2Real?</summary>
+  <p>R2R2R augments the poses of the objects that were demonstrated. Real2Sem2Real adds semantic augmentation:
+  the same demonstration is transferred to new object instances. Trained on the same number of episodes, the
+  cousins raise mug placement on the xArm7 from 36% to 90%.</p></details>
+
+  <details><summary>Why align objects by semantics rather than shape?</summary>
+  <p>Cousins differ in shape, so lining up their geometry does not line up the parts that matter. DINOv3 features
+  distilled into each splat let us match corresponding parts. For placement objects, the alignment is weighted
+  toward the functional region, such as a coffee machine's tray, rather than the whole object.</p></details>
+
+  <details><summary>Which simulators do you use?</summary>
+  <p>Both IsaacSim, with kinematic replay rendered in parallel on the GPU, and MuJoCo, which simulates contact
+  physics and keeps an episode only if the object comes to rest at its goal.</p></details>
 </section>
 
-<footer>Real2Sem2Real project page.</footer>
-</main>
+<footer>
+  Anonymous project page. Paper and code coming soon.
+</footer>
+
+</div>
 <script>
-  // Theme toggle: remembers the viewer's choice; storage can be unavailable, so every access is guarded.
-  (function () {
-    var root = document.documentElement, key = 'r2s2r-theme';
-    try { var saved = localStorage.getItem(key); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
-    document.querySelector('.theme-toggle').addEventListener('click', function () {
-      var dark = root.getAttribute('data-theme') ? root.getAttribute('data-theme') === 'dark'
-               : window.matchMedia('(prefers-color-scheme: dark)').matches;
-      var next = dark ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      try { localStorage.setItem(key, next); } catch (e) {}
+  // Results charts and table, from the project's results tracker (successes / trials per condition).
+  // To update: edit R below. null = evaluation still running.
+  (function(){
+    var M=[['teleop','Teleoperation (150 demos)'],['r2r2r','R2R2R (2k episodes, one pair)'],['ours','Real2Sem2Real (2k episodes, cousins)']];
+    var R={
+      xarm7:[['Mug on coffee machine',[35,56],[18,50],[45,50]],
+             ['Pour into bowl',[35,48],[22,48],[37,50]],
+             ['Hang on mug tree',[26,45],[10,50],[31,50]],
+             ['Drill pick and place',[34,40],[15,40],[34,40]]],
+      panda:[['Mug on coffee machine',[30,50],[20,50],[34,50]],
+             ['Pour into bowl',[28,50],[22,50],[38,50]],
+             ['Hang on mug tree',[14,50],null,null],
+             ['Drill pick and place',[33,50],[12,40],[26,40]]]
+    };
+    var NAME={xarm7:'xArm7',panda:'Franka Panda'};
+    function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+    function pct(c){ return Math.round(100*c[0]/c[1] - 1e-9); }   // an exact .5 rounds down, as in the paper's figures (35/56 = 62%)
+    document.querySelectorAll('[data-chart]').forEach(function(el){
+      var rows=R[el.dataset.chart]; if(!rows) return;
+      var h='<div class="legend">';
+      M.forEach(function(m){ h+='<span><i class="'+m[0]+'"></i>'+esc(m[1])+'</span>'; });
+      h+='</div><div class="groups">';
+      rows.forEach(function(r){
+        h+='<div class="group"><div class="glabel">'+esc(r[0])+'</div>';
+        M.forEach(function(m,i){
+          var c=r[i+1];
+          if(!c){ h+='<div class="row pending"><div class="rl">'+esc(m[1].split(' (')[0])+'<span>running</span></div><div class="track"></div></div>'; return; }
+          h+='<div class="row"><div class="rl">'+esc(m[1].split(' (')[0])+'<span>'+pct(c)+'%</span></div>'+
+             '<div class="track"><div class="fill '+m[0]+'" style="width:'+pct(c)+'%"></div></div></div>';
+        });
+        h+='</div>';
+      });
+      h+='</div><div class="axis">Real-robot success rate. Each policy is evaluated for 50 trials, or on a fixed object grid of 40 to 56 trials; the full table gives every count.</div>';
+      el.innerHTML=h;
     });
+    var t=document.getElementById('results-table'); if(!t) return;
+    var h='<thead><tr><th>Robot</th><th>Task</th>';
+    M.forEach(function(m){ h+='<th class="num">'+esc(m[1].split(' (')[0])+'</th>'; });
+    h+='</tr></thead><tbody>';
+    Object.keys(R).forEach(function(rb){
+      R[rb].forEach(function(r){
+        var best=Math.max.apply(null, r.slice(1).map(function(c){ return c?pct(c):-1; }));
+        h+='<tr><td>'+NAME[rb]+'</td><td>'+esc(r[0])+'</td>';
+        r.slice(1).forEach(function(c){
+          h+= c ? '<td class="num'+(pct(c)===best?' best':'')+'">'+c[0]+'/'+c[1]+' ('+pct(c)+'%)</td>' : '<td class="num">running</td>';
+        });
+        h+='</tr>';
+      });
+    });
+    t.innerHTML=h+'</tbody><caption>Successes / trials. Bold is the best in each row.</caption>';
   })();
+</script>
+<script>
+  (function(){
+    var links=Array.prototype.slice.call(document.querySelectorAll('#chapters a'));
+    if(!links.length || !('IntersectionObserver' in window)) return;
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(!e.isIntersecting) return;
+        links.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href')==='#'+e.target.id); });
+      });
+    },{rootMargin:'-20% 0px -70% 0px'});
+    links.forEach(function(a){ var t=document.getElementById(a.getAttribute('href').slice(1)); if(t) io.observe(t); });
+  })();
+</script>
+<script>
+  document.getElementById('theme').addEventListener('click', function(){
+    var r=document.documentElement, cur=r.getAttribute('data-theme');
+    if(!cur) cur = 'light';
+    var next = cur==='dark' ? 'light' : 'dark';
+    r.setAttribute('data-theme', next);
+    try{ localStorage.setItem('theme', next); }catch(e){}
+  });
 </script>
 </body>
 </html>
