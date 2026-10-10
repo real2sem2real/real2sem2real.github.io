@@ -230,7 +230,7 @@
   <figure class="wide">
     <img src="static/images/task_visualization.png" alt="Four tasks, each shown as a single human demonstration and then executed by an xArm7 and a Franka Panda: placing a mug on a coffee machine, pouring a mug into a bowl, hanging a mug on a mug tree, and a drill pick and place.">
   </figure>
-  <p>Teleoperation pays for every demonstration, and every new object instance pays again. Real2Sem2Real turns
+  <p>Teleoperation pays for every demonstration, and every new object instance pays again. Real2Sem2Real (R2S2R) turns
   <b>one human RGB video</b> into thousands of robot demonstrations across the object instances of a category,
   with no depth sensor and no teleoperation. It tracks the demonstrated objects, generates
   <b>digital cousins</b> of them from photographs, aligns the cousins to the demonstration by their semantics,
@@ -243,7 +243,7 @@
   </ul>
   <div class="stats hero-stats">
     <div class="stat"><div class="v">62 <small>&rarr;</small> 90<small>%</small></div>
-      <div class="l">Mug placement on the xArm7, teleoperation vs Real2Sem2Real</div></div>
+      <div class="l">Mug placement on the xArm7, teleoperation vs R2S2R</div></div>
     <div class="stat"><div class="v">36 <small>&rarr;</small> 90<small>%</small></div>
       <div class="l">Same task, one object pair (R2R2R) vs digital cousins</div></div>
     <div class="stat"><div class="v">7 <small>/</small> 7</div>
@@ -263,15 +263,15 @@
   <p>Existing real-to-sim pipelines also break at three recurring points: the object track drifts, the
   recovered grasp collides with the object, and the reconstructed meshes look nothing like the real scene.</p>
   <figure>
-    <img src="static/images/common_failure_modes.png" loading="lazy" alt="Three rows of failure modes, tracking issues, grasp failures and unrealistic meshes, comparing the real frame, previous methods, and Real2Sem2Real.">
+    <img src="static/images/common_failure_modes.png" loading="lazy" alt="Three rows of failure modes, tracking issues, grasp failures and unrealistic meshes, comparing the real frame, previous methods, and R2S2R.">
     <figcaption><b>Common failure modes.</b> Across tracking, grasping and meshes, previous methods degrade while
-    Real2Sem2Real stays faithful to the real observation.</figcaption>
+    R2S2R stays faithful to the real observation.</figcaption>
   </figure>
 </section>
 
 <section id="method">
   <div class="eyebrow">02</div>
-  <h2>How does Real2Sem2Real work?</h2>
+  <h2>How does R2S2R work?</h2>
   <figure class="wide">
     <img src="static/images/pipeline.png" loading="lazy" alt="Pipeline in four panels: a single human RGB demonstration with the recovered hand mesh, a generated library of 16 cousin mugs and 9 cousin coffee machines, robot demonstrations rendered in simulation along the tracked trajectory, and the deployed policy succeeding on in- and out-of-distribution mugs and machines.">
   </figure>
@@ -362,7 +362,7 @@
   <p>We fine-tune the &pi;<sub>0.5</sub> vision-language-action model on three kinds of data and evaluate on real
   robots: <b>teleoperation</b>, 150 real demonstrations collected across several objects; <b>R2R2R</b>, 2,000
   generated episodes of the single demonstrated object pair, following Real2Render2Real; and
-  <b>Real2Sem2Real</b>, 2,000 generated episodes across digital cousins.</p>
+  <b>R2S2R</b>, 2,000 generated episodes across digital cousins.</p>
 
   <h3>xArm7</h3>
   <div class="chart" data-chart="xarm7"></div>
@@ -387,14 +387,14 @@
 
   <h3>More generated data keeps helping</h3>
   <figure class="narrow">
-    <img src="static/images/data_scaling.png" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, Real2Sem2Real across cousins, teleoperation on one pair, and R2R2R on one pair.">
+    <img src="static/images/data_scaling.png" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, R2S2R across cousins, teleoperation on one pair, and R2R2R on one pair.">
     <figcaption><b>Success against training-set size</b> on xArm7 placement. R2R2R levels off below 40%, while
-    Real2Sem2Real keeps improving and passes the largest teleoperated set. The charts label our method SAP.</figcaption>
+    R2S2R keeps improving and passes the largest teleoperated set.</figcaption>
   </figure>
 
   <details class="more"><summary>What the data costs to collect</summary>
   <figure>
-    <img src="static/images/scaling_comparison.png" loading="lazy" alt="Log-log plot of demonstrations produced against wall-clock time for teleoperation with 1, 10 and 100 operators and for R2R2R and SAP with 1 and 100 GPUs.">
+    <img src="static/images/scaling_comparison.png" loading="lazy" alt="Log-log plot of demonstrations produced against wall-clock time for teleoperation with 1, 10 and 100 operators and for R2R2R and R2S2R with 1 and 100 GPUs.">
     <figcaption><b>Demonstrations against wall-clock time.</b> Teleoperation grows linearly with human time.
     Generated data needs a short one-time setup and then scales with GPUs.</figcaption>
   </figure>
@@ -459,7 +459,7 @@
   store, or generated by an image model.</p></details>
 
   <details><summary>How is this different from Real2Render2Real?</summary>
-  <p>R2R2R augments the poses of the objects that were demonstrated. Real2Sem2Real adds semantic augmentation:
+  <p>R2R2R augments the poses of the objects that were demonstrated. R2S2R adds semantic augmentation:
   the same demonstration is transferred to new object instances. Trained on the same number of episodes, the
   cousins raise mug placement on the xArm7 from 36% to 90%.</p></details>
 
@@ -482,7 +482,7 @@
   // Results charts and table, from the project's results tracker (successes / trials per condition).
   // To update: edit R below. null = evaluation still running.
   (function(){
-    var M=[['teleop','Teleoperation (150 demos)'],['r2r2r','R2R2R (2k episodes, one pair)'],['ours','Real2Sem2Real (2k episodes, cousins)']];
+    var M=[['teleop','Teleoperation (150 demos)'],['r2r2r','R2R2R (2k episodes, one pair)'],['ours','R2S2R (2k episodes, cousins)']];
     var R={
       xarm7:[['Mug on coffee machine',[35,56],[18,50],[45,50]],
              ['Pour into bowl',[35,48],[22,48],[37,50]],
