@@ -296,11 +296,11 @@
 
   <h3>Semantic alignment on all four tasks</h3>
   <figure class="wide">
-    <img src="static/images/semantic_alignment_tasks.jpg" loading="lazy" alt="Four rows of tasks, mug on coffee machine, mug pour, mug hang and drill. Left, the scanned objects of the source demonstration at the task pose; right, five cousin objects carried to the same pose, with the anchoring region (the machine's tray, the mug's rim, the mug handle and hang branch) marked in pink.">
+    <img src="static/images/semantic_alignment_tasks.jpg" loading="lazy" alt="Four rows of tasks, mug on coffee machine, mug pour, mug hang and drill. Left, the scanned objects of the source demonstration at the task pose; right, five cousin objects carried to the same pose, with the anchoring region (the machine's tray, the mug's rim, the mug handle and hang branch, the drill handle) marked in pink.">
   </figure>
   <p class="hero-cap"><b>Cousin objects carried to the demonstrated pose.</b> Left, the scanned objects of the source
   demonstration; right, cousins aligned to it. Pink marks the region that anchors the alignment: the tray of the
-  coffee machine, the rim of the poured mug, and the handle with the branch it hangs on. Cousins that differ in
+  coffee machine, the rim of the poured mug, the handle with the branch it hangs on, and the drill's handle. Cousins that differ in
   shape, size and color still land on the tray, tip over the bowl, or hang on the branch as demonstrated.</p>
 
   <details class="more"><summary>Why the alignment works: distilled DINOv3 features</summary>
@@ -328,10 +328,10 @@
 
   <details class="more"><summary>Building the simulated scene</summary>
   <figure>
-    <img src="static/images/viser_to_isaac.jpg" loading="lazy" alt="Left, a Viser layout tool with the coffee machine, mug, camera and robot base placed by gizmos on a table; right, the same layout converted into an IsaacSim scene with the xArm7.">
+    <img src="static/images/viser_to_isaac.jpg" loading="lazy" alt="Left, a Viser layout tool with the coffee machine, mug, camera and robot base placed by gizmos on a table; right, the same layout converted into an IsaacSim scene and a MuJoCo scene with the xArm7.">
     <figcaption><b>Scene construction.</b> In a layout tool built on Viser, the coffee machine, the mug, the camera
-    and the robot base are placed with gizmos on the recovered table plane. The layout converts into an IsaacSim
-    scene with the robot, the table and posterboard walls that match the real cell.</figcaption>
+    and the robot base are placed with gizmos on the recovered table plane. The layout converts into both an IsaacSim
+    and a MuJoCo scene with the robot, the table, the coffee machine and the mug.</figcaption>
   </figure>
   </details>
 
@@ -361,12 +361,12 @@
   objects of our four tasks. Every method gets the same object model, and every method is scored by per-frame mask
   IoU against the same SAM2 masks.</p>
   <figure class="wide">
-    <img src="static/images/tracking_method.jpg" loading="lazy" alt="Render-and-compare tracking. A video frame passes through frozen DINOv3, SAM2 and Depth Anything to give feature, RGB, mask and depth targets; the DINOv3-distilled splat of the mug is rendered at the current pose into the same four channels, and four losses update the pose. Below, the mug tracked across frames 0 to 100, and mean mask IoU bars: ours 0.95, WARPED 0.89, FoundationPose with pseudo depth 0.82, RSRD re-implemented 0.20.">
+    <img src="static/images/tracking_method.jpg" loading="lazy" alt="Render-and-compare tracking. A video frame passes through frozen DINOv3, SAM2 and Depth Anything to give RGB, feature, mask and depth targets; the DINOv3-distilled splat of the mug is rendered at the current pose into the same four channels, and four losses update the pose. Below, the mug tracked across frames 0 to 100, and per-frame mask IoU: ours averages 0.95, WARPED 0.89, FoundationPose with pseudo depth 0.82, and re-implemented RSRD 0.20.">
   </figure>
   <p class="hero-cap"><b>Render-and-compare tracking.</b> Frozen DINOv3, SAM2 and Depth Anything turn each video
-  frame into feature, RGB, mask and depth targets, with the hand ignored. The DINOv3-distilled splat is rendered at
-  the current pose into the same four channels, and the four losses update the pose by gradient steps. The bars
-  give mean mask IoU on the coffee-machine video.</p>
+  frame into RGB, feature, mask and depth targets, with the hand ignored. The DINOv3-distilled splat is rendered at
+  the current pose into the same four channels, and the four losses update the pose by gradient steps. The plot
+  gives per-frame mask IoU on the coffee-machine video, with each method's mean in the legend.</p>
   <details class="more"><summary>Initializing the track</summary>
   <figure>
     <img src="static/images/tabletop_init.jpg" loading="lazy" alt="Four seed poses of the mug splat rendered over the first video frame, and the best refined seed outlined on the mug.">
