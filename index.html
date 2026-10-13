@@ -7,7 +7,7 @@
 <meta name="description" content="3D Semantic Augmentations for Robot Learning from a Single Human RGB Demonstration">
 <meta property="og:title" content="Real2Sem2Real">
 <meta property="og:description" content="One human RGB video becomes thousands of robot demonstrations across the object instances of a category.">
-<meta property="og:image" content="static/images/task_visualization.png">
+<meta property="og:image" content="static/images/task_visualization.jpg">
 <link rel="icon" type="image/svg+xml" href="static/favicon.svg">
 <script>
   // set the theme before first paint so there is no flash of the wrong one
@@ -228,7 +228,7 @@
 
 <div class="hero">
   <figure class="wide">
-    <img src="static/images/task_visualization.png" alt="Four tasks, each shown as a single human demonstration and then executed by an xArm7 and a Franka Panda: placing a mug on a coffee machine, pouring a mug into a bowl, hanging a mug on a mug tree, and a drill pick and place.">
+    <img src="static/images/task_visualization.jpg" alt="Four tasks, each shown as a single human demonstration and then executed by an xArm7 and a Franka Panda: placing a mug on a coffee machine, pouring a mug into a bowl, hanging a mug on a mug tree, and a drill pick and place.">
   </figure>
   <p>Teleoperation pays for every demonstration, and every new object instance pays again. Real2Sem2Real (R2S2R) turns
   <b>one human RGB video</b> into thousands of robot demonstrations across the object instances of a category,
@@ -263,9 +263,10 @@
   <p>Existing real-to-sim pipelines also break at three recurring points: the object track drifts, the
   recovered grasp collides with the object, and the reconstructed meshes look nothing like the real scene.</p>
   <figure>
-    <img src="static/images/common_failure_modes.png" loading="lazy" alt="Three rows of failure modes, tracking issues, grasp failures and unrealistic meshes, comparing the real frame, previous methods, and R2S2R.">
-    <figcaption><b>Common failure modes.</b> Across tracking, grasping and meshes, previous methods degrade while
-    R2S2R stays faithful to the real observation.</figcaption>
+    <img src="static/images/common_failure_modes.jpg" loading="lazy" alt="Three rows, tracking, grasps and bad meshes, each comparing the real scene (GT), a prior method, and R2S2R. The prior tracker renders the mug from a wrong pose, the prior grasp collides with the mug, and the prior coffee-machine mesh is blotchy; R2S2R gets each right.">
+    <figcaption><b>Common failure modes.</b> Against the real scene (GT), prior trackers lose the object, prior grasps
+    collide with the mug instead of taking its handle, and prior meshes look unrealistic. R2S2R tracks the mug,
+    grasps it by the handle as the human did, and renders realistic objects.</figcaption>
   </figure>
 </section>
 
@@ -273,7 +274,7 @@
   <div class="eyebrow">02</div>
   <h2>How does R2S2R work?</h2>
   <figure class="wide">
-    <img src="static/images/pipeline.png" loading="lazy" alt="Pipeline in four panels: a single human RGB demonstration with the recovered hand mesh, a generated library of 16 cousin mugs and 9 cousin coffee machines, robot demonstrations rendered in simulation along the tracked trajectory, and the deployed policy succeeding on in- and out-of-distribution mugs and machines.">
+    <img src="static/images/pipeline.jpg" loading="lazy" alt="Pipeline in four panels: a single human RGB demonstration with the recovered hand mesh, a generated library of 16 cousin mugs and 9 cousin coffee machines, robot demonstrations rendered in simulation along the tracked trajectory, and the deployed policy succeeding on in- and out-of-distribution mugs and machines.">
   </figure>
   <p class="hero-cap"><b>Method overview.</b> From a single human demonstration with no teleoperation, we recover the
   mug's trajectory, generate a 16&nbsp;&times;&nbsp;9 library of cousin mugs and coffee machines, and render thousands
@@ -293,19 +294,62 @@
       contact physics, and a VLA policy is trained on the result.</p></div>
   </div>
 
+  <h3>Semantic alignment on all four tasks</h3>
+  <figure class="wide">
+    <img src="static/images/semantic_alignment_tasks.jpg" loading="lazy" alt="Four rows of tasks, mug on coffee machine, mug pour, mug hang and drill. Left, the scanned objects of the source demonstration at the task pose; right, five cousin objects carried to the same pose, with the anchoring region (the machine's tray, the mug's rim, the mug handle and hang branch) marked in pink.">
+  </figure>
+  <p class="hero-cap"><b>Cousin objects carried to the demonstrated pose.</b> Left, the scanned objects of the source
+  demonstration; right, cousins aligned to it. Pink marks the region that anchors the alignment: the tray of the
+  coffee machine, the rim of the poured mug, and the handle with the branch it hangs on. Cousins that differ in
+  shape, size and color still land on the tray, tip over the bowl, or hang on the branch as demonstrated.</p>
+
+  <details class="more"><summary>Why the alignment works: distilled DINOv3 features</summary>
+  <figure>
+    <img src="static/images/mug_alignment.jpg" loading="lazy" alt="The scanned demonstration mug and eight cousin mugs, each in RGB and with its distilled DINOv3 features mapped to color; the handle is magenta on every mug.">
+    <figcaption><b>Distilled DINOv3 features.</b> The scanned demonstration mug (top) and eight cousins generated
+    from photographs (bottom). The same parts get the same features on every mug, the handle magenta and the body
+    and rim in similar blues and greens, so the alignment matches handle to handle and rim to rim.</figcaption>
+  </figure>
+  </details>
+
   <details class="more"><summary>Recovering the robot grasp from the human hand</summary>
   <figure>
-    <img src="static/images/hamer_motion_transfer.png" loading="lazy" alt="Left, real frames of a single human demonstration and the recovered HaMeR hand mesh at three timesteps; right, the grasp retargeted to the robot gripper across mug and coffee-machine pairs.">
+    <img src="static/images/hamer_motion_transfer.jpg" loading="lazy" alt="Left, real frames of a single human demonstration and the recovered HaMeR hand mesh at three timesteps; right, the grasp retargeted to the robot gripper across mug and coffee-machine pairs.">
     <figcaption><b>Demo-to-robot motion transfer.</b> HaMeR recovers the articulated hand at each timestep. The
     grasp is retargeted to the robot gripper and re-rendered across every mug and coffee-machine combination.</figcaption>
+  </figure>
+  <figure>
+    <img src="static/images/grasp_transfer.jpg" loading="lazy" alt="The gripper grasp on the scanned demonstration mug, and the same grasp transferred to five cousin mugs, each gripped by its handle.">
+    <figcaption><b>Grasp transfer.</b> The grasp retargeted from the human hand on the demonstration mug follows each
+    cousin through its semantic alignment, so the jaws close on the handle of every cousin, from a tall steel mug
+    to a small striped cup.</figcaption>
+  </figure>
+  </details>
+
+  <details class="more"><summary>Building the simulated scene</summary>
+  <figure>
+    <img src="static/images/viser_to_isaac.jpg" loading="lazy" alt="Left, a Viser layout tool with the coffee machine, mug, camera and robot base placed by gizmos on a table; right, the same layout converted into an IsaacSim scene with the xArm7.">
+    <figcaption><b>Scene construction.</b> In a layout tool built on Viser, the coffee machine, the mug, the camera
+    and the robot base are placed with gizmos on the recovered table plane. The layout converts into an IsaacSim
+    scene with the robot, the table and posterboard walls that match the real cell.</figcaption>
   </figure>
   </details>
 
   <details class="more"><summary>Aligning the simulated camera to the real one</summary>
   <figure>
-    <img src="static/images/camera_optimization.png" loading="lazy" alt="A real camera frame, the rendered robot from the original camera pose overlaid with visible misalignment, and the rendered robot after camera optimization overlaid with close alignment.">
-    <figcaption><b>Camera alignment.</b> Starting from a coarse camera pose, the rendered robot is compared against
-    the real image and the pose is optimized until the render matches the real view.</figcaption>
+    <img src="static/images/camera_optimization.jpg" loading="lazy" alt="A real camera frame of the robot at its home pose; below, the simulated robot rendered from the initial camera, whose overlay on the real frame is misaligned, and from the optimized camera, whose overlay lines up with the real gripper.">
+    <figcaption><b>Camera alignment.</b> One real frame of the robot at its home pose is the only reference. The
+    simulated robot rendered from a coarse initial camera is visibly offset when overlaid on that frame; after
+    optimization, the render lands on the real gripper. No AprilTag is needed.</figcaption>
+  </figure>
+  </details>
+
+  <details class="more"><summary>Generated episodes in IsaacSim and MuJoCo</summary>
+  <figure>
+    <img src="static/images/isaac_vs_mujoco.jpg" loading="lazy" alt="Six phases of mug-on-coffee-machine episodes, start, grasp, lift, carry, place and release, rendered in IsaacSim (top row) and MuJoCo (bottom row), each column with a different cousin mug and machine.">
+    <figcaption><b>Both simulators.</b> Mug-on-coffee-machine episodes in IsaacSim (top), which carries the mug
+    kinematically, and MuJoCo (bottom), which simulates contact. Each column is a different episode with its own
+    cousin pairing, and table texture, lighting and background are randomized per episode.</figcaption>
   </figure>
   </details>
 </section>
@@ -316,6 +360,21 @@
   <p>Every later stage depends on the object track, so we compare against the two closest alternatives on the seven
   objects of our four tasks. Every method gets the same object model, and every method is scored by per-frame mask
   IoU against the same SAM2 masks.</p>
+  <figure class="wide">
+    <img src="static/images/tracking_method.jpg" loading="lazy" alt="Render-and-compare tracking. A video frame passes through frozen DINOv3, SAM2 and Depth Anything to give feature, RGB, mask and depth targets; the DINOv3-distilled splat of the mug is rendered at the current pose into the same four channels, and four losses update the pose. Below, the mug tracked across frames 0 to 100, and mean mask IoU bars: ours 0.95, WARPED 0.89, FoundationPose with pseudo depth 0.82, RSRD re-implemented 0.20.">
+  </figure>
+  <p class="hero-cap"><b>Render-and-compare tracking.</b> Frozen DINOv3, SAM2 and Depth Anything turn each video
+  frame into feature, RGB, mask and depth targets, with the hand ignored. The DINOv3-distilled splat is rendered at
+  the current pose into the same four channels, and the four losses update the pose by gradient steps. The bars
+  give mean mask IoU on the coffee-machine video.</p>
+  <details class="more"><summary>Initializing the track</summary>
+  <figure>
+    <img src="static/images/tabletop_init.jpg" loading="lazy" alt="Four seed poses of the mug splat rendered over the first video frame, and the best refined seed outlined on the mug.">
+    <figcaption><b>Upright initialization.</b> Seeds from a grid of upright orientations on the table plane are
+    each refined before ranking, and the best refined seed fits the mug in the first frame. Blind rotation sweeps
+    often settle in a wrong basin on textureless objects.</figcaption>
+  </figure>
+  </details>
   <div class="tablewrap">
     <table>
       <thead><tr><th>Object</th><th class="num">Ours</th><th class="num">WARPED</th><th class="num">FoundationPose</th></tr></thead>
