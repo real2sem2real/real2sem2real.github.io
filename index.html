@@ -7,7 +7,7 @@
 <meta name="description" content="3D Semantic Augmentations for Robot Learning from a Single Human RGB Demonstration">
 <meta property="og:title" content="Real2Sem2Real">
 <meta property="og:description" content="One human RGB video becomes thousands of robot demonstrations across the object instances of a category.">
-<meta property="og:image" content="static/images/task_visualization.jpg">
+<meta property="og:image" content="static/images/teaser.jpg">
 <link rel="icon" type="image/svg+xml" href="static/favicon.svg">
 <script>
   // set the theme before first paint so there is no flash of the wrong one
@@ -227,8 +227,8 @@
 </header>
 
 <div class="hero">
-  <figure class="wide">
-    <img src="static/images/task_visualization.jpg" alt="Four tasks, each shown as a single human demonstration and then executed by an xArm7 and a Franka Panda: placing a mug on a coffee machine, pouring a mug into a bowl, hanging a mug on a mug tree, and a drill pick and place.">
+  <figure class="narrow">
+    <img src="static/images/teaser.jpg" alt="Overview of R2S2R. Top, a single human RGB video and an object scan whose DINOv3 part matches link the demonstrated mug to cousin mugs. Middle, the real scene and splat cousins, with motion transfer across embodiments, produce synthetic data for place, pour, hang and drill. Bottom, a fine-tuned VLA deployed on the real xArm7 and Franka Panda succeeds on all four tasks.">
   </figure>
   <p>Teleoperation pays for every demonstration, and every new object instance pays again. Real2Sem2Real (R2S2R) turns
   <b>one human RGB video</b> into thousands of robot demonstrations across the object instances of a category,
@@ -422,6 +422,13 @@
   robots: <b>teleoperation</b>, 150 real demonstrations collected across several objects; <b>R2R2R</b>, 2,000
   generated episodes of the single demonstrated object pair, following Real2Render2Real; and
   <b>R2S2R</b>, 2,000 generated episodes across digital cousins.</p>
+
+  <h3>The four tasks</h3>
+  <figure class="narrow">
+    <img src="static/images/task_visualization.jpg" loading="lazy" alt="Four tasks, each shown as a single human demonstration and then executed by an xArm7 and a Franka Panda: placing a mug on a coffee machine, pouring a mug into a bowl, hanging a mug on a mug tree, and a drill pick and place.">
+    <figcaption><b>Tasks.</b> Each row is one task: the single human RGB demonstration (left) and real rollouts on
+    the xArm7 and the Franka Panda. The manipulated object is outlined and its motion drawn as an arrow.</figcaption>
+  </figure>
 
   <h3>xArm7</h3>
   <div class="chart" data-chart="xarm7"></div>
