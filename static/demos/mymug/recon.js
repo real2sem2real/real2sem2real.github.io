@@ -105,6 +105,7 @@ export function reconstruct(mask, W, H, img, { height = 0.09 } = {}) {
   const rowsO = []; for (let y = 0; y < h; y++) { let a = -1, b = -1; for (let x = 0; x < w; x++) if (O[y * w + x]) { if (a < 0) a = x; b = x; } if (a >= 0) rowsO.push([y, a, b]); }
   const n0 = rowsO.length, mid = rowsO.slice(Math.floor(n0 * 0.1), Math.ceil(n0 * 0.9));
   const xc = median(mid.map(r_ => 0.5 * (r_[1] + r_[2])));
+  let bx = 0, xcAt = () => xc;                         // set below, once we know which side the handle is on
   // handle = mug minus the (slightly grown) body, largest part
   const dO = edt(O, w, h), Hm = new Uint8Array(w * h);
   for (let i = 0; i < w * h; i++) Hm[i] = M[i] && dO[i] > 4 ? 1 : 0;
@@ -113,74 +114,142 @@ export function reconstruct(mask, W, H, img, { height = 0.09 } = {}) {
     if (best >= 0) { hArea = c.sizes[best]; let sx = 0; for (let i = 0; i < w * h; i++) { Hm[i] = c.labels[i] === best ? 1 : 0; if (Hm[i]) sx += i % w; } side = sx / hArea > xc ? 1 : -1; } }
   const mArea = M.reduce((a, b) => a + b, 0);
   if (!side || hArea < 0.015 * mArea) return { error: 'No handle found. Use a side view with the handle on the left or right.' };
-  // body radius per row: the clean side (away from the handle), capped by the handle side up to its first gap (so a
-  // stray bit of background on the clean side cannot widen the mug); rows outside the mug get NaN
+  // body edges per row: the clean side (away from the handle), and on the handle side the first gap, if there is one
   let yTop = h, yBot = -1; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (M[y * w + x] && !Hm[y * w + x]) { if (y < yTop) yTop = y; if (y > yBot) yBot = y; }
-  const rad = new Float64Array(h).fill(NaN), xcR = Math.round(xc);
+  const eClean = new Float64Array(h).fill(NaN), eGap = new Float64Array(h).fill(NaN), xcR = Math.round(xc);
   for (let y = yTop; y <= yBot; y++) {
-    let clean = NaN, gap = NaN;
-    if (side > 0) { for (let x = 0; x < w; x++) if (M[y * w + x]) { clean = xc - x + 0.5; break; } }
-    else { for (let x = w - 1; x >= 0; x--) if (M[y * w + x]) { clean = x - xc + 0.5; break; } }
-    if (M[y * w + xcR]) for (let x = xcR; x >= 0 && x < w; x += side) if (!M[y * w + x]) { gap = side * (x - xc) - 0.5; break; }
+    if (side > 0) { for (let x = 0; x < w; x++) if (M[y * w + x]) { eClean[y] = x - 0.5; break; } }
+    else { for (let x = w - 1; x >= 0; x--) if (M[y * w + x]) { eClean[y] = x + 0.5; break; } }
+    if (M[y * w + xcR]) for (let x = xcR; x >= 0 && x < w; x += side) if (!M[y * w + x]) { eGap[y] = x - side * 0.5; break; }
+  }
+  // the axis column: the median centre of the rows where both edges are body edges (between the handle's arms); the
+  // opened body's centres are pulled towards the handle by its arms. A leaning axis is left to the taper fit below.
+  { const ys = []; for (let y = yTop; y <= yBot; y++) if (eClean[y] === eClean[y] && eGap[y] === eGap[y]) ys.push(y);
+    if (ys.length > 0.15 * (yBot - yTop)) { const x0c = median(ys.map(y => 0.5 * (eClean[y] + eGap[y]))); xcAt = () => x0c; } }
+  const rad = new Float64Array(h).fill(NaN);
+  for (let y = yTop; y <= yBot; y++) {
+    const xcy = xcAt(y), clean = side * (xcy - eClean[y]), gap = side * (eGap[y] - xcy);
     rad[y] = gap > 0 ? Math.min(clean, gap) : clean;
   }
-  // smooth with a running median (5 % of the height)
-  { const r0 = Float64Array.from(rad), hw = Math.max(2, Math.round(0.025 * (yBot - yTop)));
-    for (let y = yTop; y <= yBot; y++) { const a2 = []; for (let k = y - hw; k <= y + hw; k++) if (k >= yTop && k <= yBot && r0[k] > 0) a2.push(r0[k]); rad[y] = a2.length ? median(a2) : NaN; } }
-  // the handle: mug pixels beyond the body edge on the handle side, largest part
-  Hm.fill(0);
-  for (let y = yTop; y <= yBot + 2 && y < h; y++) {
-    const r_ = rad[Math.min(yBot, y)]; if (!(r_ > 0)) continue;
-    for (let x = 0; x < w; x++) if (M[y * w + x] && side * (x - xc) > r_ + 1.5) Hm[y * w + x] = 1;
-  }
-  { const c = components(Hm, w, h); let best = -1; c.sizes.forEach((s2, i) => { if (best < 0 || s2 > c.sizes[best]) best = i; });
-    hArea = best >= 0 ? c.sizes[best] : 0; for (let i = 0; i < w * h; i++) Hm[i] = best >= 0 && c.labels[i] === best ? 1 : 0; }
-  if (hArea < 0.015 * mArea) return { error: 'No handle found. Use a side view with the handle on the left or right.' };
-  const Hpx = yBot - yTop + 1, s = height / Hpx;                       // metres per work pixel
+  // ---- camera tilt. Photos are taken from a little above, so the silhouette's top is the far arc of the rim ellipse:
+  // its half-width grows from the top row to the ellipse's centre, where the rim is widest, then follows the wall. The
+  // rim centre is the first row (from the top) within 1.5 % of the widest near the top; the arc's height over the rim's
+  // radius is sin(elevation). The foot's near arc is shadowed or cut off more often, so its centre follows from the tilt.
+  const radS = new Float64Array(h).fill(NaN);
+  for (let y = yTop; y <= yBot; y++) { const a2 = []; for (let k = y - 2; k <= y + 2; k++) if (rad[k] > 0) a2.push(rad[k]); if (a2.length) radS[y] = median(a2); }
+  const topEnd = Math.round(yTop + 0.35 * (yBot - yTop));
+  let rMaxTop = 0; for (let y = yTop; y <= topEnd; y++) if (radS[y] > rMaxTop) rMaxTop = radS[y];
+  let yR = yTop; for (let y = yTop; y <= topEnd; y++) if (radS[y] >= 0.985 * rMaxTop) { yR = y; break; }
+  const sinP = Math.min(0.7, Math.max(0, (yR - yTop) / Math.max(1, radS[yR] || rMaxTop))), cosP = Math.sqrt(1 - sinP * sinP);
+  let yB = yBot;
+  for (let it = 0; it < 4; it++) { const ref = []; for (let k = 3; k <= 9; k++) { const v = radS[Math.round(yB) - k]; if (v > 0) ref.push(v); } if (ref.length) yB = yBot - median(ref) * sinP; }
+  if (yB - yR < 0.3 * (yBot - yTop)) return { error: 'Could not read the mug\'s shape. Try a photo from the side.' };
+  const s = height * cosP / (yB - yR);                                         // metres per work pixel
+  const zOf = y => (yB - y) * s / cosP;
+  // ---- body profile: a Theil-Sen line r(z) through the side-wall rows (robust to stray background, shadows and the
+  // handle's arms), so the body is a clean cylinder or cone
+  const Z = [], R = [];
+  for (let y = Math.ceil(yR + 0.05 * (yB - yR)); y <= yB - 0.05 * (yB - yR); y++) if (rad[y] > 0) { Z.push(zOf(y)); R.push(rad[y] * s); }
+  if (Z.length < 8) return { error: 'Could not read the mug\'s shape. Try a photo from the side.' };
+  const slopes = [], stp = Math.max(1, Math.floor(Z.length / 80));
+  for (let i = 0; i < Z.length; i += stp) for (let j = i + stp; j < Z.length; j += stp) if (Math.abs(Z[j] - Z[i]) > 0.15 * height) slopes.push((R[j] - R[i]) / (Z[j] - Z[i]));
+  // the camera is closer to the rim than to the foot, which exaggerates an outward taper; keep 60 % of it, at most
+  // a 20 % change in radius over the height
+  const rMed0 = median(R), c1 = slopes.length ? Math.max(-0.2 * rMed0 / height, Math.min(0.2 * rMed0 / height, 0.6 * median(slopes))) : 0;
+  const c0 = median(R.map((r_, i) => r_ - c1 * Z[i])), rMed = median(R);
+  // the wall as it appears in the photo (undamped), to tell the body from the handle
+  const c1i = slopes.length ? median(slopes) : 0, c0i = median(R.map((r_, i) => r_ - c1i * Z[i]));
+  const rImg = y => Math.max(0.5 * rMed, c0i + c1i * Math.min(height, Math.max(0, zOf(y))));
+  const rAt = z => Math.min(1.5 * rMed, Math.max(0.5 * rMed, c0 + c1 * z));
   const K = 36, profile = [];
-  for (let k = 0; k < K; k++) {
-    const y = yBot - (k / (K - 1)) * (Hpx - 1), acc = [];
-    for (let dy = -2; dy <= 2; dy++) { const yy = Math.round(y + dy); if (yy >= yTop && yy <= yBot && rad[yy] > 0) acc.push(rad[yy]); }
-    profile.push({ z: (k / (K - 1)) * height, r: Math.max(0.004, (acc.length ? median(acc) : NaN) * s) });
+  for (let k = 0; k < K; k++) { const z = (k / (K - 1)) * height; profile.push({ z, r: rAt(z) }); }
+  // ---- the handle: mug pixels beyond the fitted body edge on the handle side, largest part
+  Hm.fill(0);
+  for (let y = yTop; y <= yBot; y++) {
+    const rp = rImg(y) / s;
+    const xcy = xcAt(y); for (let x = 0; x < w; x++) if (M[y * w + x] && !O[y * w + x] && side * (x - xcy) > rp + 3) Hm[y * w + x] = 1;
   }
-  for (let k = 0; k < K; k++) if (!(profile[k].r > 0)) profile[k].r = profile[Math.max(0, k - 1)].r || 0.035;
-  for (let k = 0; k < 2; k++) profile[k].r = 0.95 * profile[2].r;                 // the silhouette's first and last rows are
-  for (let k = K - 2; k < K; k++) profile[k].r = profile[K - 3].r;                // the foot's and the rim's ellipse edges
-  // handle centreline in the handle plane: u = outward from the axis, v = up from the bottom (work pixels)
-  // the loop's hole: background pixels inside the handle's bounding box, beyond the body edge, not touching the box's
-  // outer edge; its centroid is the ray origin (fallback: 40 % of the way from the wall to the handle's outer edge)
+  { const cc = components(Hm, w, h); let best = -1; cc.sizes.forEach((s2, i) => { if (best < 0 || s2 > cc.sizes[best]) best = i; });
+    hArea = best >= 0 ? cc.sizes[best] : 0; for (let i = 0; i < w * h; i++) Hm[i] = best >= 0 && cc.labels[i] === best ? 1 : 0; }
+  if (hArea < 0.015 * mArea) return { error: 'No handle found. Use a side view with the handle on the left or right.' };
+  // the handle lies in the plane through the axis facing the camera: u = outward (px), v = up from the foot centre
+  // (px, foreshortened by cos(tilt)). The loop's hole centroid is the origin of the angular bins (fallback: 40 % of the
+  // way from the wall to the handle's outer edge).
   let hx0 = w, hx1 = -1, hy0 = h, hy1 = -1;
   for (let i = 0; i < w * h; i++) if (Hm[i]) { const x = i % w, y = (i / w) | 0; if (x < hx0) hx0 = x; if (x > hx1) hx1 = x; if (y < hy0) hy0 = y; if (y > hy1) hy1 = y; }
   const hole = new Uint8Array(w * h);
-  for (let y = hy0; y <= hy1; y++) for (let x = hx0; x <= hx1; x++) { const r_ = rad[y]; if (!M[y * w + x] && r_ > 0 && side * (x - xc) > r_) hole[y * w + x] = 1; }
+  for (let y = hy0; y <= hy1; y++) { const rp = rImg(y) / s;
+    const xcy = xcAt(y); for (let x = hx0; x <= hx1; x++) if (!M[y * w + x] && side * (x - xcy) > rp) hole[y * w + x] = 1; }
   let origin = null;
-  { const c = components(hole, w, h), sx = new Float64Array(c.sizes.length), sy = new Float64Array(c.sizes.length), open = new Uint8Array(c.sizes.length);
-    for (let i = 0; i < w * h; i++) { const l = c.labels[i]; if (l < 0) continue; const x = i % w, y = (i / w) | 0; sx[l] += x; sy[l] += y;
+  { const cc = components(hole, w, h), sx = new Float64Array(cc.sizes.length), sy = new Float64Array(cc.sizes.length), open = new Uint8Array(cc.sizes.length);
+    for (let i = 0; i < w * h; i++) { const l = cc.labels[i]; if (l < 0) continue; const x = i % w, y = (i / w) | 0; sx[l] += x; sy[l] += y;
       if (y === hy0 || y === hy1 || x === (side > 0 ? hx1 : hx0)) open[l] = 1; }
-    let best = -1; c.sizes.forEach((s2, l) => { if (!open[l] && s2 > 12 && (best < 0 || s2 > c.sizes[best])) best = l; });
-    if (best >= 0) origin = [side * (sx[best] / c.sizes[best] - xc), yBot - sy[best] / c.sizes[best]]; }
-  if (!origin) { const yM = Math.round(0.5 * (hy0 + hy1)), rw = rad[yM] || 0, uo = side > 0 ? hx1 - xc : xc - hx0; origin = [rw + 0.4 * (uo - rw), yBot - yM]; }
-  const pix = []; for (let i = 0; i < w * h; i++) if (Hm[i]) pix.push([side * ((i % w) - xc), yBot - ((i / w) | 0)]);
+    let best = -1; cc.sizes.forEach((s2, l) => { if (!open[l] && s2 > 12 && (best < 0 || s2 > cc.sizes[best])) best = l; });
+    if (best >= 0) { const oy = sy[best] / cc.sizes[best]; origin = [side * (sx[best] / cc.sizes[best] - xcAt(oy)), yB - oy]; } }
+  if (!origin) { const yM = 0.5 * (hy0 + hy1), rw = rImg(yM) / s, uo = side > 0 ? hx1 - xcAt(yM) : xcAt(yM) - hx0; origin = [rw + 0.4 * (uo - rw), yB - yM]; }
+  const pix = []; for (let i = 0; i < w * h; i++) if (Hm[i]) { const y = (i / w) | 0; pix.push([side * ((i % w) - xcAt(y)), yB - y]); }
   const cl = handleCenterline(pix, origin);
   if (cl.pts.length < 8) return { error: 'The handle is too small or not to the side. Try another photo.' };
-  // light smoothing, then metres
-  const sm = cl.pts.map((p, i, a) => { let u = 0, v = 0, n = 0; for (let j = Math.max(0, i - 2); j <= Math.min(a.length - 1, i + 2); j++) { u += a[j][0]; v += a[j][1]; n++; } return [u / n * s, v / n * s]; });
-  const thick = Math.min(0.016, Math.max(0.005, median(cl.th) * s));
-  // colours: body front (upper middle) and a darker inside tone
+  // smooth (5-point), then metres in the handle plane: x outward, z up
+  const sm = cl.pts.map((p, i, a) => { let u = 0, v = 0, n = 0; for (let j = Math.max(0, i - 2); j <= Math.min(a.length - 1, i + 2); j++) { u += a[j][0]; v += a[j][1]; n++; } return [u / n * s, v / n * s / cosP]; });
+  const thSorted = Float64Array.from(cl.th).sort(), thick = Math.min(0.014, Math.max(0.005, thSorted[Math.floor(0.3 * thSorted.length)] * s));
+  // ---- image mapping (full-resolution pixels) for the texture and the overlay. A surface point (x, y, z) in the mug
+  // frame (x towards the handle, z up) projects to column xc + side*x/s and row yB - z*cos/s - side*y*sin/s: points on
+  // the camera's side of the axis plane appear lower. toPhoto mirrors the far side onto the near one (|y|), which is
+  // what the texture wants: the photo only shows the near side.
+  const toImg = (xw, yw) => [x0 - pad + (xw + 0.5) / f - 0.5, y0 - pad + (yw + 0.5) / f - 0.5];
+  const project = (xm, zm, ym) => { const yw = yB - zm * cosP / s - side * ym * sinP / s; return toImg(xcAt(yw) + side * xm / s, yw); };
+  // texture lookup: where the projected point lands on the handle or off the mug, use the mirrored point on the clean
+  // side (the photo shows the handle there, not the body behind it)
+  const inBody = (xm, zm, ym) => { const yw = Math.round(yB - zm * cosP / s - side * ym * sinP / s), xw = Math.round(xcAt(yw) + side * xm / s);
+    return xw >= 0 && yw >= 0 && xw < w && yw < h && M[yw * w + xw] === 1 && Hm[yw * w + xw] === 0; };
+  let plain = null;                                     // a texel of plain body colour (set below)
+  const texAt = (xm, zm, ym) => {
+    const yy = -side * Math.abs(ym), rr = Math.hypot(xm, ym);
+    if (side * ym > 0.02 * rr || xm > 0.86 * rr) return plain;   // the far side (not in the photo) and the strip beside the handle
+    if (xm <= 0 || inBody(xm, zm, yy)) return project(xm, zm, yy);
+    for (const k of [1, 0.85, 0.7]) if (inBody(-xm * k, zm, yy)) return project(-xm * k, zm, yy);
+    return project(-xm * 0.6, zm, yy);
+  };
+  const map = { x0, y0, pad, f, xc, yB, side, s, sinP, cosP, project,
+    toPhoto: (xm, zm, ym = 0) => project(xm, zm, -side * Math.abs(ym)), texAt };
+  // colours: the body front, upper middle
+  const ctx0 = () => img.getContext('2d');
   const ctx = img.getContext('2d'), sample = (cx, cy, rr) => {
     const d = ctx.getImageData(Math.round(cx - rr), Math.round(cy - rr), Math.max(1, Math.round(2 * rr)), Math.max(1, Math.round(2 * rr))).data;
-    let R = 0, G = 0, B = 0, n = 0; for (let i = 0; i < d.length; i += 4) { R += d[i]; G += d[i + 1]; B += d[i + 2]; n++; }
-    return [R / n, G / n, B / n];
+    let R_ = 0, G = 0, B = 0, n = 0; for (let i = 0; i < d.length; i += 4) { R_ += d[i]; G += d[i + 1]; B += d[i + 2]; n++; }
+    return [R_ / n, G / n, B / n];
   };
-  const toImg = (xw, yw) => [x0 - pad + (xw + 0.5) / f - 0.5, y0 - pad + (yw + 0.5) / f - 0.5];
-  const rMid = rad[Math.round(yBot - 0.55 * Hpx)] || rad[Math.round(0.5 * (yTop + yBot))];
-  const [bcx, bcy] = toImg(xc - side * 0.35 * rMid, yBot - 0.55 * Hpx);
-  const bodyColor = sample(bcx, bcy, Math.max(2, 0.08 * rMid / f));
-  // image-space mapping for textures and overlays (full-resolution pixels)
-  const map = { x0, y0, pad, f, xc, yBot, side, s,
-    toPhoto: (xm, zm) => toImg(xc + side * xm / s, yBot - zm / s) };
-  return { side, xc, yTop, yBot, s, height, profile, handle: { pts: sm, thick }, bodyColor, map,
-           debug: { w, h, M, O, Hm } };
+  const hs = []; { const st = Math.max(1, Math.floor(pix.length / 400)), d = ctx0().getImageData(0, 0, img.width, img.height).data;
+    for (let i = 0, k = 0; i < w * h; i++) if (Hm[i] && (k++ % st === 0)) { const [ix, iy] = toImg(i % w, (i / w) | 0), o = 4 * (Math.round(iy) * img.width + Math.round(ix)); hs.push([d[o], d[o + 1], d[o + 2]]); } }
+  const handleColor = [0, 1, 2].map(c => median(hs.map(p => p[c])));
+  const zc = 0.6 * height, rc = rAt(zc), [bcx, bcy] = map.toPhoto(-0.35 * rc, zc, rc * 0.9);
+  const bodyColor = sample(bcx, bcy, Math.max(2, 0.08 * rc / s / f));
+  // the plain texel: the body point whose colour is closest to the median of a few samples across the front
+  { const cand = [];
+    for (const xf of [-0.6, -0.45, -0.3, -0.15, 0, 0.15]) for (const zf of [0.35, 0.5, 0.65]) {
+      const z = zf * height, r_ = rAt(z), x = xf * r_, y = -side * Math.sqrt(Math.max(0, r_ * r_ - x * x)), [px, py] = project(x, z, y);
+      const c = sample(px, py, 1.5); cand.push({ px, py, c }); }
+    const med = [0, 1, 2].map(k => median(cand.map(q => q.c[k])));
+    cand.sort((a, b) => Math.hypot(...a.c.map((v, k) => v - med[k])) - Math.hypot(...b.c.map((v, k) => v - med[k])));
+    plain = [cand[0].px, cand[0].py]; }
+  // inside: the far inner wall, just below the far rim on the axis
+  const [icx, icy] = toImg(xcAt(yTop), yTop + 0.35 * (yR - yTop));
+  const innerColor = yR - yTop > 3 ? sample(icx, icy, Math.max(1.5, 0.15 * (yR - yTop) / f)) : bodyColor;
+  return { side, xc, s, height, tilt: Math.asin(sinP), profile, handle: { pts: sm, thick }, bodyColor, innerColor, handleColor, map,
+           debug: { w, h, M, O, Hm, yR, yB, rad: Array.from(rad), yTop, yBot, bx, origin, clRaw: cl.pts, xcA: xcAt(0) } };
+}
+
+function solve3(A, b) {
+  const M = A.map((r, i) => [...r, b[i]]);
+  for (let c = 0; c < 3; c++) {
+    let p = c; for (let r = c + 1; r < 3; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+    [M[c], M[p]] = [M[p], M[c]];
+    for (let r = c + 1; r < 3; r++) { const k = M[r][c] / M[c][c]; for (let q = c; q < 4; q++) M[r][q] -= k * M[c][q]; }
+  }
+  const x = [0, 0, 0];
+  for (let r = 2; r >= 0; r--) { let v = M[r][3]; for (let q = r + 1; q < 3; q++) v -= M[r][q] * x[q]; x[r] = v / M[r][r]; }
+  return x;
 }
 
 // largest 4-connected component of a full-resolution mask (drops speckles SAM leaves along strong edges)

@@ -4,7 +4,7 @@
 // handle (inverse kinematics solved here, per frame). Nothing is simulated physically; nothing leaves the device.
 import { THREE, createViewer, onTheme, ease, mat4, loadingOverlay, reducedMotion } from '../core/viewer.js';
 import { loadXArm, makeFK } from '../core/robot.js';
-import { getObject, objectPath, fetchJSON, url } from '../core/assets.js';
+import { getObject, objectPath, fetchJSON, url, robustMinZ } from '../core/assets.js';
 import { reconstruct, largestComponent } from './recon.js';
 
 const TJS = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.6/dist/transformers.min.js';
@@ -90,25 +90,30 @@ function revolve(rings, N, uvOf) {                       // rings: [{r, z}] in o
   return g;
 }
 
-function buildMug(rec, photo) {
+export function buildMug(rec, photo) {
   const group = new THREE.Group();
   const W = photo.width, H = photo.height, P = rec.map;
-  const uvOf = (x, y, z) => { const [px, py] = P.toPhoto(x, z); return [px / W, 1 - py / H]; };
+  // The handle always points at the robot, so the photographed side faces the scene camera only for photos with the
+  // handle on the left. For the others, turn the print half a turn about the axis: it still reads the right way round
+  // (not mirrored) and now faces the camera, like a mug printed on that side.
+  const turn = rec.side > 0 ? -1 : 1;
+  const uvOf = (x, y, z) => { const [px, py] = P.texAt(turn * x, z, turn * y); return [px / W, 1 - py / H]; };
+
   const tex = new THREE.CanvasTexture(photo); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   const prof = rec.profile, Hm = rec.height, wall = 0.0035, base = 0.006;
   // outer wall (photo texture), with a slight rounded foot
   const outer = prof.map(p => ({ r: p.r, z: p.z }));
   outer.unshift({ r: Math.max(0.002, prof[0].r - 0.003), z: 0 }); outer[1].z = Math.max(outer[1].z, 0.002);
-  const body = new THREE.Mesh(revolve(outer, 72, uvOf),
+  const body = new THREE.Mesh(revolve(outer, 120, uvOf),
     new THREE.MeshStandardMaterial({ map: tex, roughness: 0.3, metalness: 0, side: THREE.DoubleSide }));
   // rim, inner wall and the two bottoms in the body colour
-  const c = new THREE.Color().setRGB(...rec.bodyColor.map(v => v / 255), THREE.SRGBColorSpace);
+  const c = new THREE.Color().setRGB(...(rec.innerColor || rec.bodyColor).map(v => v / 255), THREE.SRGBColorSpace);
   const top = prof[prof.length - 1].r;
   const inner = [{ r: 0.0005, z: 0 }, { r: Math.max(0.002, prof[0].r - 0.003), z: 0 }];
   const lining = [{ r: top, z: Hm }, { r: top - wall, z: Hm }];
   for (let k = prof.length - 1; k >= 0; k--) { const p = prof[k]; if (p.z < base) break; lining.push({ r: Math.max(0.003, p.r - wall), z: p.z }); }
   lining.push({ r: 0.0005, z: base });
-  const inMat = new THREE.MeshStandardMaterial({ color: c.clone().multiplyScalar(0.93), roughness: 0.35, side: THREE.DoubleSide });
+  const inMat = new THREE.MeshStandardMaterial({ color: c, roughness: 0.35, side: THREE.DoubleSide });
   const lin = new THREE.Mesh(revolve(lining, 72), inMat);
   const foot = new THREE.Mesh(revolve(inner, 72), inMat);
   // handle: a tube along the centreline (in the x-z plane), its ends pushed into the wall
@@ -118,11 +123,11 @@ function buildMug(rec, photo) {
   pts.unshift(new THREE.Vector3(rAt(a.z) - 0.004, 0, a.z)); pts.push(new THREE.Vector3(rAt(b.z) - 0.004, 0, b.z));
   const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
   const TUB = 80, RAD = 14, tg = new THREE.TubeGeometry(curve, TUB, rec.handle.thick * 0.5, RAD, false);
-  const tp = tg.attributes.position, tuv = tg.attributes.uv;
-  for (let i = 0; i < tp.count; i++) { const t = uvOf(tp.getX(i), tp.getY(i), tp.getZ(i)); tuv.setXY(i, t[0], t[1]); }
+
   tg.scale(1, 0.85, 1);                                  // handles are a little flatter than they are wide
   tg.userData.sweep = TUB * RAD * 6;
-  const handle = new THREE.Mesh(tg, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.3, metalness: 0 }));
+  const hc = new THREE.Color().setRGB(...rec.handleColor.map(v => v / 255), THREE.SRGBColorSpace);
+  const handle = new THREE.Mesh(tg, new THREE.MeshStandardMaterial({ color: hc, roughness: 0.3, metalness: 0 }));
   for (const m of [body, lin, foot, handle]) { m.castShadow = true; m.receiveShadow = true; group.add(m); }
   group.userData.sweepers = [body, lin, foot];
   group.userData.handle = handle;
@@ -270,14 +275,12 @@ export async function mount(el) {
   const cmNode = new THREE.Group(); cmNode.add(cmObj); cmObj.scale.setScalar(demo.cm_scale);
   cmNode.position.setFromMatrixPosition(Tcm); cmNode.quaternion.setFromRotationMatrix(Tcm);
   v.scene.add(robot.root, cmNode);
-  // table under the machine
-  const nUp = new THREE.Vector3().setFromMatrixColumn(Tcm, 2).normalize();
-  const cmMin = new THREE.Box3().setFromObject(cmObj).min.z;
-  const pT = new THREE.Vector3().setFromMatrixPosition(Tcm).addScaledVector(nUp, cmMin * demo.cm_scale);
+  // a level table at the machine's robust base (as the hero demo); the mug starts resting on it and the small offset to
+  // the generated start height fades out during the carry
+  const tableTop = new THREE.Vector3(0, 0, robustMinZ(cmObj) * demo.cm_scale).applyMatrix4(Tcm).z;
   const tableMat = new THREE.MeshStandardMaterial({ roughness: 0.78 });
   const table = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.86, 0.026), tableMat); table.receiveShadow = true;
-  const cx = 0.27, cy = 0.17; table.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), nUp);
-  table.position.set(cx, cy, pT.z - (nUp.x * (cx - pT.x) + nUp.y * (cy - pT.y)) / nUp.z).addScaledVector(nUp, -0.013);
+  table.position.set(0.27, 0.17, tableTop - 0.013);
   v.scene.add(table);
   onTheme(dark => { tableMat.color.set(dark ? '#a8977f' : '#e9dcc8'); });
   // the mug slot: B frame node, holding either the demonstrated mug (via T_B_body) or the visitor's mug
@@ -287,6 +290,9 @@ export async function mount(el) {
   demoMug.matrixAutoUpdate = false; demoMug.matrix.copy(TBb);
   mugB.add(demoMug);
   const Bpos = demo.B_pos.map(p => new THREE.Vector3(...p)), Bq = demo.B_quat.map(q => new THREE.Quaternion(q[0], q[1], q[2], q[3]));
+  const lift0 = Math.max(-0.03, Math.min(0.03, tableTop - Bpos[0].z));             // B's origin is the mug's bottom centre
+  const ex0 = demo.phase.indexOf(4), ex1 = demo.phase.lastIndexOf(4);
+  const liftAt = f => lift0 * (1 - ease((f - ex0) / Math.max(1, 0.6 * (ex1 - ex0))));
   v.fitShadow(new THREE.Vector3(0.27, 0.15, 0), 0.7);
   load.done(); v.start();
 
@@ -297,7 +303,7 @@ export async function mount(el) {
     f = Math.max(0, Math.min(n - 1, f)); const i0 = Math.floor(f), i1 = Math.min(n - 1, i0 + 1), a = f - i0;
     for (let j = 0; j < 7; j++) qd[j] = qsrc ? lerp(qsrc[i0 * 7 + j], qsrc[i1 * 7 + j], a) : lerp(demo.q[i0][j], demo.q[i1][j], a);
     robot.setQ(qd); robot.setGrip(Math.max(0, lerp(demo.g[i0], demo.g[i1], a)));
-    mugB.position.lerpVectors(Bpos[i0], Bpos[i1], a); mugB.quaternion.slerpQuaternions(Bq[i0], Bq[i1], a);
+    mugB.position.lerpVectors(Bpos[i0], Bpos[i1], a); mugB.position.z += liftAt(f); mugB.quaternion.slerpQuaternions(Bq[i0], Bq[i1], a);
     return demo.phase[a < 0.5 ? i0 : i1];
   }
   function setWho() {
@@ -345,16 +351,24 @@ export async function mount(el) {
     const rec = view.rec, u = view.anim;
     if (rec) {
       const P = rec.map.toPhoto, accent = css('--accent') || '#0062d6', ours = css('--ours') || '#c51d38';
-      // body profile on both sides + axis
+      // fitted body: side walls, the rim ellipse and the foot ellipse (far half dashed), and the axis
+      const k1 = ease(Math.min(1, u * 1.6)), prof = rec.profile, Hh = rec.height;
       pctx.lineWidth = 2 * R.dpr; pctx.strokeStyle = accent; pctx.setLineDash([]);
-      const k1 = Math.ceil(ease(Math.min(1, u * 1.6)) * rec.profile.length);
       for (const sgn of [1, -1]) {
         pctx.beginPath();
-        rec.profile.slice(0, k1).forEach((p, i) => { const [x, y] = P(sgn * p.r, p.z); i ? pctx.lineTo(X(x), Y(y)) : pctx.moveTo(X(x), Y(y)); });
+        prof.slice(0, Math.ceil(k1 * prof.length)).forEach((p, i) => { const [x, y] = P(sgn * p.r, p.z); i ? pctx.lineTo(X(x), Y(y)) : pctx.moveTo(X(x), Y(y)); });
         pctx.stroke();
       }
+      const ell = (z, r, from, to, dash) => {
+        pctx.setLineDash(dash ? [4 * R.dpr, 4 * R.dpr] : []); pctx.beginPath();
+        for (let i = 0; i <= 48; i++) { const t = from + (to - from) * i / 48, [x, y] = rec.map.project(r * Math.cos(t), z, r * Math.sin(t)); i ? pctx.lineTo(X(x), Y(y)) : pctx.moveTo(X(x), Y(y)); }
+        pctx.stroke();
+      };
+      if (k1 > 0.02) { const front = rec.side > 0 ? [Math.PI, 2 * Math.PI] : [0, Math.PI], back = rec.side > 0 ? [0, Math.PI] : [Math.PI, 2 * Math.PI];
+        ell(0, prof[0].r, front[0], front[0] + (front[1] - front[0]) * k1, false); ell(0, prof[0].r, back[0], back[0] + (back[1] - back[0]) * k1, true); }
+      if (k1 > 0.98) ell(Hh, prof[prof.length - 1].r, 0, 2 * Math.PI, false);
       pctx.setLineDash([5 * R.dpr, 5 * R.dpr]); pctx.lineWidth = 1.2 * R.dpr;
-      const [ax0, ay0] = P(0, 0), [ax1, ay1] = P(0, rec.height); pctx.beginPath(); pctx.moveTo(X(ax0), Y(ay0)); pctx.lineTo(X(ax1), Y(ay1)); pctx.stroke();
+      const [ax0, ay0] = P(0, 0), [ax1, ay1] = P(0, Hh); pctx.beginPath(); pctx.moveTo(X(ax0), Y(ay0)); pctx.lineTo(X(ax1), Y(ay1)); pctx.stroke();
       pctx.setLineDash([]);
       // handle centreline
       const hp = rec.handle.pts, k2 = Math.ceil(ease(Math.max(0, Math.min(1, u * 1.6 - 0.4))) * hp.length);
@@ -391,7 +405,7 @@ export async function mount(el) {
   function setPhoto(img) {
     const max = 1024, s = Math.min(1, max / Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height));
     const c = document.createElement('canvas'); c.width = Math.round((img.naturalWidth || img.width) * s); c.height = Math.round((img.naturalHeight || img.height) * s);
-    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    c.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0, c.width, c.height);   // the reconstruction reads pixels back
     view.img = c; view.W = c.width; view.H = c.height; view.mask = null; view.rec = null; view.pts = []; maskCanvas = null;
     hint.innerHTML = ''; draw();
     return c;
@@ -422,6 +436,7 @@ export async function mount(el) {
     mugB.add(g);
     if (st.prevMug && st.prevMug !== demoMug) { const pm = st.prevMug; setTimeout(() => { pm.removeFromParent(); pm.userData.dispose(); }, 600); }
     st.prevMug = st.userMug; st.userMug = g; st.qTraj = ik.q; st.build = 0; st.mode = 'build';
+
     setWho();
     const d = st.grasp.delta;
     setStatus(`Grasp moved ${(Math.abs(d.x) * 100).toFixed(1)} cm ${d.x >= 0 ? 'out' : 'in'}, ${(Math.abs(d.z) * 100).toFixed(1)} cm ${d.z >= 0 ? 'up' : 'down'}`

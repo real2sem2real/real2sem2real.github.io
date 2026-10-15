@@ -5,7 +5,7 @@
 // trajectory tracked from the human video, shown in the inset in sync.
 import { THREE, createViewer, onTheme, ease, mat4, loadingOverlay, reducedMotion } from '../core/viewer.js';
 import { loadXArm } from '../core/robot.js';
-import { getObject, objectPath, fetchJSON, fetchBin, url } from '../core/assets.js';
+import { getObject, objectPath, fetchJSON, fetchBin, url, robustMinZ } from '../core/assets.js';
 
 const SPEED = 2.4;                      // playback speed vs the 10 fps recording
 const HOLD = 0.45, SWAP = 1.15;         // seconds held after release, seconds of the swap animation
@@ -111,23 +111,32 @@ class Env {
     const [mug, cm] = await Promise.all([this.app.object(ep.mug), this.app.object(ep.cm)]);
     return { ep, mug, cm };
   }
-  placeTable(ep) {                                       // slab whose top is the plane under the machine (its up axis)
-    const n = new THREE.Vector3().setFromMatrixColumn(ep.Tcm, 2).normalize();
-    const p = new THREE.Vector3().setFromMatrixPosition(ep.Tcm).addScaledVector(n, this.app.cmMinZ(ep.cm) * ep.cm_scale);
-    const cx = 0.27, cy = 0.17, top = p.z - (n.x * (cx - p.x) + n.y * (cy - p.y)) / n.z;
-    this.table.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), n);
-    this.table.position.set(cx, cy, top).addScaledVector(n, -0.013);
+  // A level table at the machine's base (its robust bottom: scanned meshes have stray vertices below the real base).
+  // In the generated data the mug's start height and the machine's base disagree by up to ~1.5 cm, so the mug is shown
+  // resting on the table and that offset fades out during the carry, while the mug is in the air: the place pose on
+  // the tray is the generated one.
+  placeTable(ep) {
+    const top = new THREE.Vector3(0, 0, this.app.bottom(ep.cm) * ep.cm_scale).applyMatrix4(ep.Tcm).z;
+    this.table.quaternion.identity();
+    this.table.position.set(0.27, 0.17, top - 0.013);
+    const s0 = sample(ep, 0, newSample()), up = new THREE.Vector3(0, 0, 1).applyQuaternion(s0.r);
+    const mugBottom = s0.p.z + up.z * this.app.bottom(ep.mug) * ep.mug_scale;
+    this.lift0 = Math.max(-0.03, Math.min(0.03, top - mugBottom));
+  }
+  liftAt(t) {                                            // the start-height offset, faded out over the first 60 % of the carry
+    const [e0, e1] = this.execRange, u = (t - e0) / Math.max(1, 0.6 * (e1 - e0));
+    return this.lift0 * (1 - ease(u));
   }
   start(prep, { instant = false } = {}) {
     const old = this.ep, ep = prep.ep;
     this.ep = ep; this.execRange = execRange(ep);
     this.placeTable(ep);
     const pts = [], tmp = newSample();                   // carried path = the EXEC frames
-    for (let f = this.execRange[0]; f <= this.execRange[1]; f++) pts.push(sample(ep, f, tmp).p.clone());
+    for (let f = this.execRange[0]; f <= this.execRange[1]; f++) { const p = sample(ep, f, tmp).p.clone(); p.z += this.liftAt(f); pts.push(p); }
     this.trail = new Trail(pts, this.app.trailColor());
     this.group.add(this.trail.mesh); this.trails.push(this.trail);
     while (this.trails.length > (this.app.grid ? 6 : 26)) this.trails.shift().dispose();
-    sample(ep, 0, this.s);
+    sample(ep, 0, this.s); this.s.p.z += this.lift0;
     const cp = new THREE.Vector3().setFromMatrixPosition(ep.Tcm), cq = new THREE.Quaternion().setFromRotationMatrix(ep.Tcm);
     if (instant || !old) {
       for (const sl of [this.mug, this.cm]) { sl.cur && sl.cur.removeFromParent(); sl.inc && sl.inc.removeFromParent(); sl.inc = null; }
@@ -153,7 +162,7 @@ class Env {
   }
   pose(s) {
     this.robot.setQ(s.q); this.robot.setGrip(Math.max(0, s.g));
-    this.mug.cur.position.copy(s.p); this.mug.cur.quaternion.copy(s.r);
+    this.mug.cur.position.copy(s.p); this.mug.cur.position.z += this.liftAt(this.t); this.mug.cur.quaternion.copy(s.r);
   }
   // a slot's swap: the same asset glides (with a hop) to its new pose; a different one shrinks out and the new one pops in
   animSlot(sl, same, a, b, u, ring, ringR, hop) {
@@ -207,7 +216,7 @@ class Env {
     if (this.trail) { this.trail.reveal(Math.max(0, Math.min(1, (this.t - this.execRange[0]) / Math.max(1, this.execRange[1] - this.execRange[0])))); this.trail.mesh.material.opacity = 0.34; }
     sample(this.ep, Math.max(0, Math.min(this.t, this.ep.n - 1)), this.s);
     this.lastQ.set(this.s.q); this.lastG = Math.max(0, this.s.g);
-    this.mug.cur.position.copy(this.s.p); this.mug.cur.quaternion.copy(this.s.r);
+    this.mug.cur.position.copy(this.s.p); this.mug.cur.position.z += this.liftAt(this.t); this.mug.cur.quaternion.copy(this.s.r);
     this.state = 'hold'; this.timer = -1e9;               // frozen while the next episode's meshes load
     const prep = await this.prepare(this.app.pick(this));
     this.loading = false;
@@ -283,12 +292,10 @@ export async function mount(el) {
     tableMat: new THREE.MeshStandardMaterial({ roughness: 0.78, metalness: 0 }),
     counts: { r2r2r: { eps: 0, pairs: new Set() }, ours: { eps: 0, pairs: new Set() } },
     object(id) {
-      if (!objCache.has(id)) objCache.set(id, getObject(objectPath(id)).then(o => {
-        const b = new THREE.Box3().setFromObject(o); cmMin.set(id, b.min.z); return o;
-      }));
+      if (!objCache.has(id)) objCache.set(id, getObject(objectPath(id)).then(o => { cmMin.set(id, robustMinZ(o)); return o; }));
       return objCache.get(id);
     },
-    cmMinZ: id => cmMin.has(id) ? cmMin.get(id) : -0.145,
+    bottom: id => cmMin.has(id) ? cmMin.get(id) : -0.07,
     trailColor() { return new THREE.Color(css(MODES[app.mode].col) || '#c51d38'); },
     pick(env) {
       const pool = pools[app.mode];
