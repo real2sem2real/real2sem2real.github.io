@@ -56,6 +56,12 @@ export class EpisodeSim {
     this.armQ = [1, 2, 3, 4, 5, 6, 7].map(i => jq('joint' + i));
     this.gripQ = jq('left_driver_joint');
     this.mugMass = this.model.body_subtreemass[this.mugBody];
+    // what each body is, for the contact visualisation: the mug, the table, the coffee machine, or the robot
+    this.bodyKind = [];
+    for (let b = 0; b < this.model.nbody; b++) {
+      const nm = mujoco.mj_id2name(this.model, T.mjOBJ_BODY.value, b) || '';
+      this.bodyKind.push(b === 0 ? 'world' : b === this.mugBody ? 'mug' : b === this.cmBody ? 'cm' : /table/.test(nm) ? 'table' : 'robot');
+    }
     this.ts = this.model.opt.timestep;
     this.phaseOf = [];
     for (const [p, k] of ep.phases) for (let i = 0; i < k; i++) this.phaseOf.push(p);
@@ -120,6 +126,47 @@ export class EpisodeSim {
       this.sub = 0; this.frame++;
       this.applyFrame(this.frame);
     }
+  }
+
+  // --- contact forces ----------------------------------------------------------------------------------------------
+  // Every active contact with its normal force (N) and the direction of that force on the mug (or, for contacts that
+  // do not touch the mug, on the second body). MuJoCo's contact normal points from geom1 to geom2, so the force on
+  // geom2's body is +f n. The normal force is decoded from the constraint forces (pyramidal cone: the sum of the edge
+  // forces; elliptic: the first row); checked headlessly: the vertical forces on a resting mug add up to its weight.
+  // Contacts are copied out before the force array is read, since allocating the copies can grow the wasm memory and
+  // detach typed-array views obtained earlier.
+  contacts() {
+    const d = this.data, m = this.model, n = d.ncon, out = [];
+    if (!n) return out;
+    const cv = d.contact, raw = [];
+    for (let i = 0; i < n; i++) {
+      const c = cv.get(i);
+      raw.push([m.geom_bodyid[c.geom1], m.geom_bodyid[c.geom2], c.efc_address, c.dim, Array.from(c.pos), Array.from(c.frame).slice(0, 3)]);
+      c.delete();
+    }
+    cv.delete();
+    const ef = d.efc_force, elliptic = m.opt.cone === 1;
+    for (const [b1, b2, adr, dim, pos, nrm] of raw) {
+      if (adr < 0) continue;
+      let f = 0;
+      if (elliptic || dim === 1) f = ef[adr]; else for (let j = 0; j < 2 * (dim - 1); j++) f += ef[adr + j];
+      if (!(f > 0)) continue;
+      const k1 = this.bodyKind[b1], k2 = this.bodyKind[b2], onMug2 = k2 === 'mug', s = (k1 === 'mug') ? -1 : 1;
+      const other = k1 === 'mug' ? k2 : k2 === 'mug' ? k1 : null;
+      out.push({ pos, dir: [s * nrm[0], s * nrm[1], s * nrm[2]], f, kind: other === null ? 'other' : other === 'robot' ? 'grip' : other === 'cm' ? 'machine' : other, mug: onMug2 || k1 === 'mug' });
+    }
+    return out;
+  }
+  // Force of the grasp weld on the mug (N, world frame) and the point it is drawn at (between the finger pads), or
+  // null while the weld is off. The weld's translational constraint rows give minus the force on the mug.
+  weldForce() {
+    if (!this.welded) return null;
+    const d = this.data, ty = d.efc_type, id = d.efc_id, ef = d.efc_force, f = [];
+    for (let r = 0; r < d.nefc && f.length < 3; r++) if (ty[r] === 0 && id[r] === this.weld) f.push(-ef[r]);
+    if (f.length < 3) return null;
+    const gx = d.geom_xpos, p = [0, 0, 0];
+    for (const g of this.pads) for (let k = 0; k < 3; k++) p[k] += gx[3 * g + k] / this.pads.length;
+    return { f, pos: p };
   }
 
   // --- poke: spring from a body-fixed anchor on the mug to a world target -----------------------------------------

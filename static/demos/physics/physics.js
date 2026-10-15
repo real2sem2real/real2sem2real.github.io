@@ -108,14 +108,58 @@ async function run(el, stage, poster) {
   onTheme(() => pokeMat.color.set(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#0062d6'));
   if (!document.getElementById('phys-style')) {
     const st = document.createElement('style'); st.id = 'phys-style';
-    st.textContent = '.phys-narrow .hud .phys-lg{display:none} .phys-narrow [data-k="hint"], .phys-narrow [data-k="weld"]{display:none}';
+    st.textContent = '.phys-narrow .hud .phys-lg{display:none} .phys-narrow [data-k="hint"], .phys-narrow [data-k="weld"]{display:none}'
+      + '.demo-hud.tr{flex-direction:column; align-items:flex-end}'
+      + '.phys-forces{display:grid; grid-template-columns:auto auto 52px auto; gap:4px 7px; align-items:center; border-radius:12px; padding:8px 10px 9px; white-space:normal}'
+      + '.phys-forces .pf-t{grid-column:1/-1; font-size:11px; font-weight:600; color:var(--muted); margin-bottom:1px}'
+      + '.phys-forces .pf-d{width:8px; height:8px; border-radius:50%}'
+      + '.phys-forces .pf-d.dash{background:transparent !important; border:1.5px dashed var(--ours); width:9px; height:9px}'
+      + '.phys-forces .pf-n{font-size:11.5px}'
+      + '.phys-forces .pf-b{height:5px; border-radius:3px; background:color-mix(in srgb, var(--line) 70%, transparent); overflow:hidden}'
+      + '.phys-forces .pf-b i{display:block; height:100%; border-radius:3px; transition:width .15s}'
+      + '.phys-forces .pf-v{font-size:11.5px; font-variant-numeric:tabular-nums; text-align:right; min-width:42px}'
+      + '.phys-forces.off{display:none}'
+      + '.phys-narrow .phys-forces{grid-template-columns:auto auto auto} .phys-narrow .phys-forces .pf-b, .phys-narrow .phys-forces .pf-t{display:none}'
+      + '.dbtn.ghost[aria-pressed="true"]{border-color:var(--accent); color:var(--accent)}';
     document.head.appendChild(st);
   }
+
+  // contact forces on the mug: an arrow per contact pointing in the direction of the force, ending at the contact,
+  // its length growing with the normal force; coloured by what the mug touches. While the grasp weld holds the mug
+  // (the finger pads do not collide then, as in the data generator) its force is drawn as a translucent arrow.
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const KINDS = { grip: ['--ours', 'Fingers'], table: ['--teleop', 'Table'], machine: ['--orange', 'Machine'], other: ['--muted', 'Robot'] };
+  const cMat = {}, weldMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.5, depthTest: false, depthWrite: false });
+  for (const k of Object.keys(KINDS)) cMat[k] = new THREE.MeshBasicMaterial({ transparent: true, depthTest: false, depthWrite: false });
+  onTheme(() => { for (const [k, [c]] of Object.entries(KINDS)) cMat[k].color.set(css(c) || '#888'); weldMat.color.set(css('--ours') || '#c51d38'); });
+  const shaftGeo = new THREE.CylinderGeometry(0.0022, 0.0022, 1, 10), headGeo = new THREE.ConeGeometry(0.0068, 1, 18), dotGeo = new THREE.SphereGeometry(1, 18, 12);
+  const ringGeo = new THREE.TorusGeometry(0.016, 0.0016, 8, 48);
+  const Y = new THREE.Vector3(0, 1, 0), tmpV = new THREE.Vector3(), tmpD = new THREE.Vector3();
+  function makeArrow(mat) {
+    const g = new THREE.Group(), shaft = new THREE.Mesh(shaftGeo, mat), head = new THREE.Mesh(headGeo, mat), dot = new THREE.Mesh(dotGeo, mat);
+    for (const m of [shaft, head, dot]) { m.renderOrder = 11; g.add(m); }
+    g.visible = false; g.userData = { shaft, head, dot }; V.scene.add(g); return g;
+  }
+  function setArrow(g, mat, p, d, f, dotR = true) {        // tip at p, pointing along unit d, length from force f (N)
+    const L = Math.min(0.13, 0.02 + 0.02 * Math.sqrt(f)), h = Math.min(0.016, 0.38 * L), u = g.userData;
+    u.shaft.material = u.head.material = u.dot.material = mat;
+    tmpD.set(d[0], d[1], d[2]).normalize();
+    g.position.set(p[0], p[1], p[2]).addScaledVector(tmpD, -L);
+    g.quaternion.setFromUnitVectors(Y, tmpD);
+    u.shaft.position.y = (L - h) / 2; u.shaft.scale.y = L - h;
+    u.head.position.y = L - h / 2; u.head.scale.y = h;
+    u.dot.visible = dotR; u.dot.position.y = L; u.dot.scale.setScalar(0.0034 + 0.0022 * Math.min(1, f / 10));
+    g.visible = true;
+  }
+  const pool = Array.from({ length: 32 }, () => makeArrow(cMat.table));
+  const weldArrow = makeArrow(weldMat), weldRing = new THREE.Mesh(ringGeo, weldMat);
+  weldRing.renderOrder = 11; weldRing.visible = false; V.scene.add(weldRing);
+  let showContacts = true;
 
   // ---- HUD + controls -------------------------------------------------------------------------------------------
   const hud = (cls, html) => { const d = document.createElement('div'); d.className = 'demo-hud ' + cls; d.innerHTML = html; stage.appendChild(d); return d; };
   hud('tl', '<span class="hud dot" style="--c:var(--green)"><b>Live MuJoCo</b> <span class="mut phys-lg">contact physics in your browser</span></span>');
-  const hudTR = hud('tr', '<span class="hud" data-k="clock"></span>');
+  const hudTR = hud('tr', '<span class="hud" data-k="clock"></span><div class="hud phys-forces" data-k="forces"></div>');
   const hudBL = hud('bl', '<span class="hud" data-k="phase"></span><span class="hud" data-k="weld" hidden>Grasp held</span>');
   const hudBR = hud('br', '<span class="hud mut" data-k="hint">Drag the mug to push it</span>');
   const $ = (root, k) => root.querySelector(`[data-k="${k}"]`);
@@ -130,6 +174,7 @@ async function run(el, stage, poster) {
       <button type="button" data-speed="1" aria-pressed="true">1&times;</button>
       <button type="button" data-speed="0.5" aria-pressed="false">&frac12;&times;</button>
     </div>
+    <button class="dbtn ghost" data-k="contacts" type="button" aria-pressed="true">Contacts</button>
     <span class="sp"></span>
     <label class="dlabel" for="phys-pair">Objects</label>
     <select class="dselect" id="phys-pair" data-k="pair">${opts}</select>`;
@@ -151,6 +196,10 @@ async function run(el, stage, poster) {
     bar.querySelectorAll('[data-speed]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   }));
   sel.addEventListener('change', () => loadPair(sel.value));
+  $(bar, 'contacts').addEventListener('click', e => {
+    showContacts = !showContacts; e.currentTarget.setAttribute('aria-pressed', String(showContacts));
+    $(hudTR, 'forces').classList.toggle('off', !showContacts); drawContacts(true);
+  });
 
   async function loadPair(id) {
     if (loading) return; loading = true; sel.disabled = true;
@@ -203,6 +252,42 @@ async function run(el, stage, poster) {
                              : `<b style="color:var(--red)">Missed</b> <span class="mut">${o.xy > 0.03 ? (o.xy * 1000).toFixed(0) + ' mm from the goal' : 'tilted ' + o.tilt.toFixed(0) + '°'}</span>`;
     } else phase.innerHTML = `<b>${PHASE[sim.phase] || sim.phase}</b> <span class="mut">frame ${sim.frame + 1} / ${sim.ep.n}</span>`;
     $(hudBL, 'weld').hidden = !sim.welded;
+    drawContacts();
+  }
+
+  // contact glyphs + the force panel (smoothed sums of the normal forces on the mug, per kind)
+  const ema = { grip: 0, table: 0, machine: 0, other: 0, weld: 0 };
+  let lastStep = -1, lastPanel = 0;
+  function drawContacts(force) {
+    const stepNo = sim.frame * 1000 + sim.sub;
+    if (!force && stepNo === lastStep) return;
+    lastStep = stepNo;
+    for (const g of pool) g.visible = false;
+    weldArrow.visible = weldRing.visible = false;
+    if (!showContacts) return;
+    const cs = sim.contacts(), sum = { grip: 0, table: 0, machine: 0, other: 0 };
+    cs.sort((a, b) => b.f - a.f);
+    cs.forEach((c, i) => {
+      sum[c.kind] = (sum[c.kind] || 0) + c.f;
+      if (i < pool.length && c.f > 0.02) setArrow(pool[i], cMat[c.kind] || cMat.other, c.pos, c.dir, c.f);
+    });
+    const w = sim.weldForce(), wf = w ? Math.hypot(w.f[0], w.f[1], w.f[2]) : 0;
+    if (w && wf > 0.05) {
+      setArrow(weldArrow, weldMat, w.pos, w.f, wf, false);
+      weldRing.position.set(...w.pos); weldRing.lookAt(V.camera.position); weldRing.visible = true;
+    }
+    for (const k of Object.keys(sum)) ema[k] += 0.25 * (sum[k] - ema[k]);
+    ema.weld += 0.25 * (wf - ema.weld);
+    const now = performance.now();
+    if (now - lastPanel < 90 && !force) return;
+    lastPanel = now;
+    const row = (k, label, v, dash) => `<span class="pf-d${dash ? ' dash' : ''}" style="background:var(${KINDS[k] ? KINDS[k][0] : '--ours'})"></span>`
+      + `<span class="pf-n">${label}</span><span class="pf-b"><i style="width:${Math.min(100, 100 * Math.sqrt(v / 40)).toFixed(0)}%;background:var(${KINDS[k] ? KINDS[k][0] : '--ours'})"></i></span>`
+      + `<span class="pf-v">${v < 0.05 ? '&ndash;' : v.toFixed(v < 10 ? 1 : 0) + ' N'}</span>`;
+    $(hudTR, 'forces').innerHTML = '<span class="pf-t">Contact forces on the mug</span>'
+      + row('grip', 'Fingers', ema.grip) + row('table', 'Table', ema.table) + row('machine', 'Machine', ema.machine)
+      + (sim.welded ? row('weld', 'Grasp weld', ema.weld, true) : '')
+      + (ema.other > 0.05 ? row('other', 'Robot', ema.other) : '');
   }
 
   // ---- simulation clock: real time x speed, at most 0.1 s of physics per rendered frame ----------------------
