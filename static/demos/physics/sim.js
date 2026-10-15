@@ -157,18 +157,6 @@ export class EpisodeSim {
     }
     return out;
   }
-  // Force of the grasp weld on the mug (N, world frame) and the point it is drawn at (between the finger pads), or
-  // null while the weld is off. The weld's translational constraint rows give minus the force on the mug.
-  weldForce() {
-    if (!this.welded) return null;
-    const d = this.data, ty = d.efc_type, id = d.efc_id, ef = d.efc_force, f = [];
-    for (let r = 0; r < d.nefc && f.length < 3; r++) if (ty[r] === 0 && id[r] === this.weld) f.push(-ef[r]);
-    if (f.length < 3) return null;
-    const gx = d.geom_xpos, p = [0, 0, 0];
-    for (const g of this.pads) for (let k = 0; k < 3; k++) p[k] += gx[3 * g + k] / this.pads.length;
-    return { f, pos: p };
-  }
-
   // --- poke: spring from a body-fixed anchor on the mug to a world target -----------------------------------------
   mugPose() {
     const d = this.data, b = this.mugBody;
