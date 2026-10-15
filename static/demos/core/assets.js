@@ -52,3 +52,34 @@ export function robustMinZ(obj, q = 0.005) {
   zs.sort((a, b) => a - b);
   return zs[Math.min(zs.length - 1, Math.floor(q * zs.length))];
 }
+
+// Centre of an object's base in its local frame: the mean x, y of the vertices within `band` of its robust bottom.
+export function baseCenter(obj, band = 0.004) {
+  const z0 = robustMinZ(obj), v = new THREE.Vector3(); let sx = 0, sy = 0, n = 0;
+  obj.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(obj.matrixWorld).invert();
+  obj.traverse(m => {
+    if (!m.isMesh) return;
+    const pos = m.geometry.attributes.position, M = new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld);
+    for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i).applyMatrix4(M); if (v.z < z0 + band) { sx += v.x; sy += v.y; n++; } }
+  });
+  return new THREE.Vector3(n ? sx / n : 0, n ? sy / n : 0, z0);
+}
+
+// Height of the surface under a footprint: rays cast straight down onto `obj` (placed by world matrix T, uniform scale
+// s) from the centre and a ring of points of radius r around `c` (world, the bottom of what rests there). Returns the
+// highest hit below c.z + 2 cm, or null.
+const _ray = new THREE.Raycaster();
+export function supportHeight(obj, T, s, c, r) {
+  const g = new THREE.Group(); g.matrixAutoUpdate = false; g.matrix.copy(T);
+  const o = obj.clone(true); o.scale.setScalar(s); g.add(o); g.updateMatrixWorld(true);
+  let best = null;
+  const pts = [[0, 0]]; for (let k = 0; k < 8; k++) pts.push([0.6 * r * Math.cos(k * Math.PI / 4), 0.6 * r * Math.sin(k * Math.PI / 4)]);
+  for (const [dx, dy] of pts) {
+    _ray.set(new THREE.Vector3(c.x + dx, c.y + dy, c.z + 0.02), new THREE.Vector3(0, 0, -1));
+    _ray.far = 0.08;
+    const hit = _ray.intersectObject(g, true)[0];
+    if (hit && (best === null || hit.point.z > best)) best = hit.point.z;
+  }
+  return best;
+}

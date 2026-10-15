@@ -4,7 +4,7 @@
 // handle (inverse kinematics solved here, per frame). Nothing is simulated physically; nothing leaves the device.
 import { THREE, createViewer, onTheme, ease, mat4, loadingOverlay, reducedMotion } from '../core/viewer.js';
 import { loadXArm, makeFK } from '../core/robot.js';
-import { getObject, objectPath, fetchJSON, url, robustMinZ } from '../core/assets.js';
+import { getObject, objectPath, fetchJSON, url, robustMinZ, supportHeight } from '../core/assets.js';
 import { reconstruct, largestComponent } from './recon.js';
 
 const TJS = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.6/dist/transformers.min.js';
@@ -292,7 +292,23 @@ export async function mount(el) {
   const Bpos = demo.B_pos.map(p => new THREE.Vector3(...p)), Bq = demo.B_quat.map(q => new THREE.Quaternion(q[0], q[1], q[2], q[3]));
   const lift0 = Math.max(-0.03, Math.min(0.03, tableTop - Bpos[0].z));             // B's origin is the mug's bottom centre
   const ex0 = demo.phase.indexOf(4), ex1 = demo.phase.lastIndexOf(4);
-  const liftAt = f => lift0 * (1 - ease((f - ex0) / Math.max(1, 0.6 * (ex1 - ex0))));
+  // as in the hero: the kinematic replay can end the mug above (or slightly in) the tray; find the tray under the mug's
+  // final base, raise a sinking mug during the carry, and let a floating one drop after the gripper opens
+  const gmax = Math.max(...demo.g); let release = n - 1;
+  for (let f = ex1; f < n; f++) if (demo.g[f] < 0.5 * gmax) { release = f; break; }
+  const settle = { end: 0, drop: 0 };
+  const setSettle = r => {
+    const sup = supportHeight(cmObj, Tcm, demo.cm_scale, Bpos[n - 1], r);
+    const gap = sup === null ? 0 : Math.max(-0.02, Math.min(0.03, Bpos[n - 1].z - sup));
+    settle.end = Math.max(0, -gap); settle.drop = Math.max(0, gap);
+  };
+  setSettle(0.035);
+  const liftAt = f => {
+    const u = ease((f - ex0) / Math.max(1, ex1 - ex0));
+    let z = lift0 * (1 - u) + settle.end * u;
+    if (settle.drop > 0 && f > release) z -= settle.drop * Math.min(1, ((f - release) / (10 * SPEED) / 0.28) ** 2);
+    return z;
+  };
   v.fitShadow(new THREE.Vector3(0.27, 0.15, 0), 0.7);
   load.done(); v.start();
 
@@ -436,6 +452,7 @@ export async function mount(el) {
     mugB.add(g);
     if (st.prevMug && st.prevMug !== demoMug) { const pm = st.prevMug; setTimeout(() => { pm.removeFromParent(); pm.userData.dispose(); }, 600); }
     st.prevMug = st.userMug; st.userMug = g; st.qTraj = ik.q; st.build = 0; st.mode = 'build';
+    setSettle(Math.min(0.05, rec.profile[0].r));
 
     setWho();
     const d = st.grasp.delta;

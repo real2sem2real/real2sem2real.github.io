@@ -5,7 +5,7 @@
 // trajectory tracked from the human video, shown in the inset in sync.
 import { THREE, createViewer, onTheme, ease, mat4, loadingOverlay, reducedMotion } from '../core/viewer.js';
 import { loadXArm } from '../core/robot.js';
-import { getObject, objectPath, fetchJSON, fetchBin, url, robustMinZ } from '../core/assets.js';
+import { getObject, objectPath, fetchJSON, fetchBin, url, robustMinZ, baseCenter, supportHeight } from '../core/assets.js';
 
 const SPEED = 2.4;                      // playback speed vs the 10 fps recording
 const HOLD = 0.45, SWAP = 1.15;         // seconds held after release, seconds of the swap animation
@@ -115,22 +115,35 @@ class Env {
   // In the generated data the mug's start height and the machine's base disagree by up to ~1.5 cm, so the mug is shown
   // resting on the table and that offset fades out during the carry, while the mug is in the air: the place pose on
   // the tray is the generated one.
-  placeTable(ep) {
+  // Generated episodes replay the mug kinematically, so it never settles: it can end a few mm to ~2 cm above the
+  // tray (or a few mm into it). The tray height under the mug's final base is found by casting rays onto the machine;
+  // a floating mug drops onto it after the gripper lets go, and one that would sink in is raised during the carry.
+  placeTable(ep, prep) {
     const top = new THREE.Vector3(0, 0, this.app.bottom(ep.cm) * ep.cm_scale).applyMatrix4(ep.Tcm).z;
     this.table.quaternion.identity();
     this.table.position.set(0.27, 0.17, top - 0.013);
-    const s0 = sample(ep, 0, newSample()), up = new THREE.Vector3(0, 0, 1).applyQuaternion(s0.r);
-    const mugBottom = s0.p.z + up.z * this.app.bottom(ep.mug) * ep.mug_scale;
-    this.lift0 = Math.max(-0.03, Math.min(0.03, top - mugBottom));
+    const base = this.app.base(ep.mug).clone().multiplyScalar(ep.mug_scale);
+    const s0 = sample(ep, 0, newSample()), b0 = base.clone().applyQuaternion(s0.r).add(s0.p);
+    this.lift0 = Math.max(-0.03, Math.min(0.03, top - b0.z));
+    const s1 = sample(ep, ep.n - 1, newSample()), b1 = base.clone().applyQuaternion(s1.r).add(s1.p);
+    const sup = supportHeight(prep.cm, ep.Tcm, ep.cm_scale, b1, this.app.radius(ep.mug) * ep.mug_scale);
+    const gap = sup === null ? 0 : Math.max(-0.02, Math.min(0.03, b1.z - sup));
+    this.liftEnd = Math.max(0, -gap); this.drop = Math.max(0, gap);
+    // release: the first frame after the carry where the gripper is less than half closed
+    let gmax = 0; for (let f = 0; f < ep.n; f++) gmax = Math.max(gmax, ep.d[f * ep.st + 7]);
+    this.release = ep.n - 1;
+    for (let f = this.execRange[1]; f < ep.n; f++) if (ep.d[f * ep.st + 7] < 0.5 * gmax) { this.release = f; break; }
   }
-  liftAt(t) {                                            // the start-height offset, faded out over the first 60 % of the carry
-    const [e0, e1] = this.execRange, u = (t - e0) / Math.max(1, 0.6 * (e1 - e0));
-    return this.lift0 * (1 - ease(u));
+  liftAt(t) {                                            // the start offset fades into the end offset during the carry,
+    const [e0, e1] = this.execRange, u = ease((t - e0) / Math.max(1, e1 - e0));   // then the mug drops after release
+    let z = this.lift0 * (1 - u) + this.liftEnd * u;
+    if (this.drop > 0 && t > this.release) { const sec = (t - this.release) / (this.app.fps * SPEED); z -= this.drop * Math.min(1, (sec / 0.28) ** 2); }
+    return z;
   }
   start(prep, { instant = false } = {}) {
     const old = this.ep, ep = prep.ep;
     this.ep = ep; this.execRange = execRange(ep);
-    this.placeTable(ep);
+    this.placeTable(ep, prep);
     const pts = [], tmp = newSample();                   // carried path = the EXEC frames
     for (let f = this.execRange[0]; f <= this.execRange[1]; f++) { const p = sample(ep, f, tmp).p.clone(); p.z += this.liftAt(f); pts.push(p); }
     this.trail = new Trail(pts, this.app.trailColor());
@@ -285,17 +298,21 @@ export async function mount(el) {
   })();
 
   // shared materials ----------------------------------------------------------------------------------------------
-  const objCache = new Map(), cmMin = new Map();
+  const objCache = new Map(), cmMin = new Map(), baseOf = new Map(), radOf = new Map();
   const app = {
     mode: 'ours', grid: false, speed: 1, fps: meta.fps || 10, accent: new THREE.Color(css('--accent') || '#0062d6'),
     tableGeo: new THREE.BoxGeometry(0.98, 0.86, 0.026),
     tableMat: new THREE.MeshStandardMaterial({ roughness: 0.78, metalness: 0 }),
     counts: { r2r2r: { eps: 0, pairs: new Set() }, ours: { eps: 0, pairs: new Set() } },
     object(id) {
-      if (!objCache.has(id)) objCache.set(id, getObject(objectPath(id)).then(o => { cmMin.set(id, robustMinZ(o)); return o; }));
+      if (!objCache.has(id)) objCache.set(id, getObject(objectPath(id)).then(o => {
+        const bc = baseCenter(o), bb = new THREE.Box3().setFromObject(o);
+        cmMin.set(id, bc.z); baseOf.set(id, bc); radOf.set(id, 0.5 * Math.min(bb.max.x - bb.min.x, bb.max.y - bb.min.y)); return o; }));
       return objCache.get(id);
     },
     bottom: id => cmMin.has(id) ? cmMin.get(id) : -0.07,
+    base: id => baseOf.get(id) || new THREE.Vector3(0, 0, -0.075),
+    radius: id => Math.min(0.05, radOf.get(id) || 0.035),
     trailColor() { return new THREE.Color(css(MODES[app.mode].col) || '#c51d38'); },
     pick(env) {
       const pool = pools[app.mode];
@@ -328,6 +345,7 @@ export async function mount(el) {
     envs.push(env); v.scene.add(env.group);
   }
   const center = envs[4];
+  if (/[?&]debug\b/.test(location.search)) window.__hero = { envs, app, eps, Env };   // for automated checks only
   await center.init(loadXArm());
   load.set(0.6);
   // first episode: a cousin pair, preloaded
