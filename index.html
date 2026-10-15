@@ -238,14 +238,14 @@
 </div>
 <p class="hero-cap"><b>Live: one human video, thousands of robot demonstrations.</b> Episodes our pipeline generated in
 IsaacSim, replayed in your browser on the xArm7. Switch between <b>R2R2R</b>, which varies only the poses of the one
-demonstrated mug and coffee machine, and <b>R2S2R</b>, which also swaps in digital cousins, and run nine environments in
+demonstrated mug and coffee machine, and <b>R2Sem2R</b>, which also swaps in digital cousins, and run nine environments in
 parallel. In every episode the carry replays the mug trajectory tracked from the single human video (inset). Drag to orbit.</p>
 
 <div class="hero">
   <figure class="narrow">
-    <img src="static/images/teaser.jpg" alt="Overview of R2S2R. Top, a single human RGB video and an object scan whose DINOv3 part matches link the demonstrated mug to cousin mugs. Middle, the real scene and splat cousins, with motion transfer across embodiments, produce synthetic data for place, pour, hang and drill. Bottom, a fine-tuned VLA deployed on the real xArm7 and Franka Panda succeeds on all four tasks.">
+    <img src="static/images/teaser.jpg" alt="Overview of R2Sem2R. Top, a single human RGB video and an object scan whose DINOv3 part matches link the demonstrated mug to cousin mugs. Middle, the real scene and splat cousins, with motion transfer across embodiments, produce synthetic data for place, pour, hang and drill. Bottom, a fine-tuned VLA deployed on the real xArm7 and Franka Panda succeeds on all four tasks.">
   </figure>
-  <p>Teleoperation pays for every demonstration, and every new object instance pays again. Real2Sem2Real (R2S2R) turns
+  <p>Teleoperation pays for every demonstration, and every new object instance pays again. Real2Sem2Real (R2Sem2R) turns
   <b>one human RGB video</b> into thousands of robot demonstrations across the object instances of a category,
   with no depth sensor and no teleoperation. It tracks the demonstrated objects, generates
   <b>digital cousins</b> of them from photographs, aligns the cousins to the demonstration by their semantics,
@@ -258,7 +258,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   </ul>
   <div class="stats hero-stats">
     <div class="stat"><div class="v">62 <small>&rarr;</small> 90<small>%</small></div>
-      <div class="l">Mug placement on the xArm7, teleoperation vs R2S2R</div></div>
+      <div class="l">Mug placement on the xArm7, teleoperation vs R2Sem2R</div></div>
     <div class="stat"><div class="v">36 <small>&rarr;</small> 90<small>%</small></div>
       <div class="l">Same task, one object pair (R2R2R) vs digital cousins</div></div>
     <div class="stat"><div class="v">7 <small>/</small> 7</div>
@@ -278,16 +278,16 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   <p>Existing real-to-sim pipelines also break at three recurring points: the object track drifts, the
   recovered grasp collides with the object, and the reconstructed meshes look nothing like the real scene.</p>
   <figure>
-    <img src="static/images/common_failure_modes.jpg" loading="lazy" alt="Three rows, tracking, grasps and bad meshes, each comparing the real scene (GT), a prior method, and R2S2R. The prior tracker renders the mug from a wrong pose, the prior grasp collides with the mug, and the prior coffee-machine mesh is blotchy; R2S2R gets each right.">
+    <img src="static/images/common_failure_modes.jpg" loading="lazy" alt="Three rows, tracking, grasps and bad meshes, each comparing the real scene (GT), a prior method, and R2Sem2R. The prior tracker renders the mug from a wrong pose, the prior grasp collides with the mug, and the prior coffee-machine mesh is blotchy; R2Sem2R gets each right.">
     <figcaption><b>Common failure modes.</b> Against the real scene (GT), prior trackers lose the object, prior grasps
-    collide with the mug instead of taking its handle, and prior meshes look unrealistic. R2S2R tracks the mug,
+    collide with the mug instead of taking its handle, and prior meshes look unrealistic. R2Sem2R tracks the mug,
     grasps it by the handle as the human did, and renders realistic objects.</figcaption>
   </figure>
 </section>
 
 <section id="method">
   <div class="eyebrow">02</div>
-  <h2>How does R2S2R work?</h2>
+  <h2>How does R2Sem2R work?</h2>
   <figure class="wide">
     <img src="static/images/pipeline.jpg" loading="lazy" alt="Pipeline in four panels: a single human RGB demonstration with the recovered hand mesh, a generated library of 16 cousin mugs and 9 cousin coffee machines, robot demonstrations rendered in simulation along the tracked trajectory, and the deployed policy succeeding on in- and out-of-distribution mugs and machines.">
   </figure>
@@ -470,7 +470,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   <p>We fine-tune the &pi;<sub>0.5</sub> vision-language-action model on three kinds of data and evaluate on real
   robots: <b>teleoperation</b>, 150 real demonstrations collected across several objects; <b>R2R2R</b>, 2,000
   generated episodes of the single demonstrated object pair, following Real2Render2Real; and
-  <b>R2S2R</b>, 2,000 generated episodes across digital cousins.</p>
+  <b>R2Sem2R</b>, 2,000 generated episodes across digital cousins.</p>
 
   <h3>The four tasks</h3>
   <figure class="narrow">
@@ -486,12 +486,12 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
 
   <h3>Watch the rollouts</h3>
   <div class="demo wide" data-demo="rollouts">
-    <div class="demo-fallback">Side-by-side real-robot rollouts of the R2R2R and R2S2R policies need JavaScript.</div>
+    <div class="demo-fallback">Side-by-side real-robot rollouts of the R2R2R and R2Sem2R policies need JavaScript.</div>
   </div>
   <p class="hero-cap"><b>Interactive: real-robot rollouts, in sync.</b> The same task on the same robot, run by a policy
   trained on 2,000 generated episodes of the single demonstrated object pair (R2R2R) and by one trained on 2,000 episodes
-  across digital cousins (R2S2R). Clips are in recording order, skipping ones in which a person steps into view, and end
-  before the scene is reset; for the Franka Panda placement with R2S2R we also skipped one failure and one trial with an
+  across digital cousins (R2Sem2R). Clips are in recording order, skipping ones in which a person steps into view, and end
+  before the scene is reset; for the Franka Panda placement with R2Sem2R we also skipped one failure and one trial with an
   unclear outcome, so the three clips shown sit closer to its measured rate. The bars give the success rate over every
   real-robot trial.</p>
   <p class="takeaway">Digital cousins beat a single object pair on every task and robot evaluated so far, by 28
@@ -513,14 +513,14 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
 
   <h3>More generated data keeps helping</h3>
   <figure class="narrow">
-    <img src="static/images/data_scaling.png" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, R2S2R across cousins, teleoperation on one pair, and R2R2R on one pair.">
+    <img src="static/images/data_scaling.png" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, R2Sem2R across cousins, teleoperation on one pair, and R2R2R on one pair.">
     <figcaption><b>Success against training-set size</b> on xArm7 placement. R2R2R levels off below 40%, while
-    R2S2R keeps improving and passes the largest teleoperated set.</figcaption>
+    R2Sem2R keeps improving and passes the largest teleoperated set.</figcaption>
   </figure>
 
   <details class="more"><summary>What the data costs to collect</summary>
   <figure>
-    <img src="static/images/scaling_comparison.png" loading="lazy" alt="Log-log plot of demonstrations produced against wall-clock time for teleoperation with 1, 10 and 100 operators and for R2R2R and R2S2R with 1 and 100 GPUs.">
+    <img src="static/images/scaling_comparison.png" loading="lazy" alt="Log-log plot of demonstrations produced against wall-clock time for teleoperation with 1, 10 and 100 operators and for R2R2R and R2Sem2R with 1 and 100 GPUs.">
     <figcaption><b>Demonstrations against wall-clock time.</b> Teleoperation grows linearly with human time.
     Generated data needs a short one-time setup and then scales with GPUs.</figcaption>
   </figure>
@@ -596,7 +596,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   store, or generated by an image model.</p></details>
 
   <details><summary>How is this different from Real2Render2Real?</summary>
-  <p>R2R2R augments the poses of the objects that were demonstrated. R2S2R adds semantic augmentation:
+  <p>R2R2R augments the poses of the objects that were demonstrated. R2Sem2R adds semantic augmentation:
   the same demonstration is transferred to new object instances. Trained on the same number of episodes, the
   cousins raise mug placement on the xArm7 from 36% to 90%.</p></details>
 
@@ -619,7 +619,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   // Results charts and table, from the project's results tracker (successes / trials per condition).
   // To update: edit R below. null = evaluation still running.
   (function(){
-    var M=[['teleop','Teleoperation (150 demos)'],['r2r2r','R2R2R (2k episodes, one pair)'],['ours','R2S2R (2k episodes, cousins)']];
+    var M=[['teleop','Teleoperation (150 demos)'],['r2r2r','R2R2R (2k episodes, one pair)'],['ours','R2Sem2R (2k episodes, cousins)']];
     var R={
       xarm7:[['Mug on coffee machine',[35,56],[18,50],[45,50]],
              ['Pour into bowl',[35,48],[22,48],[37,50]],
@@ -631,7 +631,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
              ['Drill pick and place',[33,50],[12,40],[26,40]]]
     };
     var NAME={xarm7:'xArm7',panda:'Franka Panda'};
-    window.R2S2R_RESULTS={methods:M, results:R, robots:NAME};   // read by the interactive demos (static/demos/*), so every number on the page comes from R
+    window.R2Sem2R_RESULTS={methods:M, results:R, robots:NAME};   // read by the interactive demos (static/demos/*), so every number on the page comes from R
     function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
     function pct(c){ var x=100*c[0]/c[1], f=Math.floor(x); if (Math.abs(x-f-0.5)<1e-9) return f%2===0 ? f : f+1; return Math.round(x); }   // exact halves round to even, as in the paper (62.5 -> 62, 37.5 -> 38)
     document.querySelectorAll('[data-chart]').forEach(function(el){

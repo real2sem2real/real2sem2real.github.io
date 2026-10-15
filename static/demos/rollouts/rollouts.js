@@ -1,6 +1,6 @@
-// Real-robot rollouts of the R2R2R and R2S2R policies, side by side and in sync, with the success rates of every
+// Real-robot rollouts of the R2R2R and R2Sem2R policies, side by side and in sync, with the success rates of every
 // method for the selected robot and task underneath. The clips and their selection are listed in manifest.json;
-// every number comes from window.R2S2R_RESULTS (the results table of the page).
+// every number comes from window.R2Sem2R_RESULTS (the results table of the page).
 const BASE = new URL('./', import.meta.url);
 const ASPECT = { xarm7: '640 / 368', panda: '640 / 452' };
 const ROBOTS = ['xarm7', 'panda'];
@@ -8,7 +8,7 @@ const SPEEDS = [1, 2, 4];
 const HOLD = 1.6;                   // seconds both clips hold their last frame before the pair loops
 const LABEL = {
   r2r2r: ['R2R2R', 'one object pair'],
-  ours: ['R2S2R', 'digital cousins'],
+  ours: ['R2Sem2R', 'digital cousins'],
 };
 const PLAY = '<svg viewBox="0 0 16 16"><path d="M4 2.5v11l9.5-5.5z"/></svg>';
 const PAUSE = '<svg viewBox="0 0 16 16"><path d="M3.5 2.5h3.2v11H3.5zM9.3 2.5h3.2v11H9.3z"/></svg>';
@@ -28,7 +28,7 @@ function ensureCss() {
 export async function mount(el) {
   ensureCss();
   const manifest = await (await fetch(new URL('manifest.json', BASE))).json();
-  const RES = window.R2S2R_RESULTS || { methods: [], results: {}, robots: { xarm7: 'xArm7', panda: 'Franka Panda' } };
+  const RES = window.R2Sem2R_RESULTS || { methods: [], results: {}, robots: { xarm7: 'xArm7', panda: 'Franka Panda' } };
   const robots = ROBOTS.filter(r => manifest.tasks.some(t => t.robot === r));
   const st = { robot: robots[0], task: null, trial: 0, speed: 2, playing: true, loaded: false, visible: false,
                holdUntil: 0, scrubbing: false, wasPlaying: false };
@@ -93,7 +93,7 @@ export async function mount(el) {
 
   function renderResults() {
     const rows = (RES.results[st.robot] || []).find(r => r[0] === st.task.task);
-    const methods = RES.methods.length ? RES.methods : [['teleop', 'Teleoperation'], ['r2r2r', 'R2R2R'], ['ours', 'R2S2R']];
+    const methods = RES.methods.length ? RES.methods : [['teleop', 'Teleoperation'], ['r2r2r', 'R2R2R'], ['ours', 'R2Sem2R']];
     let h = `<div class="rh">Real-robot success, ${esc(RES.robots[st.robot] || st.robot)} &middot; ${esc(st.task.task)}<span>all trials</span></div><div class="rows">`;
     methods.forEach(([k, name], i) => {
       const c = rows ? rows[i + 1] : null, short = name.split(' (')[0], vid = k !== 'teleop' ? ' vid' : '';
