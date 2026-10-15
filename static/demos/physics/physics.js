@@ -1,0 +1,279 @@
+// Live MuJoCo demo: one of our generated xArm7 episodes (mug onto coffee machine) re-simulated with contact physics in
+// the page, on the official MuJoCo WebAssembly build. The robot replays the episode's recorded joint targets open loop;
+// everything else (mug, table, machine, the grasp) is simulated live, and the mug can be dragged with a spring.
+import { createViewer, THREE, loadingOverlay, onTheme, reducedMotion } from '../core/viewer.js';
+import { getObject, url, fetchJSON } from '../core/assets.js';
+import { loadXArm } from '../core/robot.js';
+import { EpisodeSim } from './sim.js';
+
+const PAIRS = {
+  demo_mug__demo_cm: 'Demo mug · demo machine',
+  mug1__keurig_mint: 'Blue mug · mint machine',
+  y3__keurig_silver: 'Striped mug · silver machine',
+  mug6__holstein_cm: 'Brown mug · blue machine',
+  mug8__bella_cm: 'Red mug · white machine',
+  mug2__black_cm: 'Cream mug · black machine',
+};
+const PHASE = { HOME: 'Reach', PREGRASP_SLEW: 'Reach', APPROACH: 'Approach', GRASP_HOLD: 'Grasp', EXEC: 'Carry',
+                PLACE_HOLD: 'Place', RETREAT: 'Release', SETTLE: 'Settle', DONE: 'Done' };
+const WASM_MB = 10;
+const ICON = {
+  play: '<svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>',
+  pause: '<svg viewBox="0 0 16 16"><path d="M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z"/></svg>',
+  restart: '<svg viewBox="0 0 16 16"><path d="M8 2.5a5.5 5.5 0 1 1-5.2 3.7l1.5.5A4 4 0 1 0 8 4v2L4.8 3.2 8 .5z"/></svg>',
+};
+
+export async function mount(el) {
+  let stage = el.querySelector('.demo-stage');
+  if (!stage) { stage = document.createElement('div'); stage.className = 'demo-stage'; el.prepend(stage); }
+  const poster = stage.querySelector('.demo-poster');
+  const gate = document.createElement('div');
+  gate.className = 'demo-gate';
+  gate.setAttribute('role', 'button'); gate.tabIndex = 0;
+  gate.innerHTML = `<div class="go"><svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>Run live physics</div>
+    <div class="sub">Loads the MuJoCo physics engine (${WASM_MB} MB) into this page</div>`;
+  stage.appendChild(gate);
+  const start = () => { gate.remove(); run(el, stage, poster).catch(err => { console.error(err); }); };
+  gate.addEventListener('click', start, { once: true });
+  gate.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); start(); } });
+}
+
+async function fetchProgress(u, onFrac) {
+  const r = await fetch(u); if (!r.ok) throw new Error(u + ': ' + r.status);
+  const total = +r.headers.get('content-length') || 0;
+  if (!r.body || !total) return new Uint8Array(await r.arrayBuffer());
+  const reader = r.body.getReader(), parts = []; let got = 0;
+  for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length; onFrac(got / total); }
+  const out = new Uint8Array(got); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; }
+  return out;
+}
+
+async function run(el, stage, poster) {
+  const load = loadingOverlay(stage, 'Loading MuJoCo');
+  let mujoco, index, robot;
+  try {
+    const [mod, wasm, idx] = await Promise.all([
+      import('../vendor/mujoco/mujoco.js'),
+      fetchProgress(url('vendor/mujoco/mujoco.wasm'), f => load.set(0.8 * f)),
+      fetchJSON('physics/scenes/index.json'),
+    ]);
+    index = idx;
+    load.set(0.82, 'Starting the physics engine');
+    mujoco = await mod.default({ wasmBinary: wasm.buffer });
+    load.set(0.88, 'Loading the robot');
+    robot = await loadXArm();
+  } catch (err) {
+    load.error('Could not start MuJoCo in this browser.'); throw err;
+  }
+  const robotFiles = Object.fromEntries(await Promise.all(index.robot.map(async f =>
+    [f, new Uint8Array(await (await fetch(url('physics/scenes/robot/' + f))).arrayBuffer())])));
+
+  // ---- three.js stage ------------------------------------------------------------------------------------------
+  const TARGET = new THREE.Vector3(0.22, 0.16, 0.17), VIEW = new THREE.Vector3(1.0, -0.72, 0.58).normalize(), RADIUS = 0.43;
+  const V = createViewer(stage, { position: TARGET.clone().addScaledVector(VIEW, 2).toArray(), target: TARGET.toArray(), fov: 30 });
+  V.controls.minDistance = 0.45; V.controls.maxDistance = 3.2;
+  V.renderer.domElement.style.touchAction = 'pan-y';     // let the page scroll on phones; horizontal drags orbit
+  V.fitShadow(new THREE.Vector3(0.3, 0.22, 0.1), 0.8);
+  V.ground.visible = false;
+  // frame the robot and the machine for the stage's aspect, until the visitor moves the camera themselves
+  let userCam = false;
+  V.controls.addEventListener('start', () => { userCam = true; });
+  V.onResize = (w, h) => {
+    el.classList.toggle('phys-narrow', w < 560);
+    if (userCam) return;
+    const vf = THREE.MathUtils.degToRad(V.camera.fov) / 2, hf = Math.atan(Math.tan(vf) * w / h);
+    V.camera.position.copy(TARGET).addScaledVector(VIEW, (w < 560 ? 1.2 : 1) * RADIUS / Math.sin(Math.min(vf, hf)));
+    V.controls.target.copy(TARGET); V.controls.update();
+  };
+  V.onResize(...V.size);
+  // table: a disc that fades into the card background
+  const fade = document.createElement('canvas'); fade.width = fade.height = 256;
+  const g2 = fade.getContext('2d'), grd = g2.createRadialGradient(128, 128, 0, 128, 128, 128);
+  grd.addColorStop(0, '#fff'); grd.addColorStop(0.55, '#fff'); grd.addColorStop(1, '#000');
+  g2.fillStyle = grd; g2.fillRect(0, 0, 256, 256);
+  const tableMat = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0, transparent: true, alphaMap: new THREE.CanvasTexture(fade), depthWrite: false });
+  const table = new THREE.Mesh(new THREE.CircleGeometry(1.25, 96), tableMat);
+  table.position.set(0.28, 0.2, 0); table.receiveShadow = true; table.renderOrder = -1;
+  V.scene.add(table);
+  onTheme(dark => tableMat.color.set(dark ? 0x1a2232 : 0xf1f4f9));
+  V.scene.add(robot.root);
+
+  // poke visual: a rod from the grabbed point to the pointer, with a handle at the pointer
+  const pokeMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.9, depthTest: false });
+  const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.0018, 0.0018, 1, 10), pokeMat);
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.009, 24, 16), pokeMat);
+  const anchorDot = new THREE.Mesh(new THREE.SphereGeometry(0.005, 16, 10), pokeMat);
+  for (const m of [rod, knob, anchorDot]) { m.renderOrder = 10; m.visible = false; }
+  V.scene.add(rod, knob, anchorDot);
+  onTheme(() => pokeMat.color.set(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#0062d6'));
+  if (!document.getElementById('phys-style')) {
+    const st = document.createElement('style'); st.id = 'phys-style';
+    st.textContent = '.phys-narrow .hud .phys-lg{display:none} .phys-narrow [data-k="hint"], .phys-narrow [data-k="weld"]{display:none}';
+    document.head.appendChild(st);
+  }
+
+  // ---- HUD + controls -------------------------------------------------------------------------------------------
+  const hud = (cls, html) => { const d = document.createElement('div'); d.className = 'demo-hud ' + cls; d.innerHTML = html; stage.appendChild(d); return d; };
+  hud('tl', '<span class="hud dot" style="--c:var(--green)"><b>Live MuJoCo</b> <span class="mut phys-lg">contact physics in your browser</span></span>');
+  const hudTR = hud('tr', '<span class="hud" data-k="clock"></span>');
+  const hudBL = hud('bl', '<span class="hud" data-k="phase"></span><span class="hud" data-k="weld" hidden>Grasp held</span>');
+  const hudBR = hud('br', '<span class="hud mut" data-k="hint">Drag the mug to push it</span>');
+  const $ = (root, k) => root.querySelector(`[data-k="${k}"]`);
+
+  const bar = document.createElement('div');
+  bar.className = 'demo-bar';
+  const opts = index.pairs.map(p => `<option value="${p.id}">${PAIRS[p.id] || p.id}</option>`).join('');
+  bar.innerHTML = `
+    <button class="dbtn" data-k="play" type="button" aria-label="Pause">${ICON.pause}Pause</button>
+    <button class="dbtn ghost" data-k="restart" type="button">${ICON.restart}Restart</button>
+    <div class="seg" role="group" aria-label="Speed">
+      <button type="button" data-speed="1" aria-pressed="true">1&times;</button>
+      <button type="button" data-speed="0.5" aria-pressed="false">&frac12;&times;</button>
+    </div>
+    <span class="sp"></span>
+    <label class="dlabel" for="phys-pair">Objects</label>
+    <select class="dselect" id="phys-pair" data-k="pair">${opts}</select>`;
+  el.appendChild(bar);
+  const btnPlay = $(bar, 'play'), sel = $(bar, 'pair');
+
+  let sim = null, mugObj = null, cmObj = null, playing = !reducedMotion(), speed = 1, acc = 0, loading = false;
+  let doneAt = null, lastPoke = -1e9, rtfWall = 0, rtfSim = 0, rtf = 1;
+  const setPlay = p => {
+    playing = p;
+    btnPlay.innerHTML = p ? `${ICON.pause}Pause` : `${ICON.play}Play`;
+    btnPlay.setAttribute('aria-label', p ? 'Pause' : 'Play');
+  };
+  setPlay(playing);
+  btnPlay.addEventListener('click', () => setPlay(!playing));
+  $(bar, 'restart').addEventListener('click', () => { if (sim) { sim.reset(); doneAt = null; setPlay(true); } });
+  bar.querySelectorAll('[data-speed]').forEach(b => b.addEventListener('click', () => {
+    speed = +b.dataset.speed;
+    bar.querySelectorAll('[data-speed]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+  sel.addEventListener('change', () => loadPair(sel.value));
+
+  async function loadPair(id) {
+    if (loading) return; loading = true; sel.disabled = true;
+    const ov = sim ? loadingOverlay(stage, 'Loading scene') : null;
+    try {
+      const pair = index.pairs.find(p => p.id === id);
+      const base = 'physics/scenes/' + id + '/';
+      const [ep, files, mug, cm] = await Promise.all([
+        fetchJSON(base + 'episode.json'),
+        Promise.all(pair.files.map(async f => [f, new Uint8Array(await (await fetch(url(base + f))).arrayBuffer())])),
+        getObject(base + 'mug.glb'), getObject(base + 'cm.glb'),
+      ]);
+      ov && ov.set(0.7, 'Compiling the scene');
+      if (sim) sim.dispose();
+      sim = new EpisodeSim(mujoco, { ...robotFiles, ...Object.fromEntries(files) }, ep);
+      if (mugObj) V.scene.remove(mugObj); if (cmObj) V.scene.remove(cmObj);
+      mugObj = mug; cmObj = cm; V.scene.add(mugObj, cmObj);
+      doneAt = null; acc = 0; setPlay(!reducedMotion() || playing);
+      sync();
+    } finally { ov && ov.done(); loading = false; sel.disabled = false; }
+  }
+
+  const tmpQ = new THREE.Quaternion();
+  function bodyPose(obj, b) {
+    const d = sim.data;
+    obj.position.set(d.xpos[3 * b], d.xpos[3 * b + 1], d.xpos[3 * b + 2]);
+    tmpQ.set(d.xquat[4 * b + 1], d.xquat[4 * b + 2], d.xquat[4 * b + 3], d.xquat[4 * b]);   // MuJoCo w,x,y,z -> three x,y,z,w
+    obj.quaternion.copy(tmpQ);
+  }
+  const qArm = new Array(7);
+  function sync() {
+    const d = sim.data;
+    for (let k = 0; k < 7; k++) qArm[k] = d.qpos[sim.armQ[k]];
+    robot.setQ(qArm); robot.setGrip(Math.max(0, d.qpos[sim.gripQ]));
+    bodyPose(mugObj, sim.mugBody); bodyPose(cmObj, sim.cmBody);
+    if (sim.poke) {
+      const a = sim.anchorWorld(), t = sim.poke.target;
+      const A = new THREE.Vector3(...a), B = new THREE.Vector3(...t), L = A.distanceTo(B);
+      rod.position.copy(A).add(B).multiplyScalar(0.5); rod.scale.set(1, Math.max(L, 1e-4), 1);
+      rod.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize());
+      knob.position.copy(B); anchorDot.position.copy(A);
+    }
+    rod.visible = knob.visible = anchorDot.visible = !!sim.poke;
+    // HUD
+    $(hudTR, 'clock').innerHTML = `t = ${sim.time.toFixed(1)} s <span class="mut phys-lg">&middot; ${rtf.toFixed(1)}&times; real time</span>`;
+    const phase = $(hudBL, 'phase');
+    if (sim.done) {
+      const o = sim.outcome();
+      phase.innerHTML = o.ok ? `<b style="color:var(--green)">On the tray</b> <span class="mut">${(o.xy * 1000).toFixed(0)} mm from the goal</span>`
+                             : `<b style="color:var(--red)">Missed</b> <span class="mut">${o.xy > 0.03 ? (o.xy * 1000).toFixed(0) + ' mm from the goal' : 'tilted ' + o.tilt.toFixed(0) + '°'}</span>`;
+    } else phase.innerHTML = `<b>${PHASE[sim.phase] || sim.phase}</b> <span class="mut">frame ${sim.frame + 1} / ${sim.ep.n}</span>`;
+    $(hudBL, 'weld').hidden = !sim.welded;
+  }
+
+  // ---- simulation clock: real time x speed, at most 0.1 s of physics per rendered frame ----------------------
+  V.add(dt => {
+    if (!sim || loading) return;
+    if (playing) {
+      acc += dt * speed / sim.ts;
+      let n = Math.min(Math.floor(acc), 50); acc -= n; if (acc > 50) acc = 0;
+      const t0 = performance.now();
+      while (n-- > 0) sim.step();
+      rtfWall += dt; rtfSim += Math.min(dt * speed, 0.1);
+      if (rtfWall > 0.5) { rtf = rtfSim / rtfWall; rtfWall = rtfSim = 0; }
+      if (sim.done && doneAt === null) doneAt = performance.now();
+      // loop: 5 s after the episode ends (and after the last push), start again
+      if (doneAt !== null && performance.now() - Math.max(doneAt, lastPoke) > 5000 && !sim.poke) { sim.reset(); doneAt = null; }
+      void t0;
+    }
+    sync();
+  });
+
+  // ---- poke: drag a point of the mug, a spring pulls it toward the pointer --------------------------------------
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(), hitP = new THREE.Vector3();
+  const canvas = V.renderer.domElement;
+  function setNdc(e) { const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); }
+  function pickMug(e) {
+    if (!sim || !mugObj) return null;
+    setNdc(e); ray.setFromCamera(ndc, V.camera);
+    const h = ray.intersectObject(mugObj, true)[0];
+    return h ? h.point : null;
+  }
+  let dragId = null;
+  function begin(e, p) {
+    dragId = e.pointerId ?? 'touch';
+    V.controls.enabled = false;
+    plane.setFromNormalAndCoplanarPoint(V.camera.getWorldDirection(new THREE.Vector3()).negate(), p);
+    sim.startPoke([p.x, p.y, p.z]); lastPoke = performance.now();
+    $(hudBR, 'hint').textContent = 'Release to let go';
+    if (!playing) setPlay(true);
+  }
+  function move(e) {
+    setNdc(e); ray.setFromCamera(ndc, V.camera);
+    if (ray.ray.intersectPlane(plane, hitP)) { hitP.z = Math.max(hitP.z, 0.005); sim.movePoke([hitP.x, hitP.y, hitP.z]); lastPoke = performance.now(); }
+  }
+  function end() {
+    if (dragId === null) return;
+    dragId = null; V.controls.enabled = true; sim && sim.endPoke(); lastPoke = performance.now();
+    $(hudBR, 'hint').textContent = 'Drag the mug to push it';
+  }
+  canvas.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'touch') return;                  // touch handled below so a drag on the mug does not scroll
+    const p = pickMug(e); if (!p) return;
+    e.preventDefault(); e.stopImmediatePropagation(); canvas.setPointerCapture(e.pointerId); begin(e, p);
+  }, { capture: true });
+  canvas.addEventListener('pointermove', e => {
+    if (dragId !== null && e.pointerType !== 'touch') move(e);
+    else if (e.pointerType === 'mouse') canvas.style.cursor = pickMug(e) ? 'grab' : '';
+  });
+  canvas.addEventListener('pointerup', e => { if (e.pointerType !== 'touch') end(); });
+  canvas.addEventListener('pointercancel', e => { if (e.pointerType !== 'touch') end(); });
+  canvas.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0], p = pickMug(t); if (!p) return;
+    e.preventDefault(); e.stopImmediatePropagation(); begin(t, p);
+  }, { passive: false, capture: true });
+  canvas.addEventListener('touchmove', e => { if (dragId !== null) { e.preventDefault(); move(e.touches[0]); } }, { passive: false });
+  canvas.addEventListener('touchend', end); canvas.addEventListener('touchcancel', end);
+
+  el._demo = { V, get sim() { return sim; }, get mug() { return mugObj; } };   // handle for automated checks
+  load.set(0.94, 'Loading the scene');
+  await loadPair(index.pairs[0].id);
+  V.start();
+  load.done();
+  if (poster) poster.classList.add('gone');
+}

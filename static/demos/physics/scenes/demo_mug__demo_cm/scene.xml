@@ -1,0 +1,92 @@
+<mujoco model="r2s2r_demo_mug_demo_cm">
+  <include file="xarm7.xml" />
+  <default>
+    <default class="grip_pad">
+      <geom friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" />
+    </default>
+  </default>
+  <compiler angle="radian" />
+  <equality>
+    <weld name="grip_weld" body1="xarm_gripper_base_link" body2="mug" solref="-20000 -200" solimp="0.99 0.999 0.0001 0.5 2" active="false" />
+  </equality>
+  <option timestep="0.002" integrator="implicitfast" gravity="0 0 -9.81" />
+  <asset>
+    <mesh name="mug_coll_00" file="mug_coll_00.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_01" file="mug_coll_01.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_02" file="mug_coll_02.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_03" file="mug_coll_03.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_04" file="mug_coll_04.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_05" file="mug_coll_05.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_06" file="mug_coll_06.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_07" file="mug_coll_07.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_08" file="mug_coll_08.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_09" file="mug_coll_09.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_10" file="mug_coll_10.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_11" file="mug_coll_11.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_12" file="mug_coll_12.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_13" file="mug_coll_13.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_14" file="mug_coll_14.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_15" file="mug_coll_15.obj" scale="0.9 0.9 0.9" />
+    <mesh name="mug_coll_16" file="mug_coll_16.obj" scale="0.9 0.9 0.9" />
+    <mesh name="cm_coll_00" file="cm_coll_00.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_01" file="cm_coll_01.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_02" file="cm_coll_02.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_03" file="cm_coll_03.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_04" file="cm_coll_04.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_05" file="cm_coll_05.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_06" file="cm_coll_06.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_07" file="cm_coll_07.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_08" file="cm_coll_08.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_09" file="cm_coll_09.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_10" file="cm_coll_10.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_11" file="cm_coll_11.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_12" file="cm_coll_12.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_13" file="cm_coll_13.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_14" file="cm_coll_14.obj" scale="1.1 1.1 1.1" />
+    <mesh name="cm_coll_15" file="cm_coll_15.obj" scale="1.1 1.1 1.1" />
+  </asset>
+  <worldbody>
+    <body name="table" pos="0.2 0 -0.0081">
+      <geom name="table_top" type="box" size="0.9 0.9 0.0081" friction="0.8 0.005 0.0001" rgba="0.8 0.8 0.8 1" />
+    </body>
+    <body name="mug" pos="0.450 0.000 0.066" quat="-0.670 -0.023 0.009 0.742">
+      <freejoint name="mug_free" />
+      <inertial pos="0 0 -0.06" mass="0.3" diaginertia="0.0004 0.0004 0.0003" />
+      <geom name="mug_c00" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_00" group="3" density="45" />
+      <geom name="mug_c01" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_01" group="3" density="45" />
+      <geom name="mug_c02" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_02" group="3" density="45" />
+      <geom name="mug_c03" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_03" group="3" density="45" />
+      <geom name="mug_c04" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_04" group="3" density="45" />
+      <geom name="mug_c05" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_05" group="3" density="45" />
+      <geom name="mug_c06" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_06" group="3" density="45" />
+      <geom name="mug_c07" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_07" group="3" density="45" />
+      <geom name="mug_c08" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_08" group="3" density="45" />
+      <geom name="mug_c09" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_09" group="3" density="45" />
+      <geom name="mug_c10" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_10" group="3" density="45" />
+      <geom name="mug_c11" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_11" group="3" density="45" />
+      <geom name="mug_c12" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_12" group="3" density="45" />
+      <geom name="mug_c13" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_13" group="3" density="45" />
+      <geom name="mug_c14" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_14" group="3" density="45" />
+      <geom name="mug_c15" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_15" group="3" density="45" />
+      <geom name="mug_c16" type="mesh" friction="1.5 0.05 0.005" solref="0.005 1" solimp="0.95 0.99 0.001" mesh="mug_coll_16" group="3" density="45" />
+    </body>
+    <body name="cm" pos="0.37397703402889343 0.26189266435255115 0.16435835" quat="0.48651028196666524 -0.010574125297255902 0.011052409183279373 0.8735409421808227">
+      <geom name="cm_c00" type="mesh" mesh="cm_coll_00" group="3" />
+      <geom name="cm_c01" type="mesh" mesh="cm_coll_01" group="3" />
+      <geom name="cm_c02" type="mesh" mesh="cm_coll_02" group="3" />
+      <geom name="cm_c03" type="mesh" mesh="cm_coll_03" group="3" />
+      <geom name="cm_c04" type="mesh" mesh="cm_coll_04" group="3" />
+      <geom name="cm_c05" type="mesh" mesh="cm_coll_05" group="3" />
+      <geom name="cm_c06" type="mesh" mesh="cm_coll_06" group="3" />
+      <geom name="cm_c07" type="mesh" mesh="cm_coll_07" group="3" />
+      <geom name="cm_c08" type="mesh" mesh="cm_coll_08" group="3" />
+      <geom name="cm_c09" type="mesh" mesh="cm_coll_09" group="3" />
+      <geom name="cm_c10" type="mesh" mesh="cm_coll_10" group="3" />
+      <geom name="cm_c11" type="mesh" mesh="cm_coll_11" group="3" />
+      <geom name="cm_c12" type="mesh" mesh="cm_coll_12" group="3" />
+      <geom name="cm_c13" type="mesh" mesh="cm_coll_13" group="3" />
+      <geom name="cm_c14" type="mesh" mesh="cm_coll_14" group="3" />
+      <geom name="cm_c15" type="mesh" mesh="cm_coll_15" group="3" />
+    </body>
+  </worldbody>
+</mujoco>

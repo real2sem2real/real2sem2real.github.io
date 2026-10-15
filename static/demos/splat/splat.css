@@ -1,0 +1,20 @@
+/* picture-in-picture of the human video inside the splat stage */
+.splat-pip{position:absolute; z-index:3; top:12px; right:12px; width:min(30%, 250px); margin:0; border-radius:10px; overflow:hidden;
+           border:1px solid color-mix(in srgb, var(--line) 80%, transparent); background:#000;
+           box-shadow:0 10px 26px -12px rgba(0,30,80,.55)}
+.splat-pip video{display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:cover; border:0; border-radius:0; background:#000}
+.splat-pip figcaption .sm{display:none}
+.splat-pip figcaption{position:absolute; left:0; right:0; bottom:0; margin:0; padding:14px 8px 5px; font-size:11px; line-height:1.2;
+                      color:#fff; background:linear-gradient(transparent, rgba(0,0,0,.6)); text-align:left}
+/* control bar: time controls left, view toggles right; two rows on phones */
+.splat-time{display:flex; align-items:center; gap:12px; flex:1 1 300px; min-width:0}
+.splat-time .drange{flex:1 1 auto; min-width:60px}
+.splat-t{min-width:38px; font-variant-numeric:tabular-nums; text-align:right}
+.splat-opts{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+@media (max-width:620px){
+  .splat-pip{top:8px; right:8px; width:42%}
+  .splat-pip figcaption{font-size:10px; padding:10px 6px 4px}
+  .splat-pip figcaption .lg{display:none} .splat-pip figcaption .sm{display:inline}
+  .splat-time{flex-basis:100%}
+  .splat-opts{flex-basis:100%; justify-content:space-between}
+}

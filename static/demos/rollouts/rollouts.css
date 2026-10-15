@@ -1,0 +1,41 @@
+/* Synced real-robot rollout comparison (static/demos/rollouts/rollouts.js). Builds on core/ui.css and the page tokens. */
+.ro .ro-top{border-top:0; border-bottom:1px solid var(--line)}
+.ro .ro-top .dlabel{margin-right:-4px}
+.ro-stage{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px;
+          background:
+            radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 62%),
+            linear-gradient(180deg, color-mix(in srgb, var(--surface) 70%, var(--bg)), var(--surface))}
+.ro-player{position:relative; margin:0}
+.ro-frame{position:relative; width:100%; border-radius:10px; overflow:hidden; background:#0b0d12;
+          border:1px solid color-mix(in srgb, var(--line) 80%, transparent); aspect-ratio:640/368}
+.ro-frame video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; border:0; border-radius:0}
+.ro-player[data-m="r2r2r"] .ro-frame{box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--r2r2r) 0%, transparent)}
+.ro-player.done .ro-frame video{filter:saturate(.85) brightness(.92); transition:filter .4s}
+.ro-prog{position:absolute; left:0; right:0; bottom:0; height:3px; background:rgba(255,255,255,.18); z-index:2}
+.ro-prog i{display:block; height:100%; width:0; background:var(--c, var(--accent))}
+.ro-out{opacity:0; transform:translateY(-4px); transition:opacity .35s, transform .35s}
+.ro-player.done .ro-out{opacity:1; transform:none}
+.ro-out.s{color:#fff; background:color-mix(in srgb, var(--green) 88%, transparent); border-color:transparent}
+.ro-out.f{color:#fff; background:color-mix(in srgb, var(--red) 88%, transparent); border-color:transparent}
+.ro-play{flex:none; width:36px; height:36px; padding:0; display:grid; place-items:center}
+.ro-play svg{margin:0; width:14px; height:14px}
+.ro-time{font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; min-width:76px; text-align:right}
+.ro-results{padding:12px 14px 14px; border-top:1px solid var(--line)}
+.ro-results .rh{display:flex; justify-content:space-between; gap:10px; font-size:12.5px; font-weight:600; margin-bottom:2px}
+.ro-results .rh span{font-weight:400; color:var(--muted)}
+.ro-results .rows{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:4px 16px}
+.ro-results .row{margin-top:9px}
+.ro-results .rl{display:flex; justify-content:space-between; gap:10px; font-size:12.5px; line-height:1.3; margin-bottom:5px}
+.ro-results .rl span{flex:none; color:var(--muted); font-variant-numeric:tabular-nums}
+.ro-results .track{height:10px; background:color-mix(in srgb, var(--line) 55%, transparent); border-radius:3px; overflow:hidden}
+.ro-results .fill{height:100%; border-radius:3px; min-width:2px; transition:width .5s ease}
+.ro-results .teleop{background:var(--teleop)} .ro-results .r2r2r{background:var(--r2r2r)} .ro-results .ours{background:var(--ours)}
+.ro-results .pending .rl span{font-style:italic}
+.ro-results .row.vid .rl{font-weight:600}
+@media (max-width:620px){
+  .ro-stage{grid-template-columns:1fr; padding:10px; gap:8px}
+  .ro-results .rows{grid-template-columns:1fr; gap:0}
+  .ro-time{min-width:0}
+  .ro .ro-top .dlabel{display:none}
+  .ro-results .rh span{display:none}
+}

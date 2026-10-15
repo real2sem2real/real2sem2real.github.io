@@ -1,0 +1,172 @@
+{
+ "tasks": [
+  {
+   "robot": "xarm7",
+   "task": "Mug on coffee machine",
+   "key": "mug_cm",
+   "pairs": [
+    {
+     "r2r2r": {
+      "src": "media/xarm7_mug_cm_r2r2r_t1.mp4",
+      "poster": "media/xarm7_mug_cm_r2r2r_t1.jpg",
+      "dur": 24.9,
+      "outcome": "fail"
+     },
+     "ours": {
+      "src": "media/xarm7_mug_cm_ours_t1.mp4",
+      "poster": "media/xarm7_mug_cm_ours_t1.jpg",
+      "dur": 31.0,
+      "outcome": null
+     }
+    }
+   ]
+  },
+  {
+   "robot": "xarm7",
+   "task": "Drill pick and place",
+   "key": "drill",
+   "pairs": [
+    {
+     "r2r2r": {
+      "src": "media/xarm7_drill_r2r2r_t1.mp4",
+      "poster": "media/xarm7_drill_r2r2r_t1.jpg",
+      "dur": 25.25,
+      "outcome": "fail"
+     },
+     "ours": {
+      "src": "media/xarm7_drill_ours_t1.mp4",
+      "poster": "media/xarm7_drill_ours_t1.jpg",
+      "dur": 32.6,
+      "outcome": "success"
+     }
+    },
+    {
+     "r2r2r": {
+      "src": "media/xarm7_drill_r2r2r_t2.mp4",
+      "poster": "media/xarm7_drill_r2r2r_t2.jpg",
+      "dur": 15.9,
+      "outcome": "fail"
+     },
+     "ours": {
+      "src": "media/xarm7_drill_ours_t2.mp4",
+      "poster": "media/xarm7_drill_ours_t2.jpg",
+      "dur": 27.2,
+      "outcome": null
+     }
+    },
+    {
+     "r2r2r": {
+      "src": "media/xarm7_drill_r2r2r_t3.mp4",
+      "poster": "media/xarm7_drill_r2r2r_t3.jpg",
+      "dur": 25.8,
+      "outcome": null
+     },
+     "ours": {
+      "src": "media/xarm7_drill_ours_t3.mp4",
+      "poster": "media/xarm7_drill_ours_t3.jpg",
+      "dur": 28.2,
+      "outcome": null
+     }
+    }
+   ]
+  },
+  {
+   "robot": "panda",
+   "task": "Mug on coffee machine",
+   "key": "mug_cm",
+   "pairs": [
+    {
+     "r2r2r": {
+      "src": "media/panda_mug_cm_r2r2r_t1.mp4",
+      "poster": "media/panda_mug_cm_r2r2r_t1.jpg",
+      "dur": 22.2,
+      "outcome": "fail"
+     },
+     "ours": {
+      "src": "media/panda_mug_cm_ours_t1.mp4",
+      "poster": "media/panda_mug_cm_ours_t1.jpg",
+      "dur": 9.8,
+      "outcome": "fail"
+     }
+    },
+    {
+     "r2r2r": {
+      "src": "media/panda_mug_cm_r2r2r_t2.mp4",
+      "poster": "media/panda_mug_cm_r2r2r_t2.jpg",
+      "dur": 72.4,
+      "outcome": null
+     },
+     "ours": {
+      "src": "media/panda_mug_cm_ours_t2.mp4",
+      "poster": "media/panda_mug_cm_ours_t2.jpg",
+      "dur": 33.8,
+      "outcome": "success"
+     }
+    },
+    {
+     "r2r2r": {
+      "src": "media/panda_mug_cm_r2r2r_t3.mp4",
+      "poster": "media/panda_mug_cm_r2r2r_t3.jpg",
+      "dur": 37.3,
+      "outcome": "fail"
+     },
+     "ours": {
+      "src": "media/panda_mug_cm_ours_t3.mp4",
+      "poster": "media/panda_mug_cm_ours_t3.jpg",
+      "dur": 38.3,
+      "outcome": "success"
+     }
+    }
+   ]
+  },
+  {
+   "robot": "panda",
+   "task": "Pour into bowl",
+   "key": "pour",
+   "pairs": [
+    {
+     "r2r2r": {
+      "src": "media/panda_pour_r2r2r_t1.mp4",
+      "poster": "media/panda_pour_r2r2r_t1.jpg",
+      "dur": 10.5,
+      "outcome": null
+     },
+     "ours": {
+      "src": "media/panda_pour_ours_t1.mp4",
+      "poster": "media/panda_pour_ours_t1.jpg",
+      "dur": 26.1,
+      "outcome": null
+     }
+    },
+    {
+     "r2r2r": {
+      "src": "media/panda_pour_r2r2r_t2.mp4",
+      "poster": "media/panda_pour_r2r2r_t2.jpg",
+      "dur": 47.9,
+      "outcome": null
+     },
+     "ours": {
+      "src": "media/panda_pour_ours_t2.mp4",
+      "poster": "media/panda_pour_ours_t2.jpg",
+      "dur": 23.1,
+      "outcome": null
+     }
+    },
+    {
+     "r2r2r": {
+      "src": "media/panda_pour_r2r2r_t3.mp4",
+      "poster": "media/panda_pour_r2r2r_t3.jpg",
+      "dur": 31.7,
+      "outcome": null
+     },
+     "ours": {
+      "src": "media/panda_pour_ours_t3.mp4",
+      "poster": "media/panda_pour_ours_t3.jpg",
+      "dur": 18.9,
+      "outcome": null
+     }
+    }
+   ]
+  }
+ ]
+}
