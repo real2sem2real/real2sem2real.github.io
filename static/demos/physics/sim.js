@@ -157,6 +157,19 @@ export class EpisodeSim {
     }
     return out;
   }
+  // Force with which the hand holds the mug while the grasp constraint is on (as in the data generator, the finger pads
+  // do not collide then, so there are no finger contacts): the constraint's translational rows give minus the force on
+  // the mug (checked headlessly: +2.94 N straight up, the mug's weight, during a steady carry). Returned with the two
+  // finger-pad centres, where it is drawn, split between them; null while the hand is not holding the mug.
+  holdForce() {
+    if (!this.welded) return null;
+    const d = this.data, ty = d.efc_type, id = d.efc_id, ef = d.efc_force, f = [];
+    for (let r = 0; r < d.nefc && f.length < 3; r++) if (ty[r] === 0 && id[r] === this.weld) f.push(-ef[r]);
+    if (f.length < 3) return null;
+    const gx = d.geom_xpos, pad = (a, b) => [0, 1, 2].map(k => 0.5 * (gx[3 * a + k] + gx[3 * b + k]));
+    return { f, left: pad(this.pads[0], this.pads[1]), right: pad(this.pads[2], this.pads[3]) };
+  }
+
   // --- poke: spring from a body-fixed anchor on the mug to a world target -----------------------------------------
   mugPose() {
     const d = this.data, b = this.mugBody;

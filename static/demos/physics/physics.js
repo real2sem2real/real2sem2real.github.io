@@ -124,7 +124,9 @@ async function run(el, stage, poster) {
   }
 
   // contact forces on the mug: an arrow per contact pointing in the direction of the force, ending at the contact,
-  // its length growing with the normal force; coloured by what the mug touches.
+  // its length growing with the normal force; coloured by what the mug touches. While the hand carries the mug the
+  // finger pads do not collide (the grasp is held as in the data generator), so the holding force is drawn at the two
+  // finger pads instead, in the fingers' colour.
   const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   const KINDS = { grip: ['--ours', 'Fingers'], table: ['--teleop', 'Table'], machine: ['--orange', 'Machine'], other: ['--muted', 'Robot'] };
   const cMat = {};
@@ -149,6 +151,7 @@ async function run(el, stage, poster) {
     g.visible = true;
   }
   const pool = Array.from({ length: 32 }, () => makeArrow(cMat.table));
+  const holdArrows = [makeArrow(cMat.grip), makeArrow(cMat.grip)];
   let showContacts = true;
 
   // ---- HUD + controls -------------------------------------------------------------------------------------------
@@ -258,6 +261,7 @@ async function run(el, stage, poster) {
     if (!force && stepNo === lastStep) return;
     lastStep = stepNo;
     for (const g of pool) g.visible = false;
+    for (const g of holdArrows) g.visible = false;
     if (!showContacts) return;
     const cs = sim.contacts(), sum = { grip: 0, table: 0, machine: 0, other: 0 };
     cs.sort((a, b) => b.f - a.f);
@@ -265,6 +269,12 @@ async function run(el, stage, poster) {
       sum[c.kind] = (sum[c.kind] || 0) + c.f;
       if (i < pool.length && c.f > 0.02) setArrow(pool[i], cMat[c.kind] || cMat.other, c.pos, c.dir, c.f);
     });
+    const hold = sim.holdForce();
+    if (hold) {
+      const hf = Math.hypot(hold.f[0], hold.f[1], hold.f[2]);
+      sum.grip += hf;
+      if (hf > 0.05) { setArrow(holdArrows[0], cMat.grip, hold.left, hold.f, hf / 2); setArrow(holdArrows[1], cMat.grip, hold.right, hold.f, hf / 2); }
+    }
     for (const k of Object.keys(sum)) ema[k] += 0.25 * (sum[k] - ema[k]);
     const now = performance.now();
     if (now - lastPanel < 90 && !force) return;
@@ -272,7 +282,7 @@ async function run(el, stage, poster) {
     const row = (k, label, v) => `<span class="pf-d" style="background:var(${KINDS[k] ? KINDS[k][0] : '--ours'})"></span>`
       + `<span class="pf-n">${label}</span><span class="pf-b"><i style="width:${Math.min(100, 100 * Math.sqrt(v / 40)).toFixed(0)}%;background:var(${KINDS[k] ? KINDS[k][0] : '--ours'})"></i></span>`
       + `<span class="pf-v">${v < 0.05 ? '&ndash;' : v.toFixed(v < 10 ? 1 : 0) + ' N'}</span>`;
-    $(hudTR, 'forces').innerHTML = '<span class="pf-t">Contact forces on the mug</span>'
+    $(hudTR, 'forces').innerHTML = '<span class="pf-t">Forces on the mug</span>'
       + row('grip', 'Fingers', ema.grip) + row('table', 'Table', ema.table) + row('machine', 'Machine', ema.machine)
       + (ema.other > 0.05 ? row('other', 'Robot', ema.other) : '');
   }
