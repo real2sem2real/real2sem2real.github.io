@@ -1,0 +1,19 @@
+/* Real trial vs 3D replay. Builds on core/ui.css and tasks/loopkit.css. */
+.rp-pair{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px}
+.rp-vid{aspect-ratio:16/9}
+.rp-3d{position:relative; margin:0; aspect-ratio:16/9; border-radius:10px; overflow:hidden;
+       border:1px solid color-mix(in srgb, var(--line) 80%, transparent);
+       background:radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 62%),
+                  linear-gradient(180deg, color-mix(in srgb, var(--surface) 70%, var(--bg)), var(--surface))}
+.rp-3d .demo-canvas{border-radius:10px}
+.rp-3d .demo-hud.tl{top:8px; left:8px} .rp-3d .demo-hud.tr{top:8px; right:8px} .rp-3d .demo-hud.bl{bottom:8px; left:8px; right:8px}
+.rp-3d .hud{font-size:11.5px; padding:4px 9px}
+.rp-scrub{flex:1 1 160px}
+.rp-note{font-size:12.5px}
+@media (max-width:720px){
+  .rp-pair{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:420px){
+  .rp .lk-tile .demo-hud.tr .mut, .rp-3d .demo-hud.tl .mut, .rp-legend .mut{display:none}
+  .rp .lk-bar-top .dlabel{display:none}
+}
