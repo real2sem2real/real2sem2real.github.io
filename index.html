@@ -428,19 +428,19 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   </details>
   <div class="tablewrap">
     <table>
-      <thead><tr><th>Object</th><th class="num">Ours</th><th class="num">WARPED</th><th class="num">FoundationPose</th></tr></thead>
-      <tbody>
-        <tr><td>Mug, to coffee machine</td><td class="num best">0.949</td><td class="num">0.890</td><td class="num">0.820</td></tr>
-        <tr><td>Coffee machine</td><td class="num best">0.916</td><td class="num">0.894</td><td class="num">0.814</td></tr>
-        <tr><td>Mug, to tree</td><td class="num best">0.904</td><td class="num">0.000</td><td class="num">0.210</td></tr>
-        <tr><td>Tree stand</td><td class="num best">0.840</td><td class="num">0.712</td><td class="num">0.295</td></tr>
-        <tr><td>Mug, pour</td><td class="num best">0.935</td><td class="num">0.900</td><td class="num">0.245</td></tr>
-        <tr><td>Bowl, pour</td><td class="num best">0.982</td><td class="num">0.849</td><td class="num">0.450</td></tr>
-        <tr><td>Drill</td><td class="num best">0.864</td><td class="num">0.525</td><td class="num">0.704</td></tr>
-        <tr><td><b>Mean</b></td><td class="num best">0.913</td><td class="num">0.681</td><td class="num">0.505</td></tr>
-      </tbody>
+      <thead><tr><th>Object</th><th class="num">Ours</th><th class="num">WARPED</th><th class="num">RSRD</th><th class="num">FoundationPose</th></tr></thead>
+      <!-- sync:tracking-main --><tbody>
+        <tr><td>Mug, to coffee machine</td><td class="num best">0.949</td><td class="num">0.890</td><td class="num">0.197</td><td class="num">0.648</td></tr>
+        <tr><td>Coffee machine</td><td class="num best">0.916</td><td class="num">0.894</td><td class="num">0.861</td><td class="num">0.680</td></tr>
+        <tr><td>Mug, to tree</td><td class="num best">0.904</td><td class="num">0.000</td><td class="num">0.097</td><td class="num">0.750</td></tr>
+        <tr><td>Tree stand</td><td class="num best">0.840</td><td class="num">0.712</td><td class="num">0.505</td><td class="num">0.601</td></tr>
+        <tr><td>Mug, pour</td><td class="num best">0.935</td><td class="num">0.900</td><td class="num">0.025</td><td class="num">0.443</td></tr>
+        <tr><td>Bowl, pour</td><td class="num best">0.982</td><td class="num">0.849</td><td class="num">0.503</td><td class="num">0.692</td></tr>
+        <tr><td>Drill</td><td class="num best">0.864</td><td class="num">0.525</td><td class="num">0.714</td><td class="num">0.587</td></tr>
+        <tr><td><b>Mean</b></td><td class="num best">0.913</td><td class="num">0.681</td><td class="num">0.415</td><td class="num">0.629</td></tr>
+      </tbody><!-- /sync:tracking-main -->
       <caption>Mean per-frame mask IoU, higher is better. FoundationPose is RGB-D by design; this column gives it raw
-      monocular metric depth, the only condition that uses nothing of ours.</caption>
+      monocular metric depth from MoGe-3, the only condition that uses nothing of ours. RSRD is re-implemented in our tracker.</caption>
     </table>
   </div>
   <details class="more"><summary>FoundationPose with calibrated depth</summary>
@@ -450,17 +450,17 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   <div class="tablewrap">
     <table>
       <thead><tr><th>Object</th><th class="num">Ours</th><th class="num">Per-frame fit</th><th class="num">Per-video fit</th><th class="num">Raw depth</th></tr></thead>
-      <tbody>
-        <tr><td>Mug, to coffee machine</td><td class="num best">0.949</td><td class="num">0.872</td><td class="num">0.897</td><td class="num">0.820</td></tr>
-        <tr><td>Coffee machine</td><td class="num best">0.916</td><td class="num">0.864</td><td class="num">0.872</td><td class="num">0.814</td></tr>
-        <tr><td>Mug, to tree</td><td class="num best">0.904</td><td class="num">0.888</td><td class="num">0.864</td><td class="num">0.210</td></tr>
-        <tr><td>Tree stand</td><td class="num best">0.840</td><td class="num">0.759</td><td class="num">0.757</td><td class="num">0.295</td></tr>
-        <tr><td>Mug, pour</td><td class="num best">0.935</td><td class="num">0.895</td><td class="num">0.579</td><td class="num">0.245</td></tr>
-        <tr><td>Bowl, pour</td><td class="num best">0.982</td><td class="num">0.963</td><td class="num">0.972</td><td class="num">0.450</td></tr>
-        <tr><td>Drill</td><td class="num best">0.864</td><td class="num">0.826</td><td class="num">0.819</td><td class="num">0.704</td></tr>
-        <tr><td><b>Mean</b></td><td class="num best">0.913</td><td class="num">0.867</td><td class="num">0.823</td><td class="num">0.505</td></tr>
-      </tbody>
-      <caption>FoundationPose columns use the best depth source for each condition.</caption>
+      <!-- sync:tracking-fp --><tbody>
+        <tr><td>Mug, to coffee machine</td><td class="num best">0.949</td><td class="num">0.896</td><td class="num">0.897</td><td class="num">0.648</td></tr>
+        <tr><td>Coffee machine</td><td class="num best">0.916</td><td class="num">0.883</td><td class="num">0.872</td><td class="num">0.680</td></tr>
+        <tr><td>Mug, to tree</td><td class="num best">0.904</td><td class="num">0.885</td><td class="num">0.864</td><td class="num">0.750</td></tr>
+        <tr><td>Tree stand</td><td class="num best">0.840</td><td class="num">0.793</td><td class="num">0.757</td><td class="num">0.601</td></tr>
+        <tr><td>Mug, pour</td><td class="num best">0.935</td><td class="num">0.899</td><td class="num">0.579</td><td class="num">0.443</td></tr>
+        <tr><td>Bowl, pour</td><td class="num best">0.982</td><td class="num">0.966</td><td class="num">0.972</td><td class="num">0.692</td></tr>
+        <tr><td>Drill</td><td class="num best">0.864</td><td class="num">0.819</td><td class="num">0.819</td><td class="num">0.587</td></tr>
+        <tr><td><b>Mean</b></td><td class="num best">0.913</td><td class="num">0.877</td><td class="num">0.823</td><td class="num">0.629</td></tr>
+      </tbody><!-- /sync:tracking-fp -->
+      <caption>FoundationPose columns use the best depth source for each condition: MoGe-3 per frame and raw, &pi;<sup>3</sup> per video.</caption>
     </table>
   </div>
   </details>
