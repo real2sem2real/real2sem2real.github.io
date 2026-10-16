@@ -9,7 +9,7 @@
 import * as THREE from 'three';
 import { SparkRenderer, SplatMesh } from '@sparkjsdev/spark';
 import { createViewer, onTheme, reducedMotion, loadingOverlay } from '../core/viewer.js';
-import { getObject, objectPath, url } from '../core/assets.js';
+import { getObject, objectPath, url, fetchBin } from '../core/assets.js';
 
 const BONES = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], [10, 11], [11, 12],
                [0, 13], [13, 14], [14, 15], [15, 16], [0, 17], [17, 18], [18, 19], [19, 20], [5, 9], [9, 13], [13, 17]];
@@ -81,6 +81,23 @@ function makePath(points) {
   const mesh = new THREE.Mesh(geo, mat);
   mesh.renderOrder = 2;
   return { mesh, curve, mat };
+}
+
+// RGB <-> DINOv3 colours for one splat: splat/<name>_dino.bin holds n x 3 colour bytes in splat order, the first three
+// principal components of each Gaussian's distilled DINOv3 feature (one basis for the mug and the machine). Both colourings
+// are packed once and swapped by copying the packed array, as in the align demo.
+async function featureColours(mesh, name) {
+  const [bin] = await Promise.all([fetchBin(`splat/${name}_dino.bin`), mesh.initialized]);
+  const ps = mesh.packedSplats, n = ps.numSplats, b = new Uint8Array(bin);
+  if (b.length !== 3 * n) throw new Error(`splat/${name}: ${b.length} bytes for ${n} splats`);
+  const rgb = ps.packedArray.slice();
+  for (let i = 0; i < n; i++) {
+    const g = ps.getSplat(i);
+    g.color.setRGB(b[3 * i] / 255, b[3 * i + 1] / 255, b[3 * i + 2] / 255);
+    ps.setSplat(i, g.center, g.scales, g.quaternion, g.opacity, g.color);
+  }
+  const dino = ps.packedArray.slice(); ps.packedArray.set(rgb);
+  return kind => { ps.packedArray.set(kind === 'dino' ? dino : rgb); ps.needsUpdate = true; if (mesh.updateVersion) mesh.updateVersion(); };
 }
 
 export async function mount(root) {
@@ -189,16 +206,19 @@ export async function mount(root) {
   const seg = el('div', 'seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Mug');
   const bScan = el('button', '', 'Scanned mug'), bCous = el('button', '', 'Cousins');
   seg.append(bScan, bCous);
+  const segCol = el('div', 'seg'); segCol.setAttribute('role', 'group'); segCol.setAttribute('aria-label', 'Colour');
+  const bRgb = el('button', '', 'RGB'), bDino = el('button', '', 'DINOv3');
+  segCol.append(bRgb, bDino);
   const seg2 = el('div', 'seg'); seg2.setAttribute('role', 'group'); seg2.setAttribute('aria-label', 'Overlays');
   const bHand = el('button', '', 'Hand'), bCam = el('button', '', 'Camera');
   seg2.append(bHand, bCam);
   const gTime = el('div', 'splat-time'), gOpts = el('div', 'splat-opts');
-  gTime.append(play, range, lab); gOpts.append(seg, seg2);
+  gTime.append(play, range, lab); gOpts.append(seg, segCol, seg2);
   bar.append(gTime, gOpts);
   root.appendChild(bar);
 
   const hudTL = el('div', 'demo-hud tl');
-  hudTL.append(el('span', 'hud dot', '<b>Real scan</b> <span class="mut">&middot; Gaussian splats</span>'));
+  const scanHud = el('span', 'hud dot'); hudTL.append(scanHud);
   const hudBL = el('div', 'demo-hud bl'); const objHud = el('span', 'hud dot'); objHud.style.setProperty('--c', '#00a3e0');
   hudBL.append(objHud);
   const hudBR = el('div', 'demo-hud br'); const frameHud = el('span', 'hud'); hudBR.append(frameHud);
@@ -207,7 +227,7 @@ export async function mount(root) {
   const ICON_PLAY = '<svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>';
   const ICON_PAUSE = '<svg viewBox="0 0 16 16"><path d="M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z"/></svg>';
 
-  const st = { playing: !reducedMotion(), t: 0, mode: 'scan', cousin: 0, showHand: true, showCam: true, scrubbing: false,
+  const st = { playing: !reducedMotion(), t: 0, mode: 'scan', cousin: 0, showHand: true, showCam: true, scrubbing: false, colour: 'rgb',
                visible: false, swapT: 1, lastLoopT: 0 };
   function setPressed(b, on) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); }
   function refreshUI() {
@@ -215,8 +235,11 @@ export async function mount(root) {
     play.setAttribute('aria-label', st.playing ? 'Pause' : 'Play');
     setPressed(bScan, st.mode === 'scan'); setPressed(bCous, st.mode === 'cousins');
     setPressed(bHand, st.showHand); setPressed(bCam, st.showCam);
+    setPressed(bRgb, st.colour === 'rgb'); setPressed(bDino, st.colour === 'dino');
+    scanHud.innerHTML = st.colour === 'dino' ? '<b>DINOv3 features</b> <span class="mut">&middot; first 3 principal components</span>'
+      : '<b>Real scan</b> <span class="mut">&middot; Gaussian splats</span>';
     objHud.innerHTML = st.mode === 'scan' ? '<b>Scanned mug</b> <span class="mut">&middot; tracked path</span>'
-      : `<b>Cousin ${st.cousin + 1} of ${P.cousins.length}</b> <span class="mut">&middot; same path</span>`;
+      : `<b>Cousin ${st.cousin + 1} of ${P.cousins.length}</b> <span class="mut">&middot; ${st.colour === 'dino' ? 'textured mesh, RGB' : 'same path'}</span>`;
   }
 
   // ── time & video ──
@@ -240,6 +263,15 @@ export async function mount(root) {
     cousinHolder.clear(); cousinHolder.add(g); st.swapT = 0; refreshUI();
   }
   bScan.onclick = () => { st.mode = 'scan'; cousinHolder.clear(); refreshUI(); };
+  // colour: the scanned splats as captured, or their distilled DINOv3 features (the cousin meshes keep their textures)
+  const colourers = Promise.all([featureColours(machine, 'scene'), featureColours(mug, 'mug')])
+    .catch(e => { console.warn('DINOv3 colours unavailable', e); bDino.disabled = true; return null; });
+  async function setColour(k) {
+    st.colour = k; refreshUI();
+    const c = await colourers;
+    if (c && st.colour === k) c.forEach(f => f(k));
+  }
+  bRgb.onclick = () => setColour('rgb'); bDino.onclick = () => setColour('dino');
   bCous.onclick = () => { if (st.mode === 'cousins') { showCousin(st.cousin + 1); return; } st.mode = 'cousins'; refreshUI(); showCousin(st.cousin); };
   bHand.onclick = () => { st.showHand = !st.showHand; refreshUI(); };
   bCam.onclick = () => { st.showCam = !st.showCam; refreshUI(); };

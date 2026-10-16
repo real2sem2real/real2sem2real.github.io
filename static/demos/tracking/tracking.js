@@ -141,7 +141,8 @@ export async function mount(root) {
   const frameLbl = el('span', 'trk-frame');
   const objSeg = el('div', 'seg'); objSeg.setAttribute('role', 'group'); objSeg.setAttribute('aria-label', 'Object');
   const viewSeg = el('div', 'seg'); viewSeg.setAttribute('role', 'group'); viewSeg.setAttribute('aria-label', 'View');
-  const segs = el('div', 'trk-segs'); segs.append(objSeg, viewSeg);
+  const colSeg = el('div', 'seg'); colSeg.setAttribute('role', 'group'); colSeg.setAttribute('aria-label', 'Colour');
+  const segs = el('div', 'trk-segs'); segs.append(objSeg, viewSeg, colSeg);
   bar.append(play, slider, frameLbl, segs);
   const chips = el('div', 'trk-chips');
   const chart = el('div', 'trk-chart'); const ccv = el('canvas'); chart.appendChild(ccv); const cctx = ccv.getContext('2d');
@@ -149,7 +150,9 @@ export async function mount(root) {
   const note = el('div', 'demo-note');
   note.innerHTML = 'Each outline is the object rendered at that method&rsquo;s estimated pose; the number is its mask IoU '
     + 'against the SAM2 mask in this frame. The silhouettes are re-rendered with the scoring code behind the tracking table, '
-    + 'so the means match it. FoundationPose gets raw monocular metric depth (MoGe-3). RSRD was run on the mug only.'
+    + 'so the means match it. FoundationPose gets raw monocular metric depth (MoGe-3). RSRD was run on the mug only. '
+    + 'DINOv3 shows each frame&rsquo;s DINOv3 features as their first three principal components, in the same colour basis as '
+    + 'the 3D scan&rsquo;s distilled features, so the mug and the machine get the same colours in both.'
     + (window.matchMedia && window.matchMedia('(hover: hover)').matches ? ' Hover a method to highlight it; click to hide it.' : ' Tap a method to hide it.');
   root.append(bar, chips, chart, note);
 
@@ -181,7 +184,20 @@ export async function mount(root) {
     };
   }
 
-  const state = { obj: 'mug', f: 0, playing: false, zoom: true, zt: 1, on: { ours: true, warped: true, fp: true, rsrd: true }, focus: null };
+  // DINOv3 view: frames_dino/NNN.webp, fetched the first time it is chosen
+  const framesDino = new Array(N);
+  let dinoLoading = null;
+  function loadDino() {
+    if (!dinoLoading) dinoLoading = Promise.all(Array.from({ length: N }, (_, i) => new Promise(res => {
+      const im = new Image(); im.decoding = 'async';
+      im.onload = () => { framesDino[i] = im; if (i === state.f) draw(); res(); };
+      im.onerror = res;
+      im.src = new URL(`frames_dino/${String(i).padStart(3, '0')}.webp`, HERE).href;
+    })));
+    return dinoLoading;
+  }
+
+  const state = { obj: 'mug', f: 0, playing: false, zoom: true, zt: 1, colour: 'rgb', on: { ours: true, warped: true, fp: true, rsrd: true }, focus: null };
   slider.max = N - 1;
   let colors = palette(root, false), dpr = 1, cw = 1, ch = 1, chw = 1, chh = 1;
 
@@ -195,7 +211,11 @@ export async function mount(root) {
     const b = el('button', '', lab); b.type = 'button'; b.dataset.v = k; viewSeg.appendChild(b);
     b.onclick = () => { state.zoom = k === 'zoom'; setPressed(viewSeg, k); animateZoom(); };
   }
-  setPressed(objSeg, state.obj); setPressed(viewSeg, 'zoom');
+  for (const [k, lab] of [['rgb', 'RGB'], ['dino', 'DINOv3']]) {
+    const b = el('button', '', lab); b.type = 'button'; b.dataset.v = k; colSeg.appendChild(b);
+    b.onclick = () => { state.colour = k; setPressed(colSeg, k); if (k === 'dino') loadDino(); draw(); };
+  }
+  setPressed(objSeg, state.obj); setPressed(viewSeg, 'zoom'); setPressed(colSeg, 'rgb');
 
   function swatch(m) {
     const d = METHODS[m].dash.join(' ');
@@ -261,7 +281,7 @@ export async function mount(root) {
   }
 
   function draw() {
-    const img = frames[state.f];
+    const img = (state.colour === 'dino' && framesDino[state.f]) || frames[state.f];
     const [vx, vy, vw, vh] = viewRect();
     const s = cw / vw;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
