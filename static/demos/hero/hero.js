@@ -18,6 +18,83 @@ const MODES = {
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const rnd = n => Math.floor(Math.random() * n);
 
+// ---------------------------------------------------------------- DINOv3 colours
+// hero/dino/<id>.bin: the object's DINOv3 features, fused onto its surface from rendered views, as their first three
+// principal components (the splat demo's basis), at sample points: float32 bbox min[3], max[3]; uint32 n; n x 3 uint16
+// positions in that box; n x 3 uint8 colours. The GLBs are meshopt-compressed (vertices reordered), so every vertex takes
+// the colour of its nearest sample. Geometry and material are shared by every copy of an object, so one switch recolours
+// all of them.
+const dinoBins = new Map();
+function dinoSamples(id) {
+  if (!dinoBins.has(id)) dinoBins.set(id, fetchBin(`hero/dino/${id}.bin`).then(buf => {
+    const f = new Float32Array(buf, 0, 6), n = new Uint32Array(buf, 24, 1)[0];
+    const q = new Uint16Array(buf, 28, 3 * n), c = new Uint8Array(buf, 28 + 6 * n, 3 * n);
+    const p = new Float32Array(3 * n), lin = new Float32Array(3 * n), col = new THREE.Color();
+    for (let i = 0; i < 3 * n; i++) { const a = i % 3; p[i] = f[a] + q[i] / 65535 * (f[3 + a] - f[a]); }
+    for (let i = 0; i < n; i++) {
+      col.setRGB(c[3 * i] / 255, c[3 * i + 1] / 255, c[3 * i + 2] / 255, THREE.SRGBColorSpace);
+      lin[3 * i] = col.r; lin[3 * i + 1] = col.g; lin[3 * i + 2] = col.b;
+    }
+    return { n, p, lin, lo: [f[0], f[1], f[2]], hi: [f[3], f[4], f[5]] };
+  }));
+  return dinoBins.get(id);
+}
+function nearestColours(s, pos) {                         // vertex xyz (object frame) -> colour of the nearest sample
+  const G = 24, ext = [0, 1, 2].map(a => Math.max(1e-6, s.hi[a] - s.lo[a]));
+  const cell = (x, a) => Math.min(G - 1, Math.max(0, Math.floor((x - s.lo[a]) / ext[a] * G)));
+  const grid = new Map();
+  for (let i = 0; i < s.n; i++) {
+    const k = cell(s.p[3 * i], 0) + G * (cell(s.p[3 * i + 1], 1) + G * cell(s.p[3 * i + 2], 2));
+    if (!grid.has(k)) grid.set(k, []); grid.get(k).push(i);
+  }
+  const nv = pos.length / 3, out = new Float32Array(3 * nv);
+  for (let v = 0; v < nv; v++) {
+    const x = pos[3 * v], y = pos[3 * v + 1], z = pos[3 * v + 2], cx = cell(x, 0), cy = cell(y, 1), cz = cell(z, 2);
+    let best = 0, bd = Infinity;
+    for (let r = 1; bd === Infinity && r <= G; r++)       // widen the search until a cell holds a sample
+      for (let i = Math.max(0, cx - r); i <= Math.min(G - 1, cx + r); i++)
+        for (let j = Math.max(0, cy - r); j <= Math.min(G - 1, cy + r); j++)
+          for (let k = Math.max(0, cz - r); k <= Math.min(G - 1, cz + r); k++) {
+            const L = grid.get(i + G * (j + G * k)); if (!L) continue;
+            for (const t of L) {
+              const dx = s.p[3 * t] - x, dy = s.p[3 * t + 1] - y, dz = s.p[3 * t + 2] - z, d = dx * dx + dy * dy + dz * dz;
+              if (d < bd) { bd = d; best = t; }
+            }
+          }
+    out[3 * v] = s.lin[3 * best]; out[3 * v + 1] = s.lin[3 * best + 1]; out[3 * v + 2] = s.lin[3 * best + 2];
+  }
+  return out;
+}
+async function dinoColour(id, o, on) {                    // switch one loaded object between its look and DINOv3
+  if (on) {
+    const s = await dinoSamples(id);
+    o.updateMatrixWorld(true);
+    const inv = o.matrixWorld.clone().invert(), M = new THREE.Matrix4(), v = new THREE.Vector3();
+    o.traverse(m => {
+      if (!m.isMesh || m.geometry.userData.dinoColor) return;
+      M.multiplyMatrices(inv, m.matrixWorld);
+      const P = m.geometry.attributes.position, pos = new Float32Array(3 * P.count);
+      for (let i = 0; i < P.count; i++) { v.fromBufferAttribute(P, i).applyMatrix4(M); pos[3 * i] = v.x; pos[3 * i + 1] = v.y; pos[3 * i + 2] = v.z; }
+      m.geometry.userData.dinoColor = new THREE.BufferAttribute(nearestColours(s, pos), 3);
+      m.geometry.userData.rgbColor = m.geometry.attributes.color || null;
+      m.material.userData.rgb = { map: m.material.map, vc: m.material.vertexColors, color: m.material.color.clone() };
+    });
+  }
+  return on;
+}
+function dinoShow(o, on) {
+  o.traverse(m => {
+    if (!m.isMesh || !m.geometry.userData.dinoColor) return;
+    const g = m.geometry, mat = m.material, rgb = mat.userData.rgb;
+    if (on) { g.setAttribute('color', g.userData.dinoColor); mat.map = null; mat.vertexColors = true; mat.color.set(0xffffff); }
+    else {
+      if (g.userData.rgbColor) g.setAttribute('color', g.userData.rgbColor); else g.deleteAttribute('color');
+      mat.map = rgb.map; mat.vertexColors = rgb.vc; mat.color.copy(rgb.color);
+    }
+    mat.needsUpdate = true;
+  });
+}
+
 // ---------------------------------------------------------------- episode data
 function decode(meta, buf) {
   const S = meta.scales, st = meta.stride;
@@ -257,8 +334,13 @@ export async function mount(el) {
   const pip = div('hero-pip');
   pip.innerHTML = '<canvas width="256" height="144"></canvas><div class="hero-pip-l"><b>Human video</b><span class="mut f">0 / 100</span></div>';
   stage.append(hudTL, hudBL, hudBR, pip);
-  const modePill = div('hud dot'), pairPill = div('hud'), phasePill = div('hud'), epPill = div('hud');
-  hudTL.append(modePill, pairPill); hudBL.append(phasePill); hudBR.append(epPill);
+  const modePill = div('hud dot'), pairPill = div('hud'), phasePill = div('hud'), epPill = div('hud'), dinoPill = div('hud dino');
+  dinoPill.innerHTML = '<b>DINOv3 features</b> <span class="mut">&middot; first 3 principal components</span>'; dinoPill.hidden = true;
+  if (!document.getElementById('hero-dino-css')) {                       // narrow screens: the label alone
+    const st = document.createElement('style'); st.id = 'hero-dino-css';
+    st.textContent = '@media (max-width:480px){ [data-demo="hero"] .hud.dino .mut{display:none} }'; document.head.appendChild(st);
+  }
+  hudTL.append(modePill, pairPill, dinoPill); hudBL.append(phasePill); hudBR.append(epPill);
   const pctx = pip.querySelector('canvas').getContext('2d'), pf = pip.querySelector('.f');
 
   const bar = div('demo-bar');
@@ -266,6 +348,10 @@ export async function mount(el) {
     <div class="seg" role="group" aria-label="Training data">
       <button data-mode="r2r2r" aria-pressed="false"><i style="background:var(--r2r2r)"></i>R2R2R · one pair</button>
       <button data-mode="ours" aria-pressed="true"><i style="background:var(--ours)"></i>R2Sem2R · cousins</button>
+    </div>
+    <div class="seg" role="group" aria-label="Colour">
+      <button data-col="rgb" aria-pressed="true">RGB</button>
+      <button data-col="dino" aria-pressed="false">DINOv3</button>
     </div>
     <div class="seg" role="group" aria-label="View">
       <button data-view="1" aria-pressed="true">1 env</button>
@@ -300,7 +386,7 @@ export async function mount(el) {
   // shared materials ----------------------------------------------------------------------------------------------
   const objCache = new Map(), cmMin = new Map(), baseOf = new Map(), radOf = new Map();
   const app = {
-    mode: 'ours', grid: false, speed: 1, fps: meta.fps || 10, accent: new THREE.Color(css('--accent') || '#0062d6'),
+    mode: 'ours', grid: false, dino: false, speed: 1, fps: meta.fps || 10, accent: new THREE.Color(css('--accent') || '#0062d6'),
     tableGeo: new THREE.BoxGeometry(0.98, 0.86, 0.026),
     tableMat: new THREE.MeshStandardMaterial({ roughness: 0.78, metalness: 0 }),
     counts: { r2r2r: { eps: 0, pairs: new Set() }, ours: { eps: 0, pairs: new Set() } },
@@ -308,11 +394,15 @@ export async function mount(el) {
       if (!objCache.has(id)) objCache.set(id, getObject(objectPath(id)).then(o => {
         const bc = baseCenter(o), bb = new THREE.Box3().setFromObject(o);
         cmMin.set(id, bc.z); baseOf.set(id, bc); radOf.set(id, 0.5 * Math.min(bb.max.x - bb.min.x, bb.max.y - bb.min.y)); return o; }));
-      return objCache.get(id);
+      return app.dino ? objCache.get(id).then(o => app.setColour(id, o)) : objCache.get(id);
     },
     bottom: id => cmMin.has(id) ? cmMin.get(id) : -0.07,
     base: id => baseOf.get(id) || new THREE.Vector3(0, 0, -0.075),
     radius: id => Math.min(0.05, radOf.get(id) || 0.035),
+    async setColour(id, o) {                       // the object in the current colouring (RGB or DINOv3)
+      try { await dinoColour(id, o, app.dino); } catch (e) { console.warn('DINOv3 colours unavailable for ' + id, e); }
+      dinoShow(o, app.dino); return o;
+    },
     trailColor() { return new THREE.Color(css(MODES[app.mode].col) || '#c51d38'); },
     pick(env) {
       const pool = pools[app.mode];
@@ -434,6 +524,11 @@ export async function mount(el) {
       if (!e.ep) { const p = await e.prepare(app.pick(e)); e.start(p, { instant: true }); e.t = -i * 3 - rnd(10); }
       else if (e.state === 'hold') e.next();
     }
+  }));
+  el.querySelectorAll('[data-col]').forEach(b => b.addEventListener('click', () => {
+    const on = b.dataset.col === 'dino'; if (on === app.dino) return;
+    app.dino = on; setPressed('[data-col]', 'data-col', b.dataset.col); dinoPill.hidden = !on;
+    for (const [id, p] of objCache) p.then(o => app.setColour(id, o));
   }));
   $('[data-next]').addEventListener('click', () => { for (const e of active()) e.next(); });
   const active = () => envs.filter(e => e.group.visible && e.ep);
