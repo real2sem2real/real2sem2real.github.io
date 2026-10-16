@@ -6,7 +6,7 @@ import DATA from './data.js';
 import { h, s, lin, onResize, markerAt, injectCSS } from '../scaling/charts.js';
 
 const MARK = { teleop: 'circle', r2r2r: 'square', ours: 'diamond' };
-const NAME = { teleop: 'Teleoperation', r2r2r: 'R2R2R', ours: 'R2Sem2R' };
+const NAME = { teleop: 'Teleoperation', r2r2r: 'R2R2R+', ours: 'R2Sem2R' };
 const ROWS = [{ id: 'teleop', label: 'Teleoperation', sub: '150 demos' }, { id: 'gen', label: 'Generated', sub: '2k episodes' }];
 const GROUP_TXT = { 'One pair': 'the demonstrated mug and machine', 'Several objects': 'several mugs and machines' };
 
@@ -38,7 +38,7 @@ export function mount(el) {
     return h('span', {}, [sv, text]);
   };
   legend.append(item('teleop', true, 'Teleop, one pair'), item('teleop', false, 'Teleop, several objects'),
-                item('r2r2r', true, 'R2R2R, one pair'), item('ours', false, 'R2Sem2R, cousins'));
+                item('r2r2r', true, 'R2R2R+, one pair'), item('ours', false, 'R2Sem2R, cousins'));
   const panels = h('div', { class: 'dv-panels' });
   const read = h('div', { class: 'dv-read', 'aria-live': 'polite' });
   const seg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Objects in the training data' });

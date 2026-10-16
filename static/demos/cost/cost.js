@@ -1,5 +1,5 @@
 // What the data costs: demonstrations produced against wall-clock time, with the model and rates of the paper's
-// throughput figure (results/make_figures.py): teleoperation 35.1 s per demonstration per operator; R2R2R and R2Sem2R
+// throughput figure (results/make_figures.py): teleoperation 35.1 s per demonstration per operator; R2R2R+ and R2Sem2R
 // a one-time 10-minute setup, then 1.3 s and 1.5 s per episode per GPU. Set operators, GPUs and a time, or drag on
 // the plot; the chips read off the number of completed demonstrations at that time.
 import { h, s, log, onResize, swatch, injectCSS, fmt } from '../scaling/charts.js';
@@ -11,7 +11,7 @@ const GUIDES = [[600, '10 min', '10 min'], [3600, '1 hour', '1 h'], [43200, '12 
 const LINES = [
   { id: 'teleop', name: 'Teleop', count: (t, st) => st.ops * t / TELEOP_S,
     desc: st => `${st.ops} operator${st.ops > 1 ? 's' : ''} · ${TELEOP_S} s per demo` },
-  { id: 'r2r2r', name: 'R2R2R', count: (t, st) => st.gpus * Math.max(0, t - SETUP_S) / R2R2R_S,
+  { id: 'r2r2r', name: 'R2R2R+', count: (t, st) => st.gpus * Math.max(0, t - SETUP_S) / R2R2R_S,
     desc: st => `${st.gpus} GPU${st.gpus > 1 ? 's' : ''} · ${R2R2R_S} s per episode` },
   { id: 'ours', name: 'R2Sem2R', count: (t, st) => st.gpus * Math.max(0, t - SETUP_S) / OURS_S,
     desc: st => `${st.gpus} GPU${st.gpus > 1 ? 's' : ''} · ${OURS_S} s per episode` },
@@ -47,7 +47,7 @@ export function mount(el) {
   el.innerHTML = '';
   const st = { ops: 1, gpus: 1, t: 2 * 3600 };
   const plot = h('div', { class: 'rc-plot', role: 'img',
-    'aria-label': 'Log-log chart of demonstrations produced against wall-clock time for teleoperation, R2R2R and R2Sem2R.' });
+    'aria-label': 'Log-log chart of demonstrations produced against wall-clock time for teleoperation, R2R2R+ and R2Sem2R.' });
   const chips = h('div', { class: 'rc-chips cost-chips', style: '--n:3' });
   const ui = LINES.map(L => {
     const u = { L, v: h('div', { class: 'v' }), sub: h('div', { class: 'sub' }) };

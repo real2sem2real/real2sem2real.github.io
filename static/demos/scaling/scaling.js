@@ -7,7 +7,7 @@ import { h, s, log, lin, onResize, swatch, markerAt, injectCSS } from './charts.
 
 const MARK = { teleop: 'circle', ours: 'diamond', r2r2r: 'square' };
 const SHORT = { 'teleop:true': ['Teleop', '4 mugs × 4 machines'], 'ours:true': ['R2Sem2R', 'cousins'],
-                'teleop:false': ['Teleop', '1 mug × 1 machine'], 'r2r2r:false': ['R2R2R', '1 mug × 1 machine'] };
+                'teleop:false': ['Teleop', '1 mug × 1 machine'], 'r2r2r:false': ['R2R2R+', '1 mug × 1 machine'] };
 const TELEOP_MAX = 150;                       // the largest teleoperated set
 
 injectCSS('sc-css', `
