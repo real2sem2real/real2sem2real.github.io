@@ -387,7 +387,7 @@ export async function mount(el) {
       const [ax0, ay0] = P(0, 0), [ax1, ay1] = P(0, Hh); pctx.beginPath(); pctx.moveTo(X(ax0), Y(ay0)); pctx.lineTo(X(ax1), Y(ay1)); pctx.stroke();
       pctx.setLineDash([]);
       // handle centreline
-      const hp = rec.handle.pts, k2 = Math.ceil(ease(Math.max(0, Math.min(1, u * 1.6 - 0.4))) * hp.length);
+      const hp = rec.handle.pts2d, k2 = Math.ceil(ease(Math.max(0, Math.min(1, u * 1.6 - 0.4))) * hp.length);
       pctx.strokeStyle = ours; pctx.lineWidth = Math.max(2.5 * R.dpr, 0.3 * rec.handle.thick / rec.map.s / rec.map.f * R.s);
       pctx.lineCap = 'round'; pctx.beginPath();
       hp.slice(0, k2).forEach((p, i) => { const [x, y] = P(p[0], p[1]); i ? pctx.lineTo(X(x), Y(y)) : pctx.moveTo(X(x), Y(y)); });

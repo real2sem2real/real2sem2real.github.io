@@ -2,7 +2,8 @@
 //
 //   mask (Uint8Array, 1 = mug) at image resolution  ->  {
 //     side (+1 handle on the image right, -1 left), xc (axis column, px), yTop, yBot (px), s (m per px),
-//     profile: [{z, r}] in metres (bottom -> top), handle: {pts: [[x, z]] metres in the handle plane, thick (m)},
+//     profile: [{z, r}] in metres (bottom -> top), handle: {pts: [[x, z]] metres in the handle plane, pts2d: the
+//     handle as seen in the photo (pts may reach further for a turned handle), thick (m)},
 //     bodyColor, rimColor: [r, g, b] }
 // Assumptions: the mug stands upright and the handle points left or right in the photo. The body is what survives a
 // morphological opening (the handle is thinner than the opening radius); the handle is the largest remaining part.
@@ -74,6 +75,67 @@ export function handleCenterline(pix, origin, a0 = 175, a1 = -175, nBins = 70) {
     pts.push([origin[0] + r * Math.cos(a), origin[1] + r * Math.sin(a)]); th.push(hi[k] - lo[k]);
   }
   return { pts, th };
+}
+
+// A clean handle fitted to the handle's silhouette: a superellipse loop ("D" from round to boxy) that leaves the wall at
+// two heights and reaches out, with a lean, drawn as a band of constant width. The parameters [vTop, vBot, reach,
+// squareness, width, lean] maximize the band's IoU with the handle pixels, over the region where the handle is visible
+// (beyond the wall). Pixel coordinates: u outward from the axis, v up from the foot. wallU(v) is the wall at height v.
+// Following the silhouette pixel by pixel instead carries mask noise, cut-off arms and corners into the tube.
+export function handleLoop(p, wallU, nPts = 48) {
+  const [vt, vb, a, n, , k] = p, z0 = 0.5 * (vt + vb), b = 0.5 * (vt - vb), e = 2 / n, pts = [];
+  for (let i = 0; i < nPts; i++) {
+    const th = Math.PI / 2 - (i / (nPts - 1)) * Math.PI, c = Math.max(0, Math.cos(th)), sn = Math.sin(th);
+    const z = z0 + b * Math.sign(sn) * Math.abs(sn) ** e;
+    pts.push([wallU(z) + a * (1 + k * (z - z0) / b) * c ** e, z]);
+  }
+  return pts;
+}
+
+export function fitHandle(pix, wallU, t0) {
+  let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity, reach = 0;
+  for (const [u, v] of pix) { u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v); reach = Math.max(reach, u - wallU(v)); }
+  const m = Math.ceil(2 * t0 + 6), gu0 = Math.floor(Math.min(u0, wallU(v0), wallU(v1)) - m), gv0 = Math.floor(v0 - m);
+  const gw = Math.ceil(u1 + m) - gu0 + 1, gh = Math.ceil(v1 + m) - gv0 + 1, N = gw * gh;
+  const obs = new Uint8Array(N), vis = new Uint8Array(N);
+  for (const [u, v] of pix) obs[Math.round(v - gv0) * gw + Math.round(u - gu0)] = 1;
+  let nObs = 0; for (let i = 0; i < N; i++) nObs += obs[i];
+  for (let j = 0; j < gh; j++) { const wu = wallU(j + gv0) + 3; for (let i = 0; i < gw; i++) vis[j * gw + i] = i + gu0 > wu ? 1 : 0; }
+  const line = new Uint8Array(N);
+  const cost = p => {
+    const [vt, vb, a, n, t, k] = p;
+    if (vt - vb < 2 * t || a < t || n < 2 || n > 8 || t < 0.4 * t0 || t > 2.2 * t0 || Math.abs(k) > 0.6) return 2;
+    line.fill(0);
+    const pts = handleLoop(p, wallU, 160);
+    for (let q = 1; q < pts.length; q++) {                 // rasterize the centreline
+      const [ua, va] = pts[q - 1], [ub, vb2] = pts[q], st = Math.max(1, Math.ceil(2 * Math.hypot(ub - ua, vb2 - va)));
+      for (let s2 = 0; s2 <= st; s2++) {
+        const x = Math.round(ua + (ub - ua) * s2 / st - gu0), y = Math.round(va + (vb2 - va) * s2 / st - gv0);
+        if (x >= 0 && y >= 0 && x < gw && y < gh) line[y * gw + x] = 1;
+      }
+    }
+    const d2 = edt(line, gw, gh), r2 = 0.25 * t * t;
+    let inter = 0, band = 0;
+    for (let i = 0; i < N; i++) if (vis[i] && d2[i] <= r2) { band++; inter += obs[i]; }
+    return 1 - inter / (band + nObs - inter);
+  };
+  // Nelder-Mead from the handle's extents
+  const x0 = [v1 - 0.5 * t0, v0 + 0.5 * t0, Math.max(t0 * 1.2, reach - 0.5 * t0), 3, t0, 0];
+  const step = [0.08 * (v1 - v0), 0.08 * (v1 - v0), 0.15 * reach, 1, 0.25 * t0, 0.15];
+  let S = [x0, ...step.map((d, i) => x0.map((v, j) => v + (i === j ? d : 0)))].map(x => ({ x, f: cost(x) }));
+  for (let it = 0; it < 260; it++) {
+    S.sort((A, B) => A.f - B.f);
+    const n = x0.length, c = Array(n).fill(0);
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) c[j] += S[i].x[j] / n;
+    const at = t => c.map((v, j) => v + t * (S[n].x[j] - v)), r = at(-1), fr = cost(r);
+    if (fr < S[0].f) { const ex = at(-2), fe = cost(ex); S[n] = fe < fr ? { x: ex, f: fe } : { x: r, f: fr }; }
+    else if (fr < S[n - 1].f) S[n] = { x: r, f: fr };
+    else { const ct = at(fr < S[n].f ? -0.5 : 0.5), fc = cost(ct);
+      if (fc < Math.min(fr, S[n].f)) S[n] = { x: ct, f: fc };
+      else for (let i = 1; i <= n; i++) { const x = S[i].x.map((v, j) => S[0].x[j] + 0.5 * (v - S[0].x[j])); S[i] = { x, f: cost(x) }; } }
+  }
+  S.sort((A, B) => A.f - B.f);
+  return { p: S[0].x, iou: 1 - S[0].f };
 }
 
 export function reconstruct(mask, W, H, img, { height = 0.09 } = {}) {
@@ -191,8 +253,27 @@ export function reconstruct(mask, W, H, img, { height = 0.09 } = {}) {
   const cl = handleCenterline(pix, origin);
   if (cl.pts.length < 8) return { error: 'The handle is too small or not to the side. Try another photo.' };
   // smooth (5-point), then metres in the handle plane: x outward, z up
-  const sm = cl.pts.map((p, i, a) => { let u = 0, v = 0, n = 0; for (let j = Math.max(0, i - 2); j <= Math.min(a.length - 1, i + 2); j++) { u += a[j][0]; v += a[j][1]; n++; } return [u / n * s, v / n * s / cosP]; });
-  const thSorted = Float64Array.from(cl.th).sort(), thick = Math.min(0.014, Math.max(0.005, thSorted[Math.floor(0.3 * thSorted.length)] * s));
+  let sm = cl.pts.map((p, i, a) => { let u = 0, v = 0, n = 0; for (let j = Math.max(0, i - 2); j <= Math.min(a.length - 1, i + 2); j++) { u += a[j][0]; v += a[j][1]; n++; } return [u / n * s, v / n * s / cosP]; });
+  const thSorted = Float64Array.from(cl.th).sort(), thPx = thSorted[Math.floor(0.3 * thSorted.length)];
+  let thick = Math.min(0.014, Math.max(0.005, thPx * s));
+  let sm2d = null;                                     // the handle as seen, for the photo overlay (null: same as sm)
+  // the clean handle: a loop fitted to the silhouette, attached to the wall below the rim (kept unless the fit is poor)
+  const wallU = v => rImg(yB - v) / s;
+  const fit = fitHandle(pix, wallU, Math.max(3, thPx));
+  if (fit.iou > 0.45) {
+    const pf = fit.p.slice(), tM = Math.min(0.012, Math.max(0.005, pf[4] * s));
+    const vMax = (height - 0.5 * tM - 0.003) * cosP / s, vMin = (0.5 * tM + 0.003) * cosP / s;
+    pf[0] = Math.min(pf[0], vMax); pf[1] = Math.max(pf[1], vMin);
+    const toM = pts => pts.map(([u, v]) => [u * s, v * s / cosP]);
+    if (pf[0] - pf[1] > 2 * pf[4]) {
+      sm2d = toM(handleLoop(pf, wallU)); thick = tM;
+      // a handle turned towards or away from the camera looks shorter than it is: side views reach 0.50-0.58 of their
+      // height span in our test photos, turned ones 0.26-0.30. Those get a typical reach and no lean (the lean seen in
+      // a turned view is mostly perspective); the photo overlay keeps the handle as seen.
+      if (pf[2] < 0.45 * (pf[0] - pf[1])) { pf[2] = 0.5 * (pf[0] - pf[1]); pf[5] = 0; }
+      sm = toM(handleLoop(pf, wallU));
+    }
+  }
   // ---- image mapping (full-resolution pixels) for the texture and the overlay. A surface point (x, y, z) in the mug
   // frame (x towards the handle, z up) projects to column xc + side*x/s and row yB - z*cos/s - side*y*sin/s: points on
   // the camera's side of the axis plane appear lower. toPhoto mirrors the far side onto the near one (|y|), which is
@@ -236,8 +317,8 @@ export function reconstruct(mask, W, H, img, { height = 0.09 } = {}) {
   // inside: the far inner wall, just below the far rim on the axis
   const [icx, icy] = toImg(xcAt(yTop), yTop + 0.35 * (yR - yTop));
   const innerColor = yR - yTop > 3 ? sample(icx, icy, Math.max(1.5, 0.15 * (yR - yTop) / f)) : bodyColor;
-  return { side, xc, s, height, tilt: Math.asin(sinP), profile, handle: { pts: sm, thick }, bodyColor, innerColor, handleColor, map,
-           debug: { w, h, M, O, Hm, yR, yB, rad: Array.from(rad), yTop, yBot, bx, origin, clRaw: cl.pts, xcA: xcAt(0) } };
+  return { side, xc, s, height, tilt: Math.asin(sinP), profile, handle: { pts: sm, pts2d: sm2d || sm, thick }, bodyColor, innerColor, handleColor, map,
+           debug: { w, h, M, O, Hm, yR, yB, rad: Array.from(rad), yTop, yBot, bx, origin, clRaw: cl.pts, xcA: xcAt(0), fitIou: fit.iou, fitP: fit.p } };
 }
 
 function solve3(A, b) {
