@@ -67,6 +67,7 @@
   #theme{flex:none; background:var(--surface); border:0; color:var(--muted); width:32px; height:32px;
          border-radius:40px; cursor:pointer; display:grid; place-items:center; padding:0}
   #theme:hover{color:var(--ink)}
+  @media (pointer:coarse){ #theme{position:relative} #theme::after{content:""; position:absolute; inset:-5px} }   /* 42 px tap area, same layout */
   #theme svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.9;
              stroke-linecap:round; stroke-linejoin:round}
   #theme .moon{display:none}
@@ -145,7 +146,7 @@
   summary:hover{color:var(--accent)}
   #qa details{border-top:1px solid var(--line); padding:15px 0}
   #qa details:last-of-type{border-bottom:1px solid var(--line)}
-  #qa summary{font-weight:500}
+  #qa summary{font-weight:500; padding:15px 0; margin:-15px 0}   /* the whole row is tappable; layout unchanged */
   #qa details p{margin:12px 0 2px; padding-left:20px; font-size:14.5px; color:var(--muted)}
 
   .tablewrap{overflow-x:auto; margin:18px 0; -webkit-overflow-scrolling:touch}
@@ -190,6 +191,7 @@
     th,td{padding:8px 8px 8px 0}
     td.num, th.num{padding-left:6px}
   }
+  @media (max-width:359px){ .pill small{display:none} }   /* 320 px phones: the two pills and the toggle fit on one row */
 </style>
 <link rel="stylesheet" href="static/demos/core/ui.css">
 <script type="importmap">

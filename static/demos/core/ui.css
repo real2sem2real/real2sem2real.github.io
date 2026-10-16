@@ -103,6 +103,13 @@
   .demo-hud.bl,.demo-hud.br{bottom:8px}
   .dstat{padding:10px 10px} .dstat .v{font-size:17px}
 }
+/* touch screens: controls about 40 px tall, sliders with a taller grab area (the track itself stays 4 px) */
+@media (pointer:coarse){
+  .seg button, .dselect{padding-top:10px; padding-bottom:10px}
+  .dbtn{padding-top:9px; padding-bottom:9px}
+  .drange{height:28px; padding:12px 0; background-clip:content-box}
+  .drange::-webkit-slider-thumb{width:20px; height:20px}
+}
 @media (prefers-reduced-motion: reduce){ .dbtn, .demo-gate .go, .seg button{transition:none} }
 
 /* hero demo */
@@ -126,6 +133,7 @@
   .hero-stage .demo-hud.tl .hud{white-space:normal}
   .hero-demo .dstat .l{font-size:11px}
 }
+@media (max-width:359px){ .hero-demo .demo-hud.bl .mut, .hero-pip-l .mut{display:none} }   /* 320 px phones: phase label clears "episode N", inset label not cut off */
 
 /* "try your mug" demo */
 .mm-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)}

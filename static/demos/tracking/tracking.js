@@ -60,9 +60,10 @@ const CSS = `
   .trk-chip .v{font-size:17px}
   .trk-chart{height:124px}
   .trk-frame{display:none}
-  .trk-segs{width:100%; flex-wrap:nowrap}
-  .trk-segs .seg button{padding:6px 9px}
-}`;
+  .trk-segs{width:100%}
+  .trk-segs .seg button{padding-left:9px; padding-right:9px}
+}
+@media (max-width:400px){ .trk-segs{gap:8px} .trk-segs .seg button{padding-left:6px; padding-right:6px} }`;
 
 function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
 

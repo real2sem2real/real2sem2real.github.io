@@ -18,3 +18,5 @@
   .splat-time{flex-basis:100%}
   .splat-opts{flex-basis:100%; justify-content:space-between}
 }
+/* the two bottom labels collide below 400 px: keep the object name, drop "· tracked path" */
+@media (max-width:400px){ [data-demo="splat"] .demo-hud.bl .mut{display:none} }
