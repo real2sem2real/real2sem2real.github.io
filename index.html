@@ -248,7 +248,7 @@
   <div class="demo-stage"><img class="demo-poster" src="static/demos/hero/poster.jpg" alt="An xArm7 in simulation placing a cousin mug on a cousin coffee machine, with the human demonstration video inset."></div>
 </div>
 <p class="hero-cap"><b>Live: one human video, thousands of robot demonstrations.</b> Episodes our pipeline generated in
-IsaacSim, replayed in your browser on the xArm7. Switch between <b>R2R2R</b>, which varies only the poses of the one
+IsaacSim, replayed in your browser on the xArm7. Switch between <b>R2R2R+</b>, which varies only the poses of the one
 demonstrated mug and coffee machine, and <b>R2Sem2R</b>, which also swaps in digital cousins, and run nine environments in
 parallel. In every episode the carry replays the mug trajectory tracked from the single human video (inset). Drag to orbit.</p>
 
@@ -268,9 +268,9 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
     <div class="stat"><div class="v">62 <small>&rarr;</small> 90<small>%</small></div>
       <div class="l">Mug placement on the xArm7, teleoperation vs R2Sem2R</div></div>
     <div class="stat"><div class="v">36 <small>&rarr;</small> 90<small>%</small></div>
-      <div class="l">Same task, one object pair (R2R2R) vs digital cousins</div></div>
+      <div class="l">Same task, one object pair (R2R2R+) vs digital cousins</div></div>
     <div class="stat"><div class="v">7 <small>/</small> 7</div>
-      <div class="l">Task&ndash;robot pairs where cousins beat R2R2R</div></div>
+      <div class="l">Task&ndash;robot pairs where cousins beat R2R2R+</div></div>
     <div class="stat"><div class="v">0.68 <small>&rarr;</small> 0.91</div>
       <div class="l">Object tracking IoU, WARPED vs ours</div></div>
   </div>
@@ -479,8 +479,9 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   <div class="eyebrow">04</div>
   <h2>How well does it work?</h2>
   <p>We fine-tune the &pi;<sub>0.5</sub> vision-language-action model on three kinds of data and evaluate on real
-  robots: <b>teleoperation</b>, 150 real demonstrations collected across several objects; <b>R2R2R</b>, 2,000
-  generated episodes of the single demonstrated object pair, following Real2Render2Real; and
+  robots: <b>teleoperation</b>, 150 real demonstrations collected across several objects; <b>R2R2R+</b>, 2,000
+  generated episodes of the single demonstrated object pair, a strengthened Real2Render2Real run through our
+  tracker, grasp selection and simulators, and so an upper bound on the published method; and
   <b>R2Sem2R</b>, 2,000 generated episodes across digital cousins.</p>
 
   <h3>The four tasks</h3>
@@ -501,10 +502,10 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
 
   <h3>Watch the rollouts</h3>
   <div class="demo wide" data-demo="rollouts">
-    <div class="demo-fallback">Side-by-side real-robot rollouts of the R2R2R and R2Sem2R policies need JavaScript.</div>
+    <div class="demo-fallback">Side-by-side real-robot rollouts of the R2R2R+ and R2Sem2R policies need JavaScript.</div>
   </div>
   <p class="hero-cap"><b>Interactive: real-robot rollouts, in sync.</b> The same task on the same robot, run by a policy
-  trained on 2,000 generated episodes of the single demonstrated object pair (R2R2R) and by one trained on 2,000 episodes
+  trained on 2,000 generated episodes of the single demonstrated object pair (R2R2R+) and by one trained on 2,000 episodes
   across digital cousins (R2Sem2R). Clips are in recording order, skipping ones in which a person steps into view, and end
   before the scene is reset; for the Franka Panda placement with R2Sem2R we also skipped one failure and one trial with an
   unclear outcome, so the three clips shown sit closer to its measured rate. The bars give the success rate over every
@@ -538,7 +539,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   <p class="hero-cap"><b>Interactive: success against training-set size</b> on xArm7 placement. Drag across the chart, or
   use the slider, to read every evaluation with its trials and 95% interval; tap a series to hide it. Solid lines train
   on several objects, dashed lines on the single demonstrated pair, and teleoperation was collected up to 150
-  demonstrations. R2R2R levels off below 40%, while R2Sem2R keeps improving and passes the largest teleoperated set.</p>
+  demonstrations. R2R2R+ levels off below 40%, while R2Sem2R keeps improving and passes the largest teleoperated set.</p>
   <!-- /slot:scaling -->
 
   <details class="more"><summary>What the data costs to collect</summary>
@@ -547,7 +548,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
     <div class="demo-fallback">Interactive calculator of demonstrations produced against wall-clock time. It needs JavaScript.</div>
   </div>
   <p class="hero-cap"><b>Interactive: what the data costs.</b> Demonstrations against wall-clock time at the rates in the
-  paper: teleoperation takes 35.1&nbsp;s per demonstration per operator, while R2R2R and R2Sem2R pay a one-time
+  paper: teleoperation takes 35.1&nbsp;s per demonstration per operator, while R2R2R+ and R2Sem2R pay a one-time
   10-minute setup and then generate an episode every 1.3&nbsp;s and 1.5&nbsp;s per GPU. Set the operators, the GPUs and
   the time, or drag across the chart; the chips give the demonstrations completed by then.</p>
   <!-- /slot:cost -->
@@ -602,9 +603,9 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
         <figcaption><b>Setup.</b> A UFactory xArm7 (a) and a Franka Emika Panda (b), each with its native parallel-jaw gripper. A single external RGB camera provides the policy's only image input.</figcaption></figure>
       <figure><a href="static/images/diversity_source.png"><img src="static/images/thumbs/diversity_source.webp" loading="lazy" alt="Bar chart for mug-to-coffee-machine placement comparing training on one object pair against several objects, for teleoperated and generated data, on both robots."></a>
         <figcaption><b>Object diversity versus data source.</b> Training on the single demonstrated mug and machine transfers poorly whether the data is teleoperated or generated. Several objects help either way, and cousins let generated data cover them.</figcaption></figure>
-      <figure><a href="static/images/data_scaling.png"><img src="static/images/thumbs/data_scaling.webp" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, R2Sem2R across cousins, teleoperation on one pair, and R2R2R on one pair."></a>
-        <figcaption><b>Success against training-set size</b> on xArm7 placement. R2R2R levels off below 40%, while R2Sem2R keeps improving and passes the largest teleoperated set.</figcaption></figure>
-      <figure><a href="static/images/scaling_comparison.png"><img src="static/images/thumbs/scaling_comparison.webp" loading="lazy" alt="Log-log plot of demonstrations produced against wall-clock time for teleoperation with 1, 10 and 100 operators and for R2R2R and R2Sem2R with 1 and 100 GPUs."></a>
+      <figure><a href="static/images/data_scaling.png"><img src="static/images/thumbs/data_scaling.webp" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, R2Sem2R across cousins, teleoperation on one pair, and R2R2R+ on one pair."></a>
+        <figcaption><b>Success against training-set size</b> on xArm7 placement. R2R2R+ levels off below 40%, while R2Sem2R keeps improving and passes the largest teleoperated set.</figcaption></figure>
+      <figure><a href="static/images/scaling_comparison.png"><img src="static/images/thumbs/scaling_comparison.webp" loading="lazy" alt="Log-log plot of demonstrations produced against wall-clock time for teleoperation with 1, 10 and 100 operators and for R2R2R+ and R2Sem2R with 1 and 100 GPUs."></a>
         <figcaption><b>Demonstrations against wall-clock time.</b> Teleoperation grows linearly with human time. Generated data needs a short one-time setup and then scales with GPUs.</figcaption></figure>
     </div>
   </details>
@@ -666,7 +667,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   // Results charts and table, from the project's results tracker (successes / trials per condition).
   // To update: edit R below. null = evaluation still running.
   (function(){
-    var M=[['teleop','Teleoperation (150 demos)'],['r2r2r','R2R2R (2k episodes, one pair)'],['ours','R2Sem2R (2k episodes, cousins)']];
+    var M=[['teleop','Teleoperation (150 demos)'],['r2r2r','R2R2R+ (2k episodes, one pair)'],['ours','R2Sem2R (2k episodes, cousins)']];
     var R={
       xarm7:[['Mug on coffee machine',[31,50],[18,50],[45,50]],
              ['Pour into bowl',[35,48],[22,48],[37,50]],
