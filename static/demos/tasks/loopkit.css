@@ -1,0 +1,105 @@
+/* Shared styles for the looping-video widgets (tasks, sims, failures, trackinit). Builds on core/ui.css and the page tokens. */
+.lk-tile{position:relative; margin:0; border-radius:10px; overflow:hidden; background:#0b0d12;
+         border:1px solid color-mix(in srgb, var(--line) 80%, transparent)}
+.lk-tile video, .lk-tile img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; border:0; border-radius:0}
+.lk-tile .demo-hud.tl{top:8px; left:8px} .lk-tile .demo-hud.tr{top:8px; right:8px} .lk-tile .demo-hud.bl{bottom:8px; left:8px}
+.lk-tile .hud{font-size:11.5px; padding:4px 9px}
+.lk-empty{display:grid; place-items:center; text-align:center; padding:14px; color:var(--muted); font-size:12.5px; line-height:1.5;
+          background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--line) 35%, transparent) 0 8px, transparent 8px 16px), var(--surface)}
+.lk-empty b{display:block; color:var(--ink); font-weight:600; margin-bottom:2px}
+.lk-stage{padding:12px;
+          background:
+            radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 62%),
+            linear-gradient(180deg, color-mix(in srgb, var(--surface) 70%, var(--bg)), var(--surface))}
+.lk-play{flex:none; width:36px; height:36px; padding:0; display:grid; place-items:center}
+.lk-play svg{margin:0; width:14px; height:14px}
+@media (pointer:coarse){ .lk-play{width:40px; height:40px} }
+.lk-time{font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; min-width:70px; text-align:right}
+.lk-bar-top{border-top:0; border-bottom:1px solid var(--line)}
+.lk-badge{display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; font-size:11px; font-weight:700; color:#fff;
+          margin-right:6px; vertical-align:-3px}
+.lk-badge.ok{background:var(--green)} .lk-badge.no{background:var(--red)}
+/* tasks */
+.tk-head, .tk-tiles{display:grid; grid-template-columns:1.778fr 1.739fr 1.416fr; gap:8px}
+.tk-head{padding:0 2px 6px; font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.tk-row + .tk-row{margin-top:12px}
+.tk-label{font-size:12.5px; font-weight:600; color:var(--ink); margin:0 0 6px 2px}
+.tk-tile{cursor:zoom-in}
+.tk-tile .hud.col{display:none}
+.tk .tk-top{display:none}
+.tk-enl{display:inline}
+.tk-modal{position:fixed; inset:0; z-index:60; display:grid; place-items:center; padding:20px;
+          background:color-mix(in srgb, var(--bg) 82%, transparent); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px)}
+.tk-modal[hidden]{display:none}
+.tk-modal-in{width:min(1280px, 100%); background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+             box-shadow:0 30px 80px -30px rgba(0,0,0,.5)}
+.tk-modal .tk-tile{cursor:default}
+.tk-close{flex:none}
+@media (max-width:620px){
+  .tk .tk-top{display:flex}
+  .tk-head{display:none}
+  .tk-tiles{grid-template-columns:1fr}
+  .tk-row{display:none} .tk-row.on{display:block}
+  .tk-label{display:none}
+  .tk-tile .hud.col{display:inline-block}
+  .tk-tile{cursor:default}
+  .tk-enl{display:none}
+}
+/* sims */
+.sm-pair{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.sm-pair .lk-tile{aspect-ratio:16/9}
+.sm-scrub{position:relative; flex:1 1 220px; min-width:160px; height:28px; display:flex; align-items:center}
+.sm-scrub .drange{width:100%; flex:1 1 auto}
+.sm-ticks{position:absolute; left:8px; right:8px; top:0; bottom:0; pointer-events:none}
+.sm-ticks i{position:absolute; top:5px; bottom:5px; width:2px; margin-left:-1px; border-radius:1px; background:color-mix(in srgb, var(--muted) 55%, transparent)}
+.sm-phases{display:flex; flex-wrap:wrap; gap:6px; padding:0 14px 12px}
+.sm-phases button{font:inherit; font-size:12px; border:1px solid var(--line); background:var(--surface); color:var(--muted); border-radius:30px;
+                  padding:5px 11px; cursor:pointer; transition:background .2s, color .2s, border-color .2s}
+.sm-phases button.on{color:#fff; background:var(--accent); border-color:transparent}
+.sm-phases button:hover{color:var(--ink)} .sm-phases button.on:hover{color:#fff}
+@media (pointer:coarse){ .sm-phases button{padding:10px 12px} }
+@media (max-width:620px){ .sm-pair{grid-template-columns:1fr; gap:8px} .lk-time{min-width:0} }
+/* failures */
+.fm-grid{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px}
+.fm-grid .lk-tile{aspect-ratio:16/9}
+.fm-col{margin:0}
+.fm-cap{font-size:12px; color:var(--muted); margin:7px 2px 0; line-height:1.45}
+.fm-cap b{color:var(--ink); font-weight:600}
+.fm-col[data-c="gt"] .lk-tile{border-color:color-mix(in srgb, var(--teleop) 70%, transparent)}
+.fm-col[data-c="prior"] .lk-tile{border-color:color-mix(in srgb, var(--r2r2r) 80%, transparent)}
+.fm-col[data-c="ours"] .lk-tile{border-color:color-mix(in srgb, var(--ours) 75%, transparent); box-shadow:0 0 0 1px color-mix(in srgb, var(--ours) 40%, transparent)}
+.fm .fm-cols{display:none}
+@media (max-width:620px){
+  .fm .fm-cols{display:inline-flex}
+  .fm-grid{grid-template-columns:1fr}
+  .fm-col{display:none} .fm-col.on{display:block}
+}
+/* trackinit */
+.ti-grid{display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:8px}
+.ti-seed{position:relative; margin:0; border-radius:8px; overflow:hidden; aspect-ratio:1/1; background:#eee;
+         border:2px solid transparent; transition:border-color .35s, opacity .35s, transform .35s}
+.ti-seed .ti-img{position:absolute; inset:0; background-repeat:no-repeat; transition:opacity .45s}
+.ti-seed .ti-img.after{opacity:0}
+.ti-seed.refined .ti-img.after{opacity:1}
+.ti-seed .ti-tag{position:absolute; left:5px; bottom:5px; font-size:10.5px; line-height:1; padding:4px 6px; border-radius:20px; color:#fff;
+                 background:rgba(10,14,22,.62); font-variant-numeric:tabular-nums; opacity:0; transition:opacity .35s}
+.ti-seed.refined .ti-tag{opacity:1}
+.ti-seed .ti-rank{position:absolute; right:5px; top:5px; font-size:10.5px; font-weight:700; line-height:1; padding:4px 6px; border-radius:20px;
+                  color:#fff; background:rgba(10,14,22,.62); opacity:0; transition:opacity .35s}
+.ti.st-rank .ti-seed .ti-rank{opacity:1}
+.ti.st-refine .ti-seed.ok, .ti.st-rank .ti-seed.ok{border-color:var(--green)}
+.ti.st-refine .ti-seed.no, .ti.st-rank .ti-seed.no{border-color:color-mix(in srgb, var(--red) 75%, transparent)}
+.ti.st-rank .ti-seed.no{opacity:.55}
+.ti.st-rank .ti-seed.best{border-color:var(--ours); box-shadow:0 0 0 2px color-mix(in srgb, var(--ours) 45%, transparent)}
+.ti-side{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:12px}
+.ti-big{position:relative; margin:0; border-radius:10px; overflow:hidden; aspect-ratio:1/1; background:#eee; border:1px solid var(--line)}
+.ti-big .ti-img{position:absolute; inset:0; background-repeat:no-repeat}
+.ti-big figcaption{position:absolute; left:8px; top:8px; margin:0}
+.ti-count{font-size:12.5px; color:var(--muted)} .ti-count b{color:var(--ink); font-variant-numeric:tabular-nums}
+.ti-steps .dbtn{font-size:12.5px}
+@media (min-width:621px){ .ti-wrap{display:grid; grid-template-columns:minmax(0,2.6fr) minmax(0,1fr); gap:12px; align-items:start}
+                          .ti-grid{grid-template-columns:repeat(4, minmax(0,1fr))}
+                          .ti-side{grid-template-columns:1fr; margin-top:0} }
+@media (max-width:620px){ .ti-grid{grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px} .ti-seed .ti-tag{font-size:9.5px} }
+@media (max-width:380px){ .ti-grid{grid-template-columns:repeat(3, minmax(0,1fr))} }
+@media (prefers-reduced-motion: reduce){ .ti-seed, .ti-seed .ti-img, .ti-seed .ti-tag, .ti-seed .ti-rank, .sm-phases button{transition:none} }

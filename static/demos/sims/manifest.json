@@ -1,0 +1,180 @@
+{
+ "pairs": [
+  {
+   "key": "pair1",
+   "label": "Demonstrated pair",
+   "frames": 285,
+   "fps": 10,
+   "phases": [
+    {
+     "name": "Start",
+     "frame": 0
+    },
+    {
+     "name": "Approach",
+     "frame": 30
+    },
+    {
+     "name": "Grasp",
+     "frame": 84
+    },
+    {
+     "name": "Lift",
+     "frame": 110
+    },
+    {
+     "name": "Carry",
+     "frame": 169
+    },
+    {
+     "name": "Place",
+     "frame": 229
+    },
+    {
+     "name": "Release",
+     "frame": 270
+    }
+   ],
+   "isaac": {
+    "src": "media/pair1_isaac.mp4",
+    "poster": "media/pair1_isaac.jpg"
+   },
+   "mujoco": {
+    "src": "media/pair1_mujoco.mp4",
+    "poster": "media/pair1_mujoco.jpg"
+   }
+  },
+  {
+   "key": "pair2",
+   "label": "Cousin pair 1",
+   "frames": 285,
+   "fps": 10,
+   "phases": [
+    {
+     "name": "Start",
+     "frame": 0
+    },
+    {
+     "name": "Approach",
+     "frame": 30
+    },
+    {
+     "name": "Grasp",
+     "frame": 84
+    },
+    {
+     "name": "Lift",
+     "frame": 110
+    },
+    {
+     "name": "Carry",
+     "frame": 175
+    },
+    {
+     "name": "Place",
+     "frame": 241
+    },
+    {
+     "name": "Release",
+     "frame": 270
+    }
+   ],
+   "isaac": {
+    "src": "media/pair2_isaac.mp4",
+    "poster": "media/pair2_isaac.jpg"
+   },
+   "mujoco": {
+    "src": "media/pair2_mujoco.mp4",
+    "poster": "media/pair2_mujoco.jpg"
+   }
+  },
+  {
+   "key": "pair3",
+   "label": "Cousin pair 2",
+   "frames": 285,
+   "fps": 10,
+   "phases": [
+    {
+     "name": "Start",
+     "frame": 0
+    },
+    {
+     "name": "Approach",
+     "frame": 30
+    },
+    {
+     "name": "Grasp",
+     "frame": 84
+    },
+    {
+     "name": "Lift",
+     "frame": 109
+    },
+    {
+     "name": "Carry",
+     "frame": 166
+    },
+    {
+     "name": "Place",
+     "frame": 224
+    },
+    {
+     "name": "Release",
+     "frame": 270
+    }
+   ],
+   "isaac": {
+    "src": "media/pair3_isaac.mp4",
+    "poster": "media/pair3_isaac.jpg"
+   },
+   "mujoco": {
+    "src": "media/pair3_mujoco.mp4",
+    "poster": "media/pair3_mujoco.jpg"
+   }
+  },
+  {
+   "key": "pair4",
+   "label": "Cousin pair 3",
+   "frames": 285,
+   "fps": 10,
+   "phases": [
+    {
+     "name": "Start",
+     "frame": 0
+    },
+    {
+     "name": "Approach",
+     "frame": 30
+    },
+    {
+     "name": "Grasp",
+     "frame": 84
+    },
+    {
+     "name": "Lift",
+     "frame": 110
+    },
+    {
+     "name": "Carry",
+     "frame": 172
+    },
+    {
+     "name": "Place",
+     "frame": 235
+    },
+    {
+     "name": "Release",
+     "frame": 270
+    }
+   ],
+   "isaac": {
+    "src": "media/pair4_isaac.mp4",
+    "poster": "media/pair4_isaac.jpg"
+   },
+   "mujoco": {
+    "src": "media/pair4_mujoco.mp4",
+    "poster": "media/pair4_mujoco.jpg"
+   }
+  }
+ ]
+}

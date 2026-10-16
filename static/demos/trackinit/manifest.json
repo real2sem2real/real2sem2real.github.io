@@ -1,0 +1,1531 @@
+{
+ "tile": 176,
+ "objects": [
+  {
+   "key": "mug",
+   "label": "Mug, to coffee machine",
+   "modes": {
+    "blind": {
+     "sprite": "media/mug_blind.jpg",
+     "n": 12,
+     "n_ok": 4,
+     "best": 3,
+     "best_iou": 0.975,
+     "best_rot": 0.1,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.975,
+       "rank": 3,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.616,
+       "rank": 12,
+       "rot": 139.2,
+       "ok": false
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.616,
+       "rank": 9,
+       "rot": 139.2,
+       "ok": false
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.975,
+       "rank": 1,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.975,
+       "rank": 2,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.974,
+       "rank": 4,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.88,
+       "rank": 7,
+       "rot": 162.2,
+       "ok": false
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.616,
+       "rank": 8,
+       "rot": 139.2,
+       "ok": false
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.616,
+       "rank": 10,
+       "rot": 139.2,
+       "ok": false
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.907,
+       "rank": 6,
+       "rot": 177.7,
+       "ok": false
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.91,
+       "rank": 5,
+       "rot": 176.5,
+       "ok": false
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.616,
+       "rank": 11,
+       "rot": 139.2,
+       "ok": false
+      }
+     ]
+    },
+    "tabletop": {
+     "sprite": "media/mug_tabletop.jpg",
+     "n": 12,
+     "n_ok": 6,
+     "best": 4,
+     "best_iou": 0.976,
+     "best_rot": 0.1,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.616,
+       "rank": 11,
+       "rot": 139.2,
+       "ok": false
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.616,
+       "rank": 8,
+       "rot": 139.2,
+       "ok": false
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.976,
+       "rank": 2,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.975,
+       "rank": 6,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.976,
+       "rank": 1,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.616,
+       "rank": 9,
+       "rot": 139.2,
+       "ok": false
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.616,
+       "rank": 12,
+       "rot": 139.3,
+       "ok": false
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.616,
+       "rank": 7,
+       "rot": 139.2,
+       "ok": false
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.976,
+       "rank": 4,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.975,
+       "rank": 5,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.976,
+       "rank": 3,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.616,
+       "rank": 10,
+       "rot": 139.2,
+       "ok": false
+      }
+     ]
+    }
+   }
+  },
+  {
+   "key": "cm",
+   "label": "Coffee machine",
+   "modes": {
+    "blind": {
+     "sprite": "media/cm_blind.jpg",
+     "n": 12,
+     "n_ok": 4,
+     "best": 7,
+     "best_iou": 0.955,
+     "best_rot": 0.2,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.76,
+       "rank": 9,
+       "rot": 154.2,
+       "ok": false
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.696,
+       "rank": 12,
+       "rot": 136.8,
+       "ok": false
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.871,
+       "rank": 7,
+       "rot": 174.0,
+       "ok": false
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.955,
+       "rank": 4,
+       "rot": 0.5,
+       "ok": true
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.703,
+       "rank": 11,
+       "rot": 162.6,
+       "ok": false
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.871,
+       "rank": 5,
+       "rot": 174.1,
+       "ok": false
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.871,
+       "rank": 6,
+       "rot": 174.0,
+       "ok": false
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.955,
+       "rank": 1,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.954,
+       "rank": 2,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.74,
+       "rank": 10,
+       "rot": 87.0,
+       "ok": false
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.812,
+       "rank": 8,
+       "rot": 171.3,
+       "ok": false
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.954,
+       "rank": 3,
+       "rot": 0.5,
+       "ok": true
+      }
+     ]
+    },
+    "tabletop": {
+     "sprite": "media/cm_tabletop.jpg",
+     "n": 12,
+     "n_ok": 7,
+     "best": 3,
+     "best_iou": 0.956,
+     "best_rot": 0.3,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.955,
+       "rank": 7,
+       "rot": 0.3,
+       "ok": true
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.696,
+       "rank": 11,
+       "rot": 136.8,
+       "ok": false
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.791,
+       "rank": 8,
+       "rot": 178.9,
+       "ok": false
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.956,
+       "rank": 1,
+       "rot": 0.3,
+       "ok": true
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.955,
+       "rank": 6,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.955,
+       "rank": 4,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.688,
+       "rank": 12,
+       "rot": 105.9,
+       "ok": false
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.696,
+       "rank": 10,
+       "rot": 136.8,
+       "ok": false
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.754,
+       "rank": 9,
+       "rot": 139.7,
+       "ok": false
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.955,
+       "rank": 5,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.956,
+       "rank": 3,
+       "rot": 0.3,
+       "ok": true
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.956,
+       "rank": 2,
+       "rot": 0.3,
+       "ok": true
+      }
+     ]
+    }
+   }
+  },
+  {
+   "key": "tree",
+   "label": "Mug, to tree",
+   "modes": {
+    "blind": {
+     "sprite": "media/tree_blind.jpg",
+     "n": 12,
+     "n_ok": 5,
+     "best": 1,
+     "best_iou": 0.955,
+     "best_rot": 0.2,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.911,
+       "rank": 7,
+       "rot": 52.5,
+       "ok": false
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.955,
+       "rank": 1,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.89,
+       "rank": 11,
+       "rot": 179.8,
+       "ok": false
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.92,
+       "rank": 6,
+       "rot": 46.9,
+       "ok": false
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.89,
+       "rank": 10,
+       "rot": 180.0,
+       "ok": false
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.888,
+       "rank": 12,
+       "rot": 180.0,
+       "ok": false
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.947,
+       "rank": 5,
+       "rot": 1.5,
+       "ok": true
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.954,
+       "rank": 3,
+       "rot": 0.3,
+       "ok": true
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.955,
+       "rank": 2,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.891,
+       "rank": 9,
+       "rot": 179.9,
+       "ok": false
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.894,
+       "rank": 8,
+       "rot": 180.0,
+       "ok": false
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.953,
+       "rank": 4,
+       "rot": 0.3,
+       "ok": true
+      }
+     ]
+    },
+    "tabletop": {
+     "sprite": "media/tree_tabletop.jpg",
+     "n": 12,
+     "n_ok": 4,
+     "best": 11,
+     "best_iou": 0.955,
+     "best_rot": 0.2,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.955,
+       "rank": 2,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.876,
+       "rank": 9,
+       "rot": 58.4,
+       "ok": false
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.87,
+       "rank": 12,
+       "rot": 29.4,
+       "ok": false
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.924,
+       "rank": 7,
+       "rot": 47.1,
+       "ok": false
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.916,
+       "rank": 8,
+       "rot": 50.7,
+       "ok": false
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.952,
+       "rank": 3,
+       "rot": 0.5,
+       "ok": true
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.957,
+       "rank": 4,
+       "rot": 0.3,
+       "ok": true
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.879,
+       "rank": 11,
+       "rot": 57.7,
+       "ok": false
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.876,
+       "rank": 10,
+       "rot": 50.6,
+       "ok": false
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.921,
+       "rank": 5,
+       "rot": 39.6,
+       "ok": false
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.921,
+       "rank": 6,
+       "rot": 43.6,
+       "ok": false
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.955,
+       "rank": 1,
+       "rot": 0.2,
+       "ok": true
+      }
+     ]
+    }
+   }
+  },
+  {
+   "key": "stand",
+   "label": "Tree stand",
+   "modes": {
+    "blind": {
+     "sprite": "media/stand_blind.jpg",
+     "n": 12,
+     "n_ok": 1,
+     "best": 3,
+     "best_iou": 0.888,
+     "best_rot": 0.0,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.482,
+       "rank": 7,
+       "rot": 92.9,
+       "ok": false
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.623,
+       "rank": 4,
+       "rot": 72.8,
+       "ok": false
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.506,
+       "rank": 6,
+       "rot": 102.1,
+       "ok": false
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.888,
+       "rank": 1,
+       "rot": 0.0,
+       "ok": true
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.794,
+       "rank": 3,
+       "rot": 21.3,
+       "ok": false
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.36,
+       "rank": 9,
+       "rot": 176.9,
+       "ok": false
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.358,
+       "rank": 11,
+       "rot": 133.6,
+       "ok": false
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.842,
+       "rank": 2,
+       "rot": 179.7,
+       "ok": false
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.47,
+       "rank": 5,
+       "rot": 149.0,
+       "ok": false
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.353,
+       "rank": 12,
+       "rot": 157.4,
+       "ok": false
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.352,
+       "rank": 10,
+       "rot": 157.3,
+       "ok": false
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.385,
+       "rank": 8,
+       "rot": 93.9,
+       "ok": false
+      }
+     ]
+    },
+    "tabletop": {
+     "sprite": "media/stand_tabletop.jpg",
+     "n": 12,
+     "n_ok": 3,
+     "best": 4,
+     "best_iou": 0.889,
+     "best_rot": 0.0,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.843,
+       "rank": 5,
+       "rot": 179.7,
+       "ok": false
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.743,
+       "rank": 10,
+       "rot": 131.6,
+       "ok": false
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.745,
+       "rank": 7,
+       "rot": 131.6,
+       "ok": false
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.387,
+       "rank": 12,
+       "rot": 33.2,
+       "ok": false
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.889,
+       "rank": 1,
+       "rot": 0.0,
+       "ok": true
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.742,
+       "rank": 6,
+       "rot": 45.9,
+       "ok": false
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.843,
+       "rank": 4,
+       "rot": 179.7,
+       "ok": false
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.744,
+       "rank": 9,
+       "rot": 131.6,
+       "ok": false
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.744,
+       "rank": 8,
+       "rot": 131.6,
+       "ok": false
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.888,
+       "rank": 3,
+       "rot": 0.0,
+       "ok": true
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.889,
+       "rank": 2,
+       "rot": 0.0,
+       "ok": true
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.629,
+       "rank": 11,
+       "rot": 105.6,
+       "ok": false
+      }
+     ]
+    }
+   }
+  },
+  {
+   "key": "pourmug",
+   "label": "Mug, pour",
+   "modes": {
+    "blind": {
+     "sprite": "media/pourmug_blind.jpg",
+     "n": 12,
+     "n_ok": 6,
+     "best": 8,
+     "best_iou": 0.97,
+     "best_rot": 0.4,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.969,
+       "rank": 5,
+       "rot": 0.4,
+       "ok": true
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.969,
+       "rank": 4,
+       "rot": 0.4,
+       "ok": true
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.831,
+       "rank": 10,
+       "rot": 165.0,
+       "ok": false
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.831,
+       "rank": 8,
+       "rot": 165.0,
+       "ok": false
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.83,
+       "rank": 11,
+       "rot": 164.5,
+       "ok": false
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.97,
+       "rank": 6,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.776,
+       "rank": 12,
+       "rot": 148.6,
+       "ok": false
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.969,
+       "rank": 3,
+       "rot": 0.4,
+       "ok": true
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.97,
+       "rank": 1,
+       "rot": 0.4,
+       "ok": true
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.831,
+       "rank": 9,
+       "rot": 164.7,
+       "ok": false
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.969,
+       "rank": 2,
+       "rot": 0.4,
+       "ok": true
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.855,
+       "rank": 7,
+       "rot": 134.1,
+       "ok": false
+      }
+     ]
+    },
+    "tabletop": {
+     "sprite": "media/pourmug_tabletop.jpg",
+     "n": 12,
+     "n_ok": 7,
+     "best": 5,
+     "best_iou": 0.969,
+     "best_rot": 0.4,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.969,
+       "rank": 4,
+       "rot": 0.4,
+       "ok": true
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.969,
+       "rank": 3,
+       "rot": 0.4,
+       "ok": true
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.968,
+       "rank": 6,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.831,
+       "rank": 11,
+       "rot": 165.0,
+       "ok": false
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.831,
+       "rank": 10,
+       "rot": 164.9,
+       "ok": false
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.969,
+       "rank": 1,
+       "rot": 0.4,
+       "ok": true
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.969,
+       "rank": 2,
+       "rot": 0.4,
+       "ok": true
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.966,
+       "rank": 5,
+       "rot": 0.4,
+       "ok": true
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.966,
+       "rank": 7,
+       "rot": 0.3,
+       "ok": true
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.699,
+       "rank": 12,
+       "rot": 139.3,
+       "ok": false
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.858,
+       "rank": 9,
+       "rot": 133.9,
+       "ok": false
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.901,
+       "rank": 8,
+       "rot": 129.7,
+       "ok": false
+      }
+     ]
+    }
+   }
+  },
+  {
+   "key": "pourbowl",
+   "label": "Bowl, pour",
+   "modes": {
+    "blind": {
+     "sprite": "media/pourbowl_blind.jpg",
+     "n": 12,
+     "n_ok": 3,
+     "best": 8,
+     "best_iou": 0.982,
+     "best_rot": 0.2,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.798,
+       "rank": 11,
+       "rot": 161.5,
+       "ok": false
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.951,
+       "rank": 7,
+       "rot": 37.7,
+       "ok": false
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.952,
+       "rank": 4,
+       "rot": 38.2,
+       "ok": false
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.982,
+       "rank": 3,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.849,
+       "rank": 8,
+       "rot": 100.6,
+       "ok": false
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.982,
+       "rank": 2,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.817,
+       "rank": 10,
+       "rot": 161.8,
+       "ok": false
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.953,
+       "rank": 5,
+       "rot": 37.8,
+       "ok": false
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.982,
+       "rank": 1,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.85,
+       "rank": 9,
+       "rot": 101.1,
+       "ok": false
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.77,
+       "rank": 12,
+       "rot": 147.5,
+       "ok": false
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.953,
+       "rank": 6,
+       "rot": 37.8,
+       "ok": false
+      }
+     ]
+    },
+    "tabletop": {
+     "sprite": "media/pourbowl_tabletop.jpg",
+     "n": 12,
+     "n_ok": 8,
+     "best": 6,
+     "best_iou": 0.982,
+     "best_rot": 0.2,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.953,
+       "rank": 9,
+       "rot": 38.1,
+       "ok": false
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.952,
+       "rank": 10,
+       "rot": 43.1,
+       "ok": false
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.953,
+       "rank": 12,
+       "rot": 43.1,
+       "ok": false
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.946,
+       "rank": 11,
+       "rot": 36.4,
+       "ok": false
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.982,
+       "rank": 2,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.982,
+       "rank": 6,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.982,
+       "rank": 1,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.978,
+       "rank": 7,
+       "rot": 1.7,
+       "ok": true
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.975,
+       "rank": 8,
+       "rot": 3.7,
+       "ok": true
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.982,
+       "rank": 4,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.982,
+       "rank": 5,
+       "rot": 0.2,
+       "ok": true
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.982,
+       "rank": 3,
+       "rot": 0.2,
+       "ok": true
+      }
+     ]
+    }
+   }
+  },
+  {
+   "key": "drill",
+   "label": "Drill",
+   "modes": {
+    "blind": {
+     "sprite": "media/drill_blind.jpg",
+     "n": 12,
+     "n_ok": 2,
+     "best": 3,
+     "best_iou": 0.948,
+     "best_rot": 0.1,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.55,
+       "rank": 6,
+       "rot": 89.6,
+       "ok": false
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.612,
+       "rank": 4,
+       "rot": 162.0,
+       "ok": false
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.617,
+       "rank": 3,
+       "rot": 156.3,
+       "ok": false
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.948,
+       "rank": 1,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.466,
+       "rank": 12,
+       "rot": 117.0,
+       "ok": false
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.505,
+       "rank": 10,
+       "rot": 130.0,
+       "ok": false
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.508,
+       "rank": 11,
+       "rot": 167.3,
+       "ok": false
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.948,
+       "rank": 2,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.572,
+       "rank": 7,
+       "rot": 150.4,
+       "ok": false
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.57,
+       "rank": 8,
+       "rot": 157.7,
+       "ok": false
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.522,
+       "rank": 9,
+       "rot": 157.2,
+       "ok": false
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.613,
+       "rank": 5,
+       "rot": 161.1,
+       "ok": false
+      }
+     ]
+    },
+    "tabletop": {
+     "sprite": "media/drill_tabletop.jpg",
+     "n": 12,
+     "n_ok": 6,
+     "best": 9,
+     "best_iou": 0.948,
+     "best_rot": 0.1,
+     "seeds": [
+      {
+       "seed": 0,
+       "col": 0,
+       "iou": 0.62,
+       "rank": 7,
+       "rot": 151.6,
+       "ok": false
+      },
+      {
+       "seed": 1,
+       "col": 1,
+       "iou": 0.948,
+       "rank": 2,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 2,
+       "col": 2,
+       "iou": 0.948,
+       "rank": 6,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 3,
+       "col": 3,
+       "iou": 0.948,
+       "rank": 4,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 4,
+       "col": 4,
+       "iou": 0.613,
+       "rank": 9,
+       "rot": 161.1,
+       "ok": false
+      },
+      {
+       "seed": 5,
+       "col": 5,
+       "iou": 0.615,
+       "rank": 8,
+       "rot": 158.8,
+       "ok": false
+      },
+      {
+       "seed": 6,
+       "col": 6,
+       "iou": 0.61,
+       "rank": 12,
+       "rot": 164.2,
+       "ok": false
+      },
+      {
+       "seed": 7,
+       "col": 7,
+       "iou": 0.948,
+       "rank": 3,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 8,
+       "col": 8,
+       "iou": 0.948,
+       "rank": 5,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 9,
+       "col": 9,
+       "iou": 0.948,
+       "rank": 1,
+       "rot": 0.1,
+       "ok": true
+      },
+      {
+       "seed": 10,
+       "col": 10,
+       "iou": 0.613,
+       "rank": 10,
+       "rot": 161.2,
+       "ok": false
+      },
+      {
+       "seed": 11,
+       "col": 11,
+       "iou": 0.611,
+       "rank": 11,
+       "rot": 163.7,
+       "ok": false
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

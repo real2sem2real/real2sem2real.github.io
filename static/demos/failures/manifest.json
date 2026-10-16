@@ -1,0 +1,34 @@
+{
+ "rows": [
+  {
+   "key": "track", "name": "Tracking",
+   "note": "The mug and the coffee machine rendered at each tracker's pose over the faded video, frame by frame. Mask IoU of the mug: the paper's tracking table.",
+   "gt": {"video": "media/track_real.mp4", "poster": "media/track_real.jpg", "label": "Real",
+          "cap": "<b>The human video.</b> The mug is carried from the table to the machine's tray."},
+   "prior": {"video": "media/track_rsrd.mp4", "poster": "media/track_rsrd.jpg", "label": "RSRD", "stat": "mug IoU 0.20",
+             "cap": "<b>RSRD, re-implemented.</b> Its mug is far too large and in the wrong pose from the first frame, and it never sits on the tray."},
+   "ours": {"video": "media/track_ours.mp4", "poster": "media/track_ours.jpg", "label": "R2Sem2R", "stat": "mug IoU 0.95",
+            "cap": "<b>Our track.</b> The rendered mug stays on the real one through the grasp, the carry and the placement."}
+  },
+  {
+   "key": "grasp", "name": "Grasp",
+   "note": "The gripper is yellow where it intersects the mug and green where the grasp is free of collision.",
+   "gt": {"video": "media/grasp_real.mp4", "poster": "media/grasp_real.jpg", "label": "Real",
+          "cap": "<b>The demonstrator's grasp.</b> Thumb and index finger close on the handle."},
+   "prior": {"img": "media/grasp_prior.jpg", "label": "Prior", "alt": "A yellow robot gripper intersecting the body of the mug.",
+             "cap": "<b>A prior grasp</b> collides with the mug instead of taking its handle."},
+   "ours": {"img": "media/grasp_ours.jpg", "label": "R2Sem2R", "alt": "A green robot gripper closing on the handle of the mug.",
+            "cap": "<b>Our grasp</b> closes on the handle, as the human did."}
+  },
+  {
+   "key": "mesh", "name": "Mesh",
+   "note": "The same robot camera view, real and simulated.",
+   "gt": {"img": "media/mesh_real.jpg", "label": "Real", "alt": "The real xArm7 camera view of the black coffee machine and a white mug.",
+          "cap": "<b>The real robot camera</b> with the coffee machine and the mug."},
+   "prior": {"img": "media/mesh_prior.jpg", "label": "Prior", "alt": "A simulated scene with a blotchy gray coffee machine mesh.",
+             "cap": "<b>A prior mesh</b> of the machine renders blotchy and gray."},
+   "ours": {"img": "media/mesh_ours.jpg", "label": "R2Sem2R", "alt": "A simulated scene with a clean black coffee machine.",
+            "cap": "<b>Our coffee machine</b> renders like the real one."}
+  }
+ ]
+}

@@ -1,0 +1,99 @@
+{
+ "video": {
+  "src": "media/video.mp4",
+  "poster": "media/video.webp",
+  "dur": 10.07,
+  "cues": [
+   {
+    "t": 0.0,
+    "label": "Human demonstration, phone RGB"
+   }
+  ]
+ },
+ "track": {
+  "src": "media/track.mp4",
+  "poster": "media/track.webp",
+  "dur": 10.1,
+  "cues": [
+   {
+    "t": 0.0,
+    "label": "Mug splat rendered at the tracked pose"
+   }
+  ]
+ },
+ "grasp": {
+  "src": "media/grasp.mp4",
+  "poster": "media/grasp.webp",
+  "dur": 13.45,
+  "cues": [
+   {
+    "t": 0.0,
+    "label": "Hand mesh from the video"
+   },
+   {
+    "t": 3.8,
+    "label": "Hand registered to the tracked splat"
+   },
+   {
+    "t": 7.65,
+    "label": "Gripper pose on the mug"
+   }
+  ]
+ },
+ "cousins": {
+  "src": "media/cousins.mp4",
+  "poster": "media/cousins.webp",
+  "dur": 6.0,
+  "cues": [
+   {
+    "t": 0,
+    "label": "Four phone photos"
+   }
+  ]
+ },
+ "align": {
+  "src": "media/align.mp4",
+  "poster": "media/align.webp",
+  "dur": 13.1,
+  "cues": [
+   {
+    "t": 0.0,
+    "label": "Cousin mugs and their DINOv3 features"
+   },
+   {
+    "t": 8.8,
+    "label": "Coffee machines aligned on the tray"
+   }
+  ]
+ },
+ "generate": {
+  "src": "media/generate.mp4",
+  "poster": "media/generate.webp",
+  "dur": 16.93,
+  "cues": [
+   {
+    "t": 0.0,
+    "label": "IsaacSim, kinematic replay"
+   },
+   {
+    "t": 8.47,
+    "label": "MuJoCo, contact physics"
+   }
+  ]
+ },
+ "deploy": {
+  "src": "media/deploy.mp4",
+  "poster": "media/deploy.webp",
+  "dur": 15.23,
+  "cues": [
+   {
+    "t": 0.0,
+    "label": "xArm7, 4\u00d7"
+   },
+   {
+    "t": 7.41,
+    "label": "Franka Panda, 4\u00d7"
+   }
+  ]
+ }
+}

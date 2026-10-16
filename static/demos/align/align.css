@@ -1,0 +1,33 @@
+/* alignment explorer: play + stage stepper on top, task / cousin / colour below */
+.align-bar{flex-direction:column; align-items:stretch}
+.align-row{display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px}
+.align-steps{flex:1 1 auto; min-width:0}
+.align-steps button{flex:1 1 0; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.align-steps button .n{display:inline-block; min-width:1.5em; height:1.5em; line-height:1.5em; border-radius:50%; margin-right:6px;
+                       font-size:11px; font-weight:600; text-align:center; background:color-mix(in srgb, var(--line) 80%, transparent)}
+.align-steps button[aria-pressed="true"] .n{background:var(--accent); color:#fff}
+.align-steps button .sm{display:none}
+.align-cousin{display:flex; align-items:center; gap:6px; flex:1 1 auto; min-width:0; justify-content:center}
+.align-clab{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:center}
+.align-clab b{color:var(--ink); font-weight:600}
+.align-clab .mut{margin-left:4px}
+.align-arrow{padding:6px 10px}
+.align-arrow svg{margin:0}
+.align-note{min-height:4.7em}
+.align-dino-note{display:block; margin-top:4px}
+@media (pointer:coarse){ .align-arrow{min-width:42px; min-height:42px} .align-steps button{min-width:42px} }
+/* phones: the stepper shows numbers, with the short name on the current stage only; icon-only play */
+@media (max-width:620px){
+  .align-play span{display:none}
+  .align-play svg{margin-right:0}
+  .align-steps button{flex:0 1 auto}
+  .align-steps button[aria-pressed="true"]{flex:1 1 auto}
+  .align-steps button .lg{display:none}
+  .align-steps button[aria-pressed="true"] .sm{display:inline}
+  .align-steps button .n{margin-right:0}
+  .align-steps button[aria-pressed="true"] .n{margin-right:5px}
+  .align-row .seg[aria-label="Task"]{flex:1 1 100%}
+  .align-row .seg[aria-label="Task"] button{flex:1 1 0}
+  .align-cousin{flex:1 1 auto; justify-content:flex-start}
+  .align-row .seg[aria-label="Colour"]{flex:0 0 auto}
+}

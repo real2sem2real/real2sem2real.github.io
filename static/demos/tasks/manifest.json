@@ -1,0 +1,114 @@
+{
+ "tasks": [
+  {
+   "key": "place",
+   "task": "Mug on coffee machine",
+   "dur": 10.0,
+   "clips": [
+    {
+     "col": "human",
+     "src": "media/place_human.mp4",
+     "poster": "media/place_human.jpg",
+     "speed": 1.0,
+     "aspect": "16 / 9"
+    },
+    {
+     "col": "xarm7",
+     "src": "media/place_xarm7.mp4",
+     "poster": "media/place_xarm7.jpg",
+     "speed": 3.0,
+     "aspect": "640 / 368"
+    },
+    {
+     "col": "panda",
+     "src": "media/place_panda.mp4",
+     "poster": "media/place_panda.jpg",
+     "speed": 3.2,
+     "aspect": "640 / 452"
+    }
+   ]
+  },
+  {
+   "key": "pour",
+   "task": "Pour into bowl",
+   "dur": 13.6,
+   "clips": [
+    {
+     "col": "human",
+     "src": "media/pour_human.mp4",
+     "poster": "media/pour_human.jpg",
+     "speed": 1.0,
+     "aspect": "16 / 9"
+    },
+    {
+     "col": "xarm7",
+     "src": "media/pour_xarm7.mp4",
+     "poster": "media/pour_xarm7.jpg",
+     "speed": 2.1,
+     "aspect": "640 / 368"
+    },
+    {
+     "col": "panda",
+     "src": "media/pour_panda.mp4",
+     "poster": "media/pour_panda.jpg",
+     "speed": 1.7,
+     "aspect": "640 / 452"
+    }
+   ]
+  },
+  {
+   "key": "hang",
+   "task": "Hang on mug tree",
+   "dur": 10.5,
+   "clips": [
+    {
+     "col": "human",
+     "src": "media/hang_human.mp4",
+     "poster": "media/hang_human.jpg",
+     "speed": 1.0,
+     "aspect": "16 / 9"
+    },
+    {
+     "col": "xarm7",
+     "src": "media/hang_xarm7.mp4",
+     "poster": "media/hang_xarm7.jpg",
+     "speed": 3.8,
+     "aspect": "640 / 368"
+    },
+    {
+     "col": "panda",
+     "src": null,
+     "aspect": "640 / 452"
+    }
+   ]
+  },
+  {
+   "key": "drill",
+   "task": "Drill pick and place",
+   "dur": 11.8,
+   "clips": [
+    {
+     "col": "human",
+     "src": "media/drill_human.mp4",
+     "poster": "media/drill_human.jpg",
+     "speed": 1.0,
+     "aspect": "16 / 9"
+    },
+    {
+     "col": "xarm7",
+     "src": "media/drill_xarm7.mp4",
+     "poster": "media/drill_xarm7.jpg",
+     "speed": 4.2,
+     "aspect": "640 / 368"
+    },
+    {
+     "col": "panda",
+     "src": "media/drill_panda.mp4",
+     "poster": "media/drill_panda.jpg",
+     "speed": 3.9,
+     "aspect": "640 / 452"
+    }
+   ]
+  }
+ ]
+}

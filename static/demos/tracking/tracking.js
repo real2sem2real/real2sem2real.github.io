@@ -149,7 +149,7 @@ export async function mount(root) {
   const note = el('div', 'demo-note');
   note.innerHTML = 'Each outline is the object rendered at that method&rsquo;s estimated pose; the number is its mask IoU '
     + 'against the SAM2 mask in this frame. The silhouettes are re-rendered with the scoring code behind the tracking table, '
-    + 'so the means match it. FoundationPose gets raw monocular metric depth (SpatialTrackerV2). RSRD was run on the mug only.'
+    + 'so the means match it. FoundationPose gets raw monocular metric depth (MoGe-3). RSRD was run on the mug only.'
     + (window.matchMedia && window.matchMedia('(hover: hover)').matches ? ' Hover a method to highlight it; click to hide it.' : ' Tap a method to hide it.');
   root.append(bar, chips, chart, note);
 

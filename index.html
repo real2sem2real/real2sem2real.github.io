@@ -135,6 +135,16 @@
   .card .t{font-weight:600; margin-bottom:5px}
   .card p{font-size:13.5px; margin:0; color:var(--muted); line-height:1.65}
 
+  .figgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:24px 18px; margin-top:6px}
+  .figgrid figure{margin:0}
+  .figgrid a{display:block; cursor:zoom-in}
+  .figgrid figcaption{font-size:12.5px}
+  dialog.lightbox{border:0; padding:0; background:transparent; max-width:none; max-height:none}
+  dialog.lightbox::backdrop{background:rgba(8,12,20,.84)}
+  dialog.lightbox img{display:block; max-width:96vw; max-height:92vh; width:auto; height:auto; border-radius:8px;
+                      background:#fff; cursor:zoom-out}
+  dialog.lightbox button{position:fixed; top:12px; right:12px; width:44px; height:44px; border:0; border-radius:50%;
+                         background:rgba(255,255,255,.92); color:#222; font-size:26px; line-height:44px; cursor:pointer}
   details.more{margin:12px 0}
   details.more > summary{background:var(--surface); border-radius:10px; padding:11px 16px; font-size:13px;
                          color:var(--ink); font-weight:500}
@@ -222,10 +232,9 @@
   <a href="#tracking"><i>03</i>Tracking</a>
   <a href="#results"><i>04</i>Results</a>
   <a href="#try"><i>05</i>Try it</a>
-  <a href="#hardware"><i>06</i>Hardware</a>
+  <a href="#figures"><i>06</i>Figures</a>
   <a href="#limitations"><i>07</i>Limitations</a>
   <a href="#qa"><i>08</i>Q&amp;A</a>
-  <!-- When supplementary figures land, add:  <a href="#supplementary"><i>06</i>Supplementary</a>  and renumber -->
 </nav>
 
 <div class="wrap">
@@ -244,9 +253,6 @@ demonstrated mug and coffee machine, and <b>R2Sem2R</b>, which also swaps in dig
 parallel. In every episode the carry replays the mug trajectory tracked from the single human video (inset). Drag to orbit.</p>
 
 <div class="hero">
-  <figure class="narrow">
-    <img src="static/images/teaser.jpg" alt="Overview of R2Sem2R. Top, a single human RGB video and an object scan whose DINOv3 part matches link the demonstrated mug to cousin mugs. Middle, the real scene and splat cousins, with motion transfer across embodiments, produce synthetic data for place, pour, hang and drill. Bottom, a fine-tuned VLA deployed on the real xArm7 and Franka Panda succeeds on all four tasks.">
-  </figure>
   <p>Teleoperation pays for every demonstration, and every new object instance pays again. Real2Sem2Real (R2Sem2R) turns
   <b>one human RGB video</b> into thousands of robot demonstrations across the object instances of a category,
   with no depth sensor and no teleoperation. It tracks the demonstrated objects, generates
@@ -281,16 +287,14 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   recovered grasp collides with the object, and the reconstructed meshes look nothing like the real scene.</p>
   <!-- slot:failures -->
   <div class="demo wide" data-demo="failures">
-    <div class="demo-fallback">This interactive figure needs JavaScript.</div>
+    <div class="demo-fallback">The interactive comparison of failure modes needs JavaScript; the paper's figure is in the supplementary section.</div>
   </div>
-  <p class="hero-cap"><b>Interactive: failures.</b> Caption to come.</p>
+  <p class="hero-cap"><b>Interactive: where real-to-sim pipelines break.</b> Pick a failure mode to compare the real scene
+  with a prior method and R2Sem2R. In the tracking loop, the mug and the coffee machine are rendered at each tracker's pose
+  over the faded video: RSRD (re-implemented) has the mug wrong from the first frame, mask IoU 0.20, while our track follows
+  it onto the tray, 0.95. A prior grasp collides with the mug where ours takes the handle, and a prior mesh renders blotchy
+  where ours looks like the real machine.</p>
   <!-- /slot:failures -->
-  <figure>
-    <img src="static/images/common_failure_modes.jpg" loading="lazy" alt="Three rows, tracking, grasps and bad meshes, each comparing the real scene (GT), a prior method, and R2Sem2R. The prior tracker renders the mug from a wrong pose, the prior grasp collides with the mug, and the prior coffee-machine mesh is blotchy; R2Sem2R gets each right.">
-    <figcaption><b>Common failure modes.</b> Against the real scene (GT), prior trackers lose the object, prior grasps
-    collide with the mug instead of taking its handle, and prior meshes look unrealistic. R2Sem2R tracks the mug,
-    grasps it by the handle as the human did, and renders realistic objects.</figcaption>
-  </figure>
 </section>
 
 <section id="method">
@@ -298,16 +302,12 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   <h2>How does R2Sem2R work?</h2>
   <!-- slot:tour -->
   <div class="demo wide" data-demo="tour">
-    <div class="demo-fallback">This interactive figure needs JavaScript.</div>
+    <div class="demo-stage keep"><img class="demo-poster" src="static/demos/tour/media/video.webp" loading="lazy" alt="A frame of the single human demonstration: a hand reaches for a white mug next to a black coffee machine."></div>
   </div>
-  <p class="hero-cap"><b>Interactive: tour.</b> Caption to come.</p>
+  <p class="hero-cap"><b>Interactive: the pipeline, step by step.</b> Each step plays a short clip of the real pipeline
+  output for the mug-on-coffee-machine task, from the human video to the trained policy on both robots. Press
+  <b>Tour</b> to play the steps in order, or pick a step and follow its link to the detailed demo below.</p>
   <!-- /slot:tour -->
-  <figure class="wide">
-    <img src="static/images/pipeline.jpg" loading="lazy" alt="Pipeline in four panels: a single human RGB demonstration with the recovered hand mesh, a generated library of 16 cousin mugs and 9 cousin coffee machines, robot demonstrations rendered in simulation along the tracked trajectory, and the deployed policy succeeding on in- and out-of-distribution mugs and machines.">
-  </figure>
-  <p class="hero-cap"><b>Method overview.</b> From a single human demonstration with no teleoperation, we recover the
-  mug's trajectory, generate a 16&nbsp;&times;&nbsp;9 library of cousin mugs and coffee machines, and render thousands
-  of robot demonstrations in simulation. The resulting policy succeeds on in- and out-of-distribution objects.</p>
   <div class="cards">
     <div class="card"><div class="n">Step 1</div><div class="t">Track</div>
       <p>An RGB-only 4D tracker built on DINO-distilled Gaussian splats follows each object's pose through the human
@@ -334,89 +334,65 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   to the scanned mug. The scan was taken separately from the video, so only the two objects are kept and the tabletop
   is drawn in. Drag to orbit.</p>
 
-  <h3>Semantic alignment on all four tasks</h3>
+  <h3>Semantic alignment, stage by stage</h3>
   <!-- slot:align -->
   <div class="demo wide" data-demo="align">
-    <div class="demo-fallback">This interactive figure needs JavaScript.</div>
+    <div class="demo-stage"><img class="demo-poster" src="static/demos/align/poster.jpg" loading="lazy" alt="A silver cousin coffee machine, as a Gaussian splat, aligned onto the demonstrated machine drawn as a translucent blue ghost; the demonstrated mug stands on the cousin's tray, which is marked in pink."></div>
   </div>
-  <p class="hero-cap"><b>Interactive: align.</b> Caption to come.</p>
+  <p class="hero-cap"><b>Interactive: semantic alignment, stage by stage.</b> Each cousin moves through the transforms our
+  pipeline computed for it, over the demonstrated object (blue). Semantic ICP pairs parts by their distilled DINOv3
+  features and learns the scale; the task-weighted stage weights the region that matters 20&times; (pink: the tray the
+  mug is placed on, the part of the mug that touches the tree, the handle the gripper closes on); the upright projection
+  removes the tilt the weighted fit leaves, keeping that region in place. The hang alignment has no upright step. Switch
+  to <b>DINOv3</b> to see the features. Splats are reduced to a few thousand Gaussians each so they load quickly. Drag to
+  orbit.</p>
   <!-- /slot:align -->
-  <figure class="wide">
-    <img src="static/images/semantic_alignment_tasks.jpg" loading="lazy" alt="Four rows of tasks, mug on coffee machine, mug pour, mug hang and drill. Left, the scanned objects of the source demonstration at the task pose; right, five cousin objects carried to the same pose, with the anchoring region (the machine's tray, the mug's rim, the mug handle and hang branch, the drill handle) marked in pink.">
-  </figure>
-  <p class="hero-cap"><b>Cousin objects carried to the demonstrated pose.</b> Left, the scanned objects of the source
-  demonstration; right, cousins aligned to it. Pink marks the region that anchors the alignment: the tray of the
-  coffee machine, the rim of the poured mug, the handle with the branch it hangs on, and the drill's handle. Cousins that differ in
-  shape, size and color still land on the tray, tip over the bowl, or hang on the branch as demonstrated.</p>
 
-  <details class="more"><summary>Why the alignment works: distilled DINOv3 features</summary>
-  <figure>
-    <img src="static/images/mug_alignment.jpg" loading="lazy" alt="The scanned demonstration mug and eight cousin mugs, each in RGB and with its distilled DINOv3 features mapped to color; the handle is magenta on every mug.">
-    <figcaption><b>Distilled DINOv3 features.</b> The scanned demonstration mug (top) and eight cousins generated
-    from photographs (bottom). The same parts get the same features on every mug, the handle magenta and the body
-    and rim in similar blues and greens, so the alignment matches handle to handle and rim to rim.</figcaption>
-  </figure>
-  </details>
 
   <h3>From the human hand to the robot grasp</h3>
   <!-- slot:grasp -->
   <div class="demo wide" data-demo="grasp">
-    <div class="demo-fallback">This interactive figure needs JavaScript.</div>
+    <div class="demo-stage"><img class="demo-poster" src="static/demos/grasp/poster.jpg" loading="lazy" alt="The HaMeR hand mesh from the human demonstration holding the tracked mug by its handle during the carry."></div>
   </div>
-  <p class="hero-cap"><b>Interactive: grasp.</b> Caption to come.</p>
+  <p class="hero-cap"><b>Interactive: from the human hand to the robot grasp.</b> <b>Human hand</b> shows the demonstrator's
+  hand, recovered by HaMeR in every frame of the placement video (inset), on the tracked mug. The strip marks, frame by
+  frame, the three conditions for a grasp: thumb and index pinched, the wrist rigid in the mug's frame, and the mug lifted
+  more than 2&nbsp;cm above its rest on the table. The 38 frames that pass all three are the carry. <b>Robot grasp</b> maps
+  the hand to the parallel-jaw gripper and, in each carry frame, tries 500 shifts within 2&nbsp;cm and 20&deg;, nearest
+  first; the first that is collision free and antipodal becomes that frame's grasp. 64 of the candidates are drawn,
+  coloured by the checks they pass. Only 8 carry frames have a valid grasp, and we keep the one closest to the human's:
+  frame 52, where the hand's own pose is valid with no shift. <b>Cousins</b> carries that grasp through each cousin's
+  semantic alignment onto its handle, every mug at its real size. Drag to orbit; drag the strip to scrub.</p>
   <!-- /slot:grasp -->
-  <details class="more"><summary>Recovering the robot grasp from the human hand</summary>
-  <figure>
-    <img src="static/images/hamer_motion_transfer.jpg" loading="lazy" alt="Left, real frames of a single human demonstration and the recovered HaMeR hand mesh at three timesteps; right, the grasp retargeted to the robot gripper across mug and coffee-machine pairs.">
-    <figcaption><b>Demo-to-robot motion transfer.</b> HaMeR recovers the articulated hand at each timestep. The
-    grasp is retargeted to the robot gripper and re-rendered across every mug and coffee-machine combination.</figcaption>
-  </figure>
-  <figure>
-    <img src="static/images/grasp_transfer.jpg" loading="lazy" alt="The gripper grasp on the scanned demonstration mug, and the same grasp transferred to five cousin mugs, each gripped by its handle.">
-    <figcaption><b>Grasp transfer.</b> The grasp retargeted from the human hand on the demonstration mug follows each
-    cousin through its semantic alignment, so the jaws close on the handle of every cousin, from a tall steel mug
-    to a small striped cup.</figcaption>
-  </figure>
-  </details>
 
-  <details class="more"><summary>Building the simulated scene</summary>
-  <figure>
-    <img src="static/images/viser_to_isaac.jpg" loading="lazy" alt="Left, a Viser layout tool with the coffee machine, mug, camera and robot base placed by gizmos on a table; right, the same layout converted into an IsaacSim scene and a MuJoCo scene with the xArm7.">
-    <figcaption><b>Scene construction.</b> In a layout tool built on Viser, the coffee machine, the mug, the camera
-    and the robot base are placed with gizmos on the recovered table plane. The layout converts into both an IsaacSim
-    and a MuJoCo scene with the robot, the table, the coffee machine and the mug.</figcaption>
-  </figure>
-  </details>
 
   <details class="more"><summary>Aligning the simulated camera to the real one</summary>
   <!-- slot:camera -->
   <div class="demo wide" data-demo="camera">
-    <div class="demo-fallback">This interactive figure needs JavaScript.</div>
+    <div class="demo-stage keep"><img class="demo-poster" src="static/demos/camera/poster.jpg" loading="lazy" alt="The real camera frame of the xArm7 at its home pose on the left and the simulated robot rendered from the optimized camera on the right, split by a divider."></div>
   </div>
-  <p class="hero-cap"><b>Interactive: camera.</b> Caption to come.</p>
+  <p class="hero-cap"><b>Interactive: aligning the simulated camera to the real one.</b> Drag the divider across the one
+  real frame of the xArm7 at its home pose (left) and the simulated robot rendered at the same pose (right). From the
+  initial camera the gripper breaks at the divider; after optimization it continues across. The camera's seven
+  extrinsics, position, look-at target and roll, are optimized for the overlap of the SAM3 robot masks in the rendered
+  and real images, with masked RGB and DINOv3 terms, at two renders per step. No AprilTag is needed. <b>Overlay</b>
+  shows the render at half opacity.</p>
   <!-- /slot:camera -->
-  <figure>
-    <img src="static/images/camera_optimization.jpg" loading="lazy" alt="A real camera frame of the robot at its home pose; below, the simulated robot rendered from the initial camera, whose overlay on the real frame is misaligned, and from the optimized camera, whose overlay lines up with the real gripper.">
-    <figcaption><b>Camera alignment.</b> One real frame of the robot at its home pose is the only reference. The
-    simulated robot rendered from a coarse initial camera is visibly offset when overlaid on that frame; after
-    optimization, the render lands on the real gripper. No AprilTag is needed.</figcaption>
-  </figure>
   </details>
 
-  <details class="more"><summary>Generated episodes in IsaacSim and MuJoCo</summary>
+
+  <h3>One plan, two simulators</h3>
   <!-- slot:sims -->
   <div class="demo wide" data-demo="sims">
-    <div class="demo-fallback">This interactive figure needs JavaScript.</div>
+    <div class="demo-fallback">The side-by-side simulator comparison needs JavaScript.</div>
   </div>
-  <p class="hero-cap"><b>Interactive: sims.</b> Caption to come.</p>
+  <p class="hero-cap"><b>Interactive: one plan, two simulators.</b> A generated mug-on-coffee-machine episode in IsaacSim,
+  which carries the mug kinematically, next to the same plan re-simulated in MuJoCo with contact physics. Pick the
+  demonstrated mug and machine or a cousin pairing, scrub, or jump to a phase. Table texture, lighting and background are
+  randomized per episode. Trained on 2,000 MuJoCo episodes instead of IsaacSim ones, the policy places the mug in 62% of
+  xArm7 trials rather than 90%, level with teleoperation, so for an RGB policy on this task visual realism matters more
+  than contact dynamics.</p>
   <!-- /slot:sims -->
-  <figure>
-    <img src="static/images/isaac_vs_mujoco.jpg" loading="lazy" alt="Six phases of mug-on-coffee-machine episodes, start, grasp, lift, carry, place and release, rendered in IsaacSim (top row) and MuJoCo (bottom row), each column with a different cousin mug and machine.">
-    <figcaption><b>Both simulators.</b> Mug-on-coffee-machine episodes in IsaacSim (top), which carries the mug
-    kinematically, and MuJoCo (bottom), which simulates contact. Each column is a different episode with its own
-    cousin pairing, and table texture, lighting and background are randomized per episode.</figcaption>
-  </figure>
-  </details>
 
   <h3>Live contact physics in your browser</h3>
   <div class="demo wide" data-demo="physics">
@@ -437,53 +413,44 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
 <section id="tracking">
   <div class="eyebrow">03</div>
   <h2>How well do we track objects?</h2>
-  <p>Every later stage depends on the object track, so we compare against the two closest alternatives on the seven
+  <p>Every later stage depends on the object track, so we compare against the closest alternatives on the seven
   objects of our four tasks. Every method gets the same object model, and every method is scored by per-frame mask
   IoU against the same SAM2 masks.</p>
-  <figure class="wide">
-    <img src="static/images/tracking_method.jpg" loading="lazy" alt="Render-and-compare tracking. A video frame passes through frozen DINOv3, SAM2 and Depth Anything to give RGB, feature, mask and depth targets; the DINOv3-distilled splat of the mug is rendered at the current pose into the same four channels, and four losses update the pose. Below, the mug tracked across frames 0 to 100, and per-frame mask IoU: ours averages 0.95, WARPED 0.89, FoundationPose with pseudo depth 0.82, and re-implemented RSRD 0.20.">
-  </figure>
-  <p class="hero-cap"><b>Render-and-compare tracking.</b> Frozen DINOv3, SAM2 and Depth Anything turn each video
-  frame into RGB, feature, mask and depth targets, with the hand ignored. The DINOv3-distilled splat is rendered at
-  the current pose into the same four channels, and the four losses update the pose by gradient steps. The plot
-  gives per-frame mask IoU on the coffee-machine video, with each method's mean in the legend.</p>
   <div class="demo wide" data-demo="tracking">
     <div class="demo-stage keep"><img class="demo-poster" src="static/demos/tracking/poster.jpg" loading="lazy" alt="A frame of the human demonstration with the mug on the coffee machine, outlined by the silhouettes of four trackers and the dashed SAM2 reference mask."></div>
   </div>
   <p class="hero-cap"><b>Interactive: scrub through the demonstration.</b> Each outline is the object rendered at one
   tracker's estimated pose in that frame, and the timeline gives its mask IoU against the SAM2 mask (dashed), frame by
   frame; the means match the table below. Our track stays on the mug through the grasp, the carry and the placement.
-  FoundationPose with monocular depth falls behind once the hand picks the mug up, and RSRD's silhouette is far too large
+  FoundationPose with raw monocular depth from MoGe-3 sits below our track from the first frame and drops further once the hand picks the mug up, and RSRD's silhouette is far too large
   from the first frame. RSRD was run on the mug only.</p>
   <details class="more"><summary>Initializing the track</summary>
   <!-- slot:trackinit -->
   <div class="demo wide" data-demo="trackinit">
-    <div class="demo-fallback">This interactive figure needs JavaScript.</div>
+    <div class="demo-fallback">The interactive initialization figure needs JavaScript.</div>
   </div>
-  <p class="hero-cap"><b>Interactive: trackinit.</b> Caption to come.</p>
+  <p class="hero-cap"><b>Interactive: how a track starts.</b> On the first frame, each object is seeded at twelve poses,
+  either upright about the table normal (ours) or from a blind rotation sweep. Every seed is refined with the tracking
+  losses and then ranked, and the best one starts the track. In our initialization runs, upright seeds converge more often
+  on six of the seven tracked objects, for the drill 6 of 12 against 2 and for the bowl 8 against 3. Pick an object, a
+  seeding, or a step.</p>
   <!-- /slot:trackinit -->
-  <figure>
-    <img src="static/images/tabletop_init.jpg" loading="lazy" alt="Four seed poses of the mug splat rendered over the first video frame, and the best refined seed outlined on the mug.">
-    <figcaption><b>Upright initialization.</b> Seeds from a grid of upright orientations on the table plane are
-    each refined before ranking, and the best refined seed fits the mug in the first frame. Blind rotation sweeps
-    often settle in a wrong basin on textureless objects.</figcaption>
-  </figure>
   </details>
   <div class="tablewrap">
     <table>
-      <thead><tr><th>Object</th><th class="num">Ours</th><th class="num">WARPED</th><th class="num">FoundationPose</th></tr></thead>
-      <tbody>
-        <tr><td>Mug, to coffee machine</td><td class="num best">0.949</td><td class="num">0.890</td><td class="num">0.820</td></tr>
-        <tr><td>Coffee machine</td><td class="num best">0.916</td><td class="num">0.894</td><td class="num">0.814</td></tr>
-        <tr><td>Mug, to tree</td><td class="num best">0.904</td><td class="num">0.000</td><td class="num">0.210</td></tr>
-        <tr><td>Tree stand</td><td class="num best">0.840</td><td class="num">0.712</td><td class="num">0.295</td></tr>
-        <tr><td>Mug, pour</td><td class="num best">0.935</td><td class="num">0.900</td><td class="num">0.245</td></tr>
-        <tr><td>Bowl, pour</td><td class="num best">0.982</td><td class="num">0.849</td><td class="num">0.450</td></tr>
-        <tr><td>Drill</td><td class="num best">0.864</td><td class="num">0.525</td><td class="num">0.704</td></tr>
-        <tr><td><b>Mean</b></td><td class="num best">0.913</td><td class="num">0.681</td><td class="num">0.505</td></tr>
-      </tbody>
+      <thead><tr><th>Object</th><th class="num">Ours</th><th class="num">WARPED</th><th class="num">RSRD</th><th class="num">FoundationPose</th></tr></thead>
+      <!-- sync:tracking-main --><tbody>
+        <tr><td>Mug, to coffee machine</td><td class="num best">0.949</td><td class="num">0.890</td><td class="num">0.197</td><td class="num">0.648</td></tr>
+        <tr><td>Coffee machine</td><td class="num best">0.916</td><td class="num">0.894</td><td class="num">0.861</td><td class="num">0.680</td></tr>
+        <tr><td>Mug, to tree</td><td class="num best">0.904</td><td class="num">0.000</td><td class="num">0.097</td><td class="num">0.750</td></tr>
+        <tr><td>Tree stand</td><td class="num best">0.840</td><td class="num">0.712</td><td class="num">0.505</td><td class="num">0.601</td></tr>
+        <tr><td>Mug, pour</td><td class="num best">0.935</td><td class="num">0.900</td><td class="num">0.025</td><td class="num">0.443</td></tr>
+        <tr><td>Bowl, pour</td><td class="num best">0.982</td><td class="num">0.849</td><td class="num">0.503</td><td class="num">0.692</td></tr>
+        <tr><td>Drill</td><td class="num best">0.864</td><td class="num">0.525</td><td class="num">0.714</td><td class="num">0.587</td></tr>
+        <tr><td><b>Mean</b></td><td class="num best">0.913</td><td class="num">0.681</td><td class="num">0.415</td><td class="num">0.629</td></tr>
+      </tbody><!-- /sync:tracking-main -->
       <caption>Mean per-frame mask IoU, higher is better. FoundationPose is RGB-D by design; this column gives it raw
-      monocular metric depth, the only condition that uses nothing of ours.</caption>
+      monocular metric depth from MoGe-3, the only condition that uses nothing of ours. RSRD is re-implemented in our tracker.</caption>
     </table>
   </div>
   <details class="more"><summary>FoundationPose with calibrated depth</summary>
@@ -493,17 +460,17 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   <div class="tablewrap">
     <table>
       <thead><tr><th>Object</th><th class="num">Ours</th><th class="num">Per-frame fit</th><th class="num">Per-video fit</th><th class="num">Raw depth</th></tr></thead>
-      <tbody>
-        <tr><td>Mug, to coffee machine</td><td class="num best">0.949</td><td class="num">0.872</td><td class="num">0.897</td><td class="num">0.820</td></tr>
-        <tr><td>Coffee machine</td><td class="num best">0.916</td><td class="num">0.864</td><td class="num">0.872</td><td class="num">0.814</td></tr>
-        <tr><td>Mug, to tree</td><td class="num best">0.904</td><td class="num">0.888</td><td class="num">0.864</td><td class="num">0.210</td></tr>
-        <tr><td>Tree stand</td><td class="num best">0.840</td><td class="num">0.759</td><td class="num">0.757</td><td class="num">0.295</td></tr>
-        <tr><td>Mug, pour</td><td class="num best">0.935</td><td class="num">0.895</td><td class="num">0.579</td><td class="num">0.245</td></tr>
-        <tr><td>Bowl, pour</td><td class="num best">0.982</td><td class="num">0.963</td><td class="num">0.972</td><td class="num">0.450</td></tr>
-        <tr><td>Drill</td><td class="num best">0.864</td><td class="num">0.826</td><td class="num">0.819</td><td class="num">0.704</td></tr>
-        <tr><td><b>Mean</b></td><td class="num best">0.913</td><td class="num">0.867</td><td class="num">0.823</td><td class="num">0.505</td></tr>
-      </tbody>
-      <caption>FoundationPose columns use the best depth source for each condition.</caption>
+      <!-- sync:tracking-fp --><tbody>
+        <tr><td>Mug, to coffee machine</td><td class="num best">0.949</td><td class="num">0.896</td><td class="num">0.897</td><td class="num">0.648</td></tr>
+        <tr><td>Coffee machine</td><td class="num best">0.916</td><td class="num">0.883</td><td class="num">0.872</td><td class="num">0.680</td></tr>
+        <tr><td>Mug, to tree</td><td class="num best">0.904</td><td class="num">0.885</td><td class="num">0.864</td><td class="num">0.750</td></tr>
+        <tr><td>Tree stand</td><td class="num best">0.840</td><td class="num">0.793</td><td class="num">0.757</td><td class="num">0.601</td></tr>
+        <tr><td>Mug, pour</td><td class="num best">0.935</td><td class="num">0.899</td><td class="num">0.579</td><td class="num">0.443</td></tr>
+        <tr><td>Bowl, pour</td><td class="num best">0.982</td><td class="num">0.966</td><td class="num">0.972</td><td class="num">0.692</td></tr>
+        <tr><td>Drill</td><td class="num best">0.864</td><td class="num">0.819</td><td class="num">0.819</td><td class="num">0.587</td></tr>
+        <tr><td><b>Mean</b></td><td class="num best">0.913</td><td class="num">0.877</td><td class="num">0.823</td><td class="num">0.629</td></tr>
+      </tbody><!-- /sync:tracking-fp -->
+      <caption>FoundationPose columns use the best depth source for each condition: MoGe-3 per frame and raw, &pi;<sup>3</sup> per video.</caption>
     </table>
   </div>
   </details>
@@ -520,15 +487,13 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   <h3>The four tasks</h3>
   <!-- slot:tasks -->
   <div class="demo wide" data-demo="tasks">
-    <div class="demo-fallback">This interactive figure needs JavaScript.</div>
+    <div class="demo-fallback">The task videos need JavaScript.</div>
   </div>
-  <p class="hero-cap"><b>Interactive: tasks.</b> Caption to come.</p>
+  <p class="hero-cap"><b>Interactive: one human video per task, two robots.</b> Each row is a task: the single human RGB
+  demonstration its data was generated from, and real rollouts on the xArm7 and the Franka Panda by policies trained on
+  R2Sem2R data. The three clips loop in sync, with the robot clips sped up to the length of the human video, and each
+  rollout ends with the object in place and the gripper open. The Franka Panda clip for hanging is still to come.</p>
   <!-- /slot:tasks -->
-  <figure class="narrow">
-    <img src="static/images/task_visualization.jpg" loading="lazy" alt="Four tasks, each shown as a single human demonstration and then executed by an xArm7 and a Franka Panda: placing a mug on a coffee machine, pouring a mug into a bowl, hanging a mug on a mug tree, and a drill pick and place.">
-    <figcaption><b>Tasks.</b> Each row is one task: the single human RGB demonstration (left) and real rollouts on
-    the xArm7 and the Franka Panda. The manipulated object is outlined and its motion drawn as an arrow.</figcaption>
-  </figure>
 
   <h3>xArm7</h3>
   <div class="chart" data-chart="xarm7"></div>
@@ -556,43 +521,37 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
 
   <h3>Object diversity is what transfers</h3>
   <!-- slot:diversity -->
-  <div class="demo wide" data-demo="diversity">
-    <div class="demo-fallback">This interactive figure needs JavaScript.</div>
+  <div class="demo" data-demo="diversity">
+    <div class="demo-fallback">Interactive chart of mug-placement success when training on one object pair or on several objects, for teleoperated and generated data, on both robots. It needs JavaScript.</div>
   </div>
-  <p class="hero-cap"><b>Interactive: diversity.</b> Caption to come.</p>
+  <p class="hero-cap"><b>Interactive: object diversity versus data source</b>, mug placement on both robots. Each row
+  runs from training on the single demonstrated mug and machine (hollow) to training on several mugs and machines
+  (filled), with 150 teleoperated demonstrations or 2,000 generated episodes; for generated data, the several objects
+  are digital cousins. Tap a point for its trials and 95% interval, or show one end at a time. Diversity helps either
+  way, and cousins let generated data cover it.</p>
   <!-- /slot:diversity -->
-  <figure class="narrow">
-    <img src="static/images/diversity_source.png" loading="lazy" alt="Bar chart for mug-to-coffee-machine placement comparing training on one object pair against several objects, for teleoperated and generated data, on both robots.">
-    <figcaption><b>Object diversity versus data source.</b> Training on the single demonstrated mug and machine
-    transfers poorly whether the data is teleoperated or generated. Several objects help either way, and cousins
-    let generated data cover them.</figcaption>
-  </figure>
 
   <h3>More generated data keeps helping</h3>
   <!-- slot:scaling -->
-  <div class="demo wide" data-demo="scaling">
-    <div class="demo-fallback">This interactive figure needs JavaScript.</div>
+  <div class="demo" data-demo="scaling">
+    <div class="demo-fallback">Interactive chart of xArm7 mug-placement success against the number of training episodes. It needs JavaScript.</div>
   </div>
-  <p class="hero-cap"><b>Interactive: scaling.</b> Caption to come.</p>
+  <p class="hero-cap"><b>Interactive: success against training-set size</b> on xArm7 placement. Drag across the chart, or
+  use the slider, to read every evaluation with its trials and 95% interval; tap a series to hide it. Solid lines train
+  on several objects, dashed lines on the single demonstrated pair, and teleoperation was collected up to 150
+  demonstrations. R2R2R levels off below 40%, while R2Sem2R keeps improving and passes the largest teleoperated set.</p>
   <!-- /slot:scaling -->
-  <figure class="narrow">
-    <img src="static/images/data_scaling.png" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, R2Sem2R across cousins, teleoperation on one pair, and R2R2R on one pair.">
-    <figcaption><b>Success against training-set size</b> on xArm7 placement. R2R2R levels off below 40%, while
-    R2Sem2R keeps improving and passes the largest teleoperated set.</figcaption>
-  </figure>
 
   <details class="more"><summary>What the data costs to collect</summary>
   <!-- slot:cost -->
-  <div class="demo wide" data-demo="cost">
-    <div class="demo-fallback">This interactive figure needs JavaScript.</div>
+  <div class="demo" data-demo="cost">
+    <div class="demo-fallback">Interactive calculator of demonstrations produced against wall-clock time. It needs JavaScript.</div>
   </div>
-  <p class="hero-cap"><b>Interactive: cost.</b> Caption to come.</p>
+  <p class="hero-cap"><b>Interactive: what the data costs.</b> Demonstrations against wall-clock time at the rates in the
+  paper: teleoperation takes 35.1&nbsp;s per demonstration per operator, while R2R2R and R2Sem2R pay a one-time
+  10-minute setup and then generate an episode every 1.3&nbsp;s and 1.5&nbsp;s per GPU. Set the operators, the GPUs and
+  the time, or drag across the chart; the chips give the demonstrations completed by then.</p>
   <!-- /slot:cost -->
-  <figure>
-    <img src="static/images/scaling_comparison.png" loading="lazy" alt="Log-log plot of demonstrations produced against wall-clock time for teleoperation with 1, 10 and 100 operators and for R2R2R and R2Sem2R with 1 and 100 GPUs.">
-    <figcaption><b>Demonstrations against wall-clock time.</b> Teleoperation grows linearly with human time.
-    Generated data needs a short one-time setup and then scales with GPUs.</figcaption>
-  </figure>
   </details>
 </section>
 
@@ -607,31 +566,51 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   </div>
 </section>
 
-<section id="hardware">
-  <div class="eyebrow">06</div>
-  <h2>Hardware</h2>
-  <figure>
-    <img src="static/images/hardware_setup.png" loading="lazy" alt="The two evaluation robots, a UFactory xArm7 and a Franka Emika Panda, each with a parallel-jaw gripper, a coffee machine, a mug and an external RGB camera.">
-    <figcaption><b>Setup.</b> A UFactory xArm7 (a) and a Franka Emika Panda (b), each with its native parallel-jaw
-    gripper. A single external RGB camera provides the policy's only image input.</figcaption>
-  </figure>
-</section>
 
-<!--
-  SUPPLEMENTARY FIGURES (website only). Copy this block above the Limitations section, add the nav link
-  at the top, and renumber the eyebrows. Each extra figure can be a plain <figure> or sit inside a
-  <details class="more"> panel so the page stays short. Put the image in static/images/.
-
-<section id="supplementary">
+<section id="figures">
   <div class="eyebrow">06</div>
-  <h2>Supplementary results</h2>
-  <p>Figures that do not fit in the paper.</p>
-  <figure>
-    <img src="static/images/YOUR_FIGURE.png" loading="lazy" alt="Describe what the figure shows.">
-    <figcaption><b>Title.</b> One or two sentences on what to take from it.</figcaption>
-  </figure>
+  <h2>All figures</h2>
+  <p>Static versions of the figures, including the ones the interactive figures above replace. Tap one to enlarge it.</p>
+  <details class="more"><summary>Show all 17 figures</summary>
+    <div class="figgrid">
+      <figure><a href="static/images/teaser.jpg"><img src="static/images/thumbs/teaser.webp" loading="lazy" alt="Overview of R2Sem2R. Top, a single human RGB video and an object scan whose DINOv3 part matches link the demonstrated mug to cousin mugs. Middle, the real scene and splat cousins, with motion transfer across embodiments, produce synthetic data for place, pour, hang and drill. Bottom, a fine-tuned VLA deployed on the real xArm7 and Franka Panda succeeds on all four tasks."></a>
+        <figcaption><b>Overview.</b> One human RGB video and a phone scan of the objects become synthetic data for four tasks on two robots, and the fine-tuned policy runs on a real xArm7 and Franka Panda.</figcaption></figure>
+      <figure><a href="static/images/common_failure_modes.jpg"><img src="static/images/thumbs/common_failure_modes.webp" loading="lazy" alt="Three rows, tracking, grasps and bad meshes, each comparing the real scene (GT), a prior method, and R2Sem2R. The prior tracker renders the mug from a wrong pose, the prior grasp collides with the mug, and the prior coffee-machine mesh is blotchy; R2Sem2R gets each right."></a>
+        <figcaption><b>Common failure modes.</b> Against the real scene (GT), prior trackers lose the object, prior grasps collide with the mug instead of taking its handle, and prior meshes look unrealistic. R2Sem2R tracks the mug, grasps it by the handle as the human did, and renders realistic objects.</figcaption></figure>
+      <figure><a href="static/images/pipeline.jpg"><img src="static/images/thumbs/pipeline.webp" loading="lazy" alt="Pipeline in four panels: a single human RGB demonstration with the recovered hand mesh, a generated library of 16 cousin mugs and 9 cousin coffee machines, robot demonstrations rendered in simulation along the tracked trajectory, and the deployed policy succeeding on in- and out-of-distribution mugs and machines."></a>
+        <figcaption><b>Method overview.</b> From a single human demonstration with no teleoperation, we recover the mug's trajectory, generate a 16&nbsp;&times;&nbsp;9 library of cousin mugs and coffee machines, and render thousands of robot demonstrations in simulation. The resulting policy succeeds on in- and out-of-distribution objects.</figcaption></figure>
+      <figure><a href="static/images/tracking_method.jpg"><img src="static/images/thumbs/tracking_method.webp" loading="lazy" alt="Render-and-compare tracking. A video frame passes through frozen DINOv3, SAM2 and Depth Anything to give RGB, feature, mask and depth targets; the DINOv3-distilled splat of the mug is rendered at the current pose into the same four channels, and four losses update the pose. Below, the mug tracked across frames 0 to 100, and per-frame mask IoU: ours averages 0.95, WARPED 0.89, FoundationPose with pseudo depth 0.82, and re-implemented RSRD 0.20."></a>
+        <figcaption><b>Render-and-compare tracking.</b> Frozen DINOv3, SAM2 and Depth Anything turn each video frame into RGB, feature, mask and depth targets, with the hand ignored. The DINOv3-distilled splat is rendered at the current pose into the same four channels, and the four losses update the pose by gradient steps. The plot gives per-frame mask IoU on the coffee-machine video, with each method's mean in the legend.</figcaption></figure>
+      <figure><a href="static/images/tabletop_init.jpg"><img src="static/images/thumbs/tabletop_init.webp" loading="lazy" alt="Four seed poses of the mug splat rendered over the first video frame, and the best refined seed outlined on the mug."></a>
+        <figcaption><b>Upright initialization.</b> Seeds from a grid of upright orientations on the table plane are each refined before ranking, and the best refined seed fits the mug in the first frame. Blind rotation sweeps often settle in a wrong basin on textureless objects.</figcaption></figure>
+      <figure><a href="static/images/semantic_alignment_tasks.jpg"><img src="static/images/thumbs/semantic_alignment_tasks.webp" loading="lazy" alt="Four rows of tasks, mug on coffee machine, mug pour, mug hang and drill. Left, the scanned objects of the source demonstration at the task pose; right, five cousin objects carried to the same pose, with the anchoring region (the machine's tray, the mug's rim, the mug handle and hang branch, the drill handle) marked in pink."></a>
+        <figcaption><b>Cousin objects carried to the demonstrated pose.</b> Left, the scanned objects of the source demonstration; right, cousins aligned to it. Pink marks the region that anchors the alignment: the tray of the coffee machine, the rim of the poured mug, the handle with the branch it hangs on, and the drill's handle. Cousins that differ in shape, size and color still land on the tray, tip over the bowl, or hang on the branch as demonstrated.</figcaption></figure>
+      <figure><a href="static/images/mug_alignment.jpg"><img src="static/images/thumbs/mug_alignment.webp" loading="lazy" alt="The scanned demonstration mug and eight cousin mugs, each in RGB and with its distilled DINOv3 features mapped to color; the handle is magenta on every mug."></a>
+        <figcaption><b>Distilled DINOv3 features.</b> The scanned demonstration mug (top) and eight cousins generated from photographs (bottom). The same parts get the same features on every mug, the handle magenta and the body and rim in similar blues and greens, so the alignment matches handle to handle and rim to rim.</figcaption></figure>
+      <figure><a href="static/images/hamer_motion_transfer.jpg"><img src="static/images/thumbs/hamer_motion_transfer.webp" loading="lazy" alt="Left, real frames of a single human demonstration and the recovered HaMeR hand mesh at three timesteps; right, the grasp retargeted to the robot gripper across mug and coffee-machine pairs."></a>
+        <figcaption><b>Demo-to-robot motion transfer.</b> HaMeR recovers the articulated hand at each timestep. The grasp is retargeted to the robot gripper and re-rendered across every mug and coffee-machine combination.</figcaption></figure>
+      <figure><a href="static/images/grasp_transfer.jpg"><img src="static/images/thumbs/grasp_transfer.webp" loading="lazy" alt="The gripper grasp on the scanned demonstration mug, and the same grasp transferred to five cousin mugs, each gripped by its handle."></a>
+        <figcaption><b>Grasp transfer.</b> The grasp retargeted from the human hand on the demonstration mug follows each cousin through its semantic alignment, so the jaws close on the handle of every cousin, from a tall steel mug to a small striped cup.</figcaption></figure>
+      <figure><a href="static/images/viser_to_isaac.jpg"><img src="static/images/thumbs/viser_to_isaac.webp" loading="lazy" alt="Left, a Viser layout tool with the coffee machine, mug, camera and robot base placed by gizmos on a table; right, the same layout converted into an IsaacSim scene and a MuJoCo scene with the xArm7."></a>
+        <figcaption><b>Scene construction.</b> In a layout tool built on Viser, the coffee machine, the mug, the camera and the robot base are placed with gizmos on the recovered table plane. The layout converts into both an IsaacSim and a MuJoCo scene with the robot, the table, the coffee machine and the mug.</figcaption></figure>
+      <figure><a href="static/images/camera_optimization.jpg"><img src="static/images/thumbs/camera_optimization.webp" loading="lazy" alt="A real camera frame of the robot at its home pose; below, the simulated robot rendered from the initial camera, whose overlay on the real frame is misaligned, and from the optimized camera, whose overlay lines up with the real gripper."></a>
+        <figcaption><b>Camera alignment.</b> One real frame of the robot at its home pose is the only reference. The simulated robot rendered from a coarse initial camera is visibly offset when overlaid on that frame; after optimization, the render lands on the real gripper. No AprilTag is needed.</figcaption></figure>
+      <figure><a href="static/images/isaac_vs_mujoco.jpg"><img src="static/images/thumbs/isaac_vs_mujoco.webp" loading="lazy" alt="Six phases of mug-on-coffee-machine episodes, start, grasp, lift, carry, place and release, rendered in IsaacSim (top row) and MuJoCo (bottom row), each column with a different cousin mug and machine."></a>
+        <figcaption><b>Both simulators.</b> Mug-on-coffee-machine episodes in IsaacSim (top), which carries the mug kinematically, and MuJoCo (bottom), which simulates contact. Each column is a different episode with its own cousin pairing, and table texture, lighting and background are randomized per episode.</figcaption></figure>
+      <figure><a href="static/images/task_visualization.jpg"><img src="static/images/thumbs/task_visualization.webp" loading="lazy" alt="Four tasks, each shown as a single human demonstration and then executed by an xArm7 and a Franka Panda: placing a mug on a coffee machine, pouring a mug into a bowl, hanging a mug on a mug tree, and a drill pick and place."></a>
+        <figcaption><b>Tasks.</b> Each row is one task: the single human RGB demonstration (left) and real rollouts on the xArm7 and the Franka Panda. The manipulated object is outlined and its motion drawn as an arrow.</figcaption></figure>
+      <figure><a href="static/images/hardware_setup.png"><img src="static/images/thumbs/hardware_setup.webp" loading="lazy" alt="The two evaluation robots, a UFactory xArm7 and a Franka Emika Panda, each with a parallel-jaw gripper, a coffee machine, a mug and an external RGB camera."></a>
+        <figcaption><b>Setup.</b> A UFactory xArm7 (a) and a Franka Emika Panda (b), each with its native parallel-jaw gripper. A single external RGB camera provides the policy's only image input.</figcaption></figure>
+      <figure><a href="static/images/diversity_source.png"><img src="static/images/thumbs/diversity_source.webp" loading="lazy" alt="Bar chart for mug-to-coffee-machine placement comparing training on one object pair against several objects, for teleoperated and generated data, on both robots."></a>
+        <figcaption><b>Object diversity versus data source.</b> Training on the single demonstrated mug and machine transfers poorly whether the data is teleoperated or generated. Several objects help either way, and cousins let generated data cover them.</figcaption></figure>
+      <figure><a href="static/images/data_scaling.png"><img src="static/images/thumbs/data_scaling.webp" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, R2Sem2R across cousins, teleoperation on one pair, and R2R2R on one pair."></a>
+        <figcaption><b>Success against training-set size</b> on xArm7 placement. R2R2R levels off below 40%, while R2Sem2R keeps improving and passes the largest teleoperated set.</figcaption></figure>
+      <figure><a href="static/images/scaling_comparison.png"><img src="static/images/thumbs/scaling_comparison.webp" loading="lazy" alt="Log-log plot of demonstrations produced against wall-clock time for teleoperation with 1, 10 and 100 operators and for R2R2R and R2Sem2R with 1 and 100 GPUs."></a>
+        <figcaption><b>Demonstrations against wall-clock time.</b> Teleoperation grows linearly with human time. Generated data needs a short one-time setup and then scales with GPUs.</figcaption></figure>
+    </div>
+  </details>
+  <dialog id="lightbox" class="lightbox" aria-label="Enlarged figure"><img alt=""><button type="button" aria-label="Close">&times;</button></dialog>
 </section>
--->
 
 <section id="limitations">
   <div class="eyebrow">07</div>
@@ -759,6 +738,18 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
     r.setAttribute('data-theme', next);
     try{ localStorage.setItem('theme', next); }catch(e){}
   });
+</script>
+<script>
+  // Figures gallery: a thumbnail opens the full image in a dialog; without <dialog> support the link opens the image.
+  (function(){
+    var d=document.getElementById('lightbox'); if(!d || typeof d.showModal!=='function') return;
+    var img=d.querySelector('img');
+    document.querySelectorAll('.figgrid a').forEach(function(a){
+      a.addEventListener('click', function(e){ e.preventDefault(); img.src=a.href; img.alt=a.querySelector('img').alt; d.showModal(); });
+    });
+    d.addEventListener('click', function(){ d.close(); });
+    d.addEventListener('close', function(){ img.removeAttribute('src'); });
+  })();
 </script>
 <script type="module">
   // Interactive demos: each <div data-demo="name"> loads static/demos/name/name.js when it comes near the viewport and
