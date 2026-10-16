@@ -562,6 +562,16 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   demonstrations. R2R2R+ levels off below 40%, while R2Sem2R keeps improving and passes the largest teleoperated set.</p>
   <!-- /slot:scaling -->
 
+  <h3>Watch it learn from more generated data</h3>
+  <!-- slot:learn -->
+  <div class="demo" data-demo="learn">
+    <div class="demo-fallback">Real xArm7 rollouts of R2Sem2R and R2R2R+ at every training-set size. They need JavaScript.</div>
+  </div>
+  <p class="hero-cap"><b>Interactive: the same policies on the real robot.</b> Slide across training-set sizes to watch a
+  real xArm7 trial of each policy, trained on that many generated episodes, side by side. Each clip is one success from that
+  checkpoint's evaluation; the percentages, dots and small chart give how often each policy succeeds over all of its trials.</p>
+  <!-- /slot:learn -->
+
   <details class="more"><summary>What the data costs to collect</summary>
   <!-- slot:cost -->
   <div class="demo" data-demo="cost">

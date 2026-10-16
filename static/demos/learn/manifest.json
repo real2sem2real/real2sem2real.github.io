@@ -1,0 +1,84 @@
+{
+ "robot": "xarm7",
+ "task": "Mug on coffee machine",
+ "sizes": [
+  {
+   "episodes": 50,
+   "ours": {
+    "src": "media/ours_50.mp4",
+    "poster": "media/ours_50.jpg",
+    "dur": 40.1
+   },
+   "r2r2r": {
+    "src": "media/r2r2r_50.mp4",
+    "poster": "media/r2r2r_50.jpg",
+    "dur": 56.45
+   }
+  },
+  {
+   "episodes": 100,
+   "ours": {
+    "src": "media/ours_100.mp4",
+    "poster": "media/ours_100.jpg",
+    "dur": 52.95
+   },
+   "r2r2r": {
+    "src": "media/r2r2r_100.mp4",
+    "poster": "media/r2r2r_100.jpg",
+    "dur": 40.1
+   }
+  },
+  {
+   "episodes": 150,
+   "ours": {
+    "src": "media/ours_150.mp4",
+    "poster": "media/ours_150.jpg",
+    "dur": 35.65
+   },
+   "r2r2r": {
+    "src": "media/r2r2r_150.mp4",
+    "poster": "media/r2r2r_150.jpg",
+    "dur": 40.3
+   }
+  },
+  {
+   "episodes": 660,
+   "ours": {
+    "src": "media/ours_660.mp4",
+    "poster": "media/ours_660.jpg",
+    "dur": 31.7
+   },
+   "r2r2r": {
+    "src": "media/r2r2r_660.mp4",
+    "poster": "media/r2r2r_660.jpg",
+    "dur": 38.85
+   }
+  },
+  {
+   "episodes": 1320,
+   "ours": {
+    "src": "media/ours_1320.mp4",
+    "poster": "media/ours_1320.jpg",
+    "dur": 34.25
+   },
+   "r2r2r": {
+    "src": "media/r2r2r_1320.mp4",
+    "poster": "media/r2r2r_1320.jpg",
+    "dur": 43.45
+   }
+  },
+  {
+   "episodes": 2000,
+   "ours": {
+    "src": "media/ours_2000.mp4",
+    "poster": "media/ours_2000.jpg",
+    "dur": 31.15
+   },
+   "r2r2r": {
+    "src": "media/r2r2r_2000.mp4",
+    "poster": "media/r2r2r_2000.jpg",
+    "dur": 25.95
+   }
+  }
+ ]
+}
