@@ -1,0 +1,170 @@
+{
+ "rows": [
+  {
+   "key": "panda_mug",
+   "robot": "Franka Panda",
+   "task": "Mug on coffee machine",
+   "recorded": 79,
+   "failures": 29,
+   "note": "All 79 recorded trials of the evaluated checkpoint (68% in the paper's table). Trials where a person reached in before the outcome, or whose recording stops early, are left out.",
+   "cats": [
+    {
+     "key": "machine",
+     "title": "Pushes the machine",
+     "cap": "The mug meets the machine's front instead of the tray, and the arm keeps pushing, sliding the machine away.",
+     "count": 12,
+     "video": "media/panda_mug_machine.mp4",
+     "poster": "media/panda_mug_machine.jpg",
+     "speed": 4
+    },
+    {
+     "key": "tray",
+     "title": "Falls in front of the tray",
+     "cap": "The mug reaches the machine but slips from the gripper and lands on the table in front of it.",
+     "count": 6,
+     "video": "media/panda_mug_tray.mp4",
+     "poster": "media/panda_mug_tray.jpg",
+     "speed": 3
+    },
+    {
+     "key": "carry",
+     "title": "Drops it in the carry",
+     "cap": "The mug is lifted, tilts in the fingers and falls before it reaches the machine.",
+     "count": 4,
+     "video": "media/panda_mug_carry.mp4",
+     "poster": "media/panda_mug_carry.jpg",
+     "speed": 2
+    },
+    {
+     "key": "miss",
+     "title": "Never lifts the mug",
+     "cap": "The fingers close beside the handle instead of on it, and the trial is stopped.",
+     "count": 4,
+     "video": "media/panda_mug_miss.mp4",
+     "poster": "media/panda_mug_miss.jpg",
+     "speed": 1
+    },
+    {
+     "key": "knock",
+     "title": "Knocks it over",
+     "cap": "The gripper catches the mug while closing and tips it onto its side.",
+     "count": 3,
+     "video": "media/panda_mug_knock.mp4",
+     "poster": "media/panda_mug_knock.jpg",
+     "speed": 1
+    }
+   ]
+  },
+  {
+   "key": "panda_pour",
+   "robot": "Franka Panda",
+   "task": "Pour into bowl",
+   "recorded": 52,
+   "failures": 9,
+   "note": "All 52 recorded trials of the evaluated checkpoint (76% in the paper's table). Four failed trials in which a person reached in mid-trial are left out.",
+   "cats": [
+    {
+     "key": "miss",
+     "title": "Never lifts the mug",
+     "cap": "The fingers close on the side of the mug or beside the handle, and it stays on the table.",
+     "count": 5,
+     "video": "media/panda_pour_miss.mp4",
+     "poster": "media/panda_pour_miss.jpg",
+     "speed": 2
+    },
+    {
+     "key": "knock",
+     "title": "Tips it over",
+     "cap": "The gripper pushes the mug over while closing on it.",
+     "count": 2,
+     "video": "media/panda_pour_knock.mp4",
+     "poster": "media/panda_pour_knock.jpg",
+     "speed": 2
+    },
+    {
+     "key": "drop",
+     "title": "Drops it",
+     "cap": "The mug is lifted but slips out of the fingers before the pour.",
+     "count": 1,
+     "video": "media/panda_pour_drop.mp4",
+     "poster": "media/panda_pour_drop.jpg",
+     "speed": 2
+    },
+    {
+     "key": "short",
+     "title": "Stops short",
+     "cap": "The mug is lifted and carried, but never tipped over the bowl.",
+     "count": 1,
+     "video": "media/panda_pour_short.mp4",
+     "poster": "media/panda_pour_short.jpg",
+     "speed": 2
+    }
+   ]
+  },
+  {
+   "key": "panda_drill",
+   "robot": "Franka Panda",
+   "task": "Drill pick and place",
+   "recorded": 43,
+   "failures": 10,
+   "note": "All 43 recorded trials of a later four-drill checkpoint; the 65% in the paper's table is from an earlier one whose few recordings show a person adjusting the drill. Most recordings stop before the gripper lets go, so only failures before the release are counted.",
+   "cats": [
+    {
+     "key": "drop",
+     "title": "Drops it in the carry",
+     "cap": "The drill is lifted and turned upright but slips out of the fingers and lands on its side.",
+     "count": 5,
+     "video": "media/panda_drill_drop.mp4",
+     "poster": "media/panda_drill_drop.jpg",
+     "speed": 3
+    },
+    {
+     "key": "knock",
+     "title": "Knocks it over",
+     "cap": "The gripper tips the drill onto its side while closing on the handle.",
+     "count": 4,
+     "video": "media/panda_drill_knock.mp4",
+     "poster": "media/panda_drill_knock.jpg",
+     "speed": 2
+    },
+    {
+     "key": "miss",
+     "title": "Never grasps it",
+     "cap": "The gripper closes beside the drill's nose rather than on the handle and backs away.",
+     "count": 1,
+     "video": "media/panda_drill_miss.mp4",
+     "poster": "media/panda_drill_miss.jpg",
+     "speed": 2
+    }
+   ]
+  },
+  {
+   "key": "xarm_drill",
+   "robot": "xArm7",
+   "task": "Drill pick and place",
+   "recorded": 29,
+   "failures": 7,
+   "note": "29 recorded trials of the evaluated checkpoint (85% in the paper's table, 40 trials). Recordings that run several attempts back to back with a reset in between are left out.",
+   "cats": [
+    {
+     "key": "carry",
+     "title": "Falls in the carry",
+     "cap": "The drill is lifted and carried, then slips out of the fingers or topples as it is set down.",
+     "count": 4,
+     "video": "media/xarm_drill_carry.mp4",
+     "poster": "media/xarm_drill_carry.jpg",
+     "speed": 2
+    },
+    {
+     "key": "lift",
+     "title": "Tips over at the lift",
+     "cap": "The drill rotates in the fingers as it leaves the table and falls onto its side.",
+     "count": 3,
+     "video": "media/xarm_drill_lift.mp4",
+     "poster": "media/xarm_drill_lift.jpg",
+     "speed": 2
+    }
+   ]
+  }
+ ]
+}
