@@ -64,6 +64,7 @@
   .pill{font-size:13px; font-weight:500; background:var(--surface); color:var(--ink);
         border-radius:40px; padding:7px 14px; white-space:nowrap}
   .pill small{font-size:12px; font-weight:400; color:var(--muted)}
+  a.pill{text-decoration:none}
   #theme{flex:none; background:var(--surface); border:0; color:var(--muted); width:32px; height:32px;
          border-radius:40px; cursor:pointer; display:grid; place-items:center; padding:0}
   #theme:hover{color:var(--ink)}
@@ -201,7 +202,7 @@
     th,td{padding:8px 8px 8px 0}
     td.num, th.num{padding-left:6px}
   }
-  @media (max-width:359px){ .pill small{display:none} }   /* 320 px phones: the two pills and the toggle fit on one row */
+  @media (max-width:479px){ .pill small{display:none} }   /* phones: the three pills and the toggle fit on one row */
 </style>
 <link rel="stylesheet" href="static/demos/core/ui.css">
 <script type="importmap">
@@ -216,6 +217,7 @@
 <div class="header">
   <span class="brand">Real2Sem2Real</span>
   <div class="pills">
+    <a class="pill" href="#video">Video</a>
     <span class="pill">Paper <small>&middot; coming soon</small></span>
     <span class="pill">Code <small>&middot; coming soon</small></span>
     <button id="theme" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -275,6 +277,14 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
       <div class="l">Object tracking IoU, WARPED vs ours</div></div>
   </div>
 </div>
+
+<figure id="video">
+  <video controls preload="none" playsinline poster="static/video/overview.jpg">
+    <source src="static/video/overview.mp4" type="video/mp4">
+  </video>
+  <figcaption><b>Supplementary video</b> (3 min 42 s, no audio). Tracking from one RGB video, semantic alignment of
+  the cousins, generation in IsaacSim and MuJoCo, and the real-robot results.</figcaption>
+</figure>
 
 
 <section id="motivation">
