@@ -1,6 +1,6 @@
 // Live MuJoCo demo: one of our generated xArm7 episodes (mug onto coffee machine) re-simulated with contact physics in
 // the page, on the official MuJoCo WebAssembly build. The robot replays the episode's recorded joint targets open loop;
-// everything else (mug, table, machine, the grasp) is simulated live, and the mug can be dragged with a spring.
+// everything else (mug, table, machine, the grasp) is simulated live.
 import { createViewer, THREE, loadingOverlay, onTheme, reducedMotion } from '../core/viewer.js';
 import { getObject, url, fetchJSON } from '../core/assets.js';
 import { loadXArm } from '../core/robot.js';
@@ -98,17 +98,9 @@ async function run(el, stage, poster) {
   onTheme(dark => tableMat.color.set(dark ? 0x1a2232 : 0xf1f4f9));
   V.scene.add(robot.root);
 
-  // poke visual: a rod from the grabbed point to the pointer, with a handle at the pointer
-  const pokeMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.9, depthTest: false });
-  const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.0018, 0.0018, 1, 10), pokeMat);
-  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.009, 24, 16), pokeMat);
-  const anchorDot = new THREE.Mesh(new THREE.SphereGeometry(0.005, 16, 10), pokeMat);
-  for (const m of [rod, knob, anchorDot]) { m.renderOrder = 10; m.visible = false; }
-  V.scene.add(rod, knob, anchorDot);
-  onTheme(() => pokeMat.color.set(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#0062d6'));
   if (!document.getElementById('phys-style')) {
     const st = document.createElement('style'); st.id = 'phys-style';
-    st.textContent = '.phys-narrow .hud .phys-lg{display:none} .phys-narrow [data-k="hint"], .phys-narrow [data-k="weld"]{display:none}'
+    st.textContent = '.phys-narrow .hud .phys-lg{display:none} .phys-narrow [data-k="weld"]{display:none}'
       + '.demo-hud.tr{flex-direction:column; align-items:flex-end}'
       + '.phys-forces{display:grid; grid-template-columns:auto auto 52px auto; gap:4px 7px; align-items:center; border-radius:12px; padding:8px 10px 9px; white-space:normal}'
       + '.phys-forces .pf-t{grid-column:1/-1; font-size:11px; font-weight:600; color:var(--muted); margin-bottom:1px}'
@@ -159,7 +151,6 @@ async function run(el, stage, poster) {
   hud('tl', '<span class="hud dot" style="--c:var(--green)"><b>Live MuJoCo</b> <span class="mut phys-lg">contact physics in your browser</span></span>');
   const hudTR = hud('tr', '<span class="hud" data-k="clock"></span><div class="hud phys-forces" data-k="forces"></div>');
   const hudBL = hud('bl', '<span class="hud" data-k="phase"></span><span class="hud" data-k="weld" hidden>Grasp held</span>');
-  const hudBR = hud('br', '<span class="hud mut" data-k="hint">Drag the mug to push it</span>');
   const $ = (root, k) => root.querySelector(`[data-k="${k}"]`);
 
   const bar = document.createElement('div');
@@ -180,7 +171,7 @@ async function run(el, stage, poster) {
   const btnPlay = $(bar, 'play'), sel = $(bar, 'pair');
 
   let sim = null, mugObj = null, cmObj = null, playing = !reducedMotion(), speed = 1, acc = 0, loading = false;
-  let doneAt = null, lastPoke = -1e9, rtfWall = 0, rtfSim = 0, rtf = 1;
+  let doneAt = null, rtfWall = 0, rtfSim = 0, rtf = 1;
   const setPlay = p => {
     playing = p;
     btnPlay.innerHTML = p ? `${ICON.pause}Pause` : `${ICON.play}Play`;
@@ -233,14 +224,6 @@ async function run(el, stage, poster) {
     for (let k = 0; k < 7; k++) qArm[k] = d.qpos[sim.armQ[k]];
     robot.setQ(qArm); robot.setGrip(Math.max(0, d.qpos[sim.gripQ]));
     bodyPose(mugObj, sim.mugBody); bodyPose(cmObj, sim.cmBody);
-    if (sim.poke) {
-      const a = sim.anchorWorld(), t = sim.poke.target;
-      const A = new THREE.Vector3(...a), B = new THREE.Vector3(...t), L = A.distanceTo(B);
-      rod.position.copy(A).add(B).multiplyScalar(0.5); rod.scale.set(1, Math.max(L, 1e-4), 1);
-      rod.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize());
-      knob.position.copy(B); anchorDot.position.copy(A);
-    }
-    rod.visible = knob.visible = anchorDot.visible = !!sim.poke;
     // HUD
     $(hudTR, 'clock').innerHTML = `t = ${sim.time.toFixed(1)} s <span class="mut phys-lg">&middot; ${rtf.toFixed(1)}&times; real time</span>`;
     const phase = $(hudBL, 'phase');
@@ -298,59 +281,12 @@ async function run(el, stage, poster) {
       rtfWall += dt; rtfSim += Math.min(dt * speed, 0.1);
       if (rtfWall > 0.5) { rtf = rtfSim / rtfWall; rtfWall = rtfSim = 0; }
       if (sim.done && doneAt === null) doneAt = performance.now();
-      // loop: 5 s after the episode ends (and after the last push), start again
-      if (doneAt !== null && performance.now() - Math.max(doneAt, lastPoke) > 5000 && !sim.poke) { sim.reset(); doneAt = null; }
+      // loop: 5 s after the episode ends, start again
+      if (doneAt !== null && performance.now() - doneAt > 5000) { sim.reset(); doneAt = null; }
       void t0;
     }
     sync();
   });
-
-  // ---- poke: drag a point of the mug, a spring pulls it toward the pointer --------------------------------------
-  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(), hitP = new THREE.Vector3();
-  const canvas = V.renderer.domElement;
-  function setNdc(e) { const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); }
-  function pickMug(e) {
-    if (!sim || !mugObj) return null;
-    setNdc(e); ray.setFromCamera(ndc, V.camera);
-    const h = ray.intersectObject(mugObj, true)[0];
-    return h ? h.point : null;
-  }
-  let dragId = null;
-  function begin(e, p) {
-    dragId = e.pointerId ?? 'touch';
-    V.controls.enabled = false;
-    plane.setFromNormalAndCoplanarPoint(V.camera.getWorldDirection(new THREE.Vector3()).negate(), p);
-    sim.startPoke([p.x, p.y, p.z]); lastPoke = performance.now();
-    $(hudBR, 'hint').textContent = 'Release to let go';
-    if (!playing) setPlay(true);
-  }
-  function move(e) {
-    setNdc(e); ray.setFromCamera(ndc, V.camera);
-    if (ray.ray.intersectPlane(plane, hitP)) { hitP.z = Math.max(hitP.z, 0.005); sim.movePoke([hitP.x, hitP.y, hitP.z]); lastPoke = performance.now(); }
-  }
-  function end() {
-    if (dragId === null) return;
-    dragId = null; V.controls.enabled = true; sim && sim.endPoke(); lastPoke = performance.now();
-    $(hudBR, 'hint').textContent = 'Drag the mug to push it';
-  }
-  canvas.addEventListener('pointerdown', e => {
-    if (e.pointerType === 'touch') return;                  // touch handled below so a drag on the mug does not scroll
-    const p = pickMug(e); if (!p) return;
-    e.preventDefault(); e.stopImmediatePropagation(); canvas.setPointerCapture(e.pointerId); begin(e, p);
-  }, { capture: true });
-  canvas.addEventListener('pointermove', e => {
-    if (dragId !== null && e.pointerType !== 'touch') move(e);
-    else if (e.pointerType === 'mouse') canvas.style.cursor = pickMug(e) ? 'grab' : '';
-  });
-  canvas.addEventListener('pointerup', e => { if (e.pointerType !== 'touch') end(); });
-  canvas.addEventListener('pointercancel', e => { if (e.pointerType !== 'touch') end(); });
-  canvas.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1) return;
-    const t = e.touches[0], p = pickMug(t); if (!p) return;
-    e.preventDefault(); e.stopImmediatePropagation(); begin(t, p);
-  }, { passive: false, capture: true });
-  canvas.addEventListener('touchmove', e => { if (dragId !== null) { e.preventDefault(); move(e.touches[0]); } }, { passive: false });
-  canvas.addEventListener('touchend', end); canvas.addEventListener('touchcancel', end);
 
   el._demo = { V, get sim() { return sim; }, get mug() { return mugObj; } };   // handle for automated checks
   load.set(0.94, 'Loading the scene');

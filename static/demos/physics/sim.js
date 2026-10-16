@@ -4,7 +4,6 @@
 // pose). The recorded per-frame controls (7 joint position targets, gripper command 0..255) are replayed open loop at
 // 10 Hz, 50 physics steps of 2 ms per frame. As in the data generator, once the finger pads have closed on the handle a
 // soft weld constraint holds the mug in the hand (pad collisions off), and it is released at the end of the place phase.
-// poke(): a spring between a point on the mug and a target point, applied as an external force (xfrc_applied).
 //
 // The 3.14 WebAssembly bindings cannot read data.eq_active (a bool array), so the weld is compiled active and switched
 // by its bodies instead: off = world to world (zero Jacobian, so no generalized force), on = gripper to mug.
@@ -55,7 +54,6 @@ export class EpisodeSim {
     const jq = n => this.model.jnt_qposadr[id(T.mjOBJ_JOINT, n)];
     this.armQ = [1, 2, 3, 4, 5, 6, 7].map(i => jq('joint' + i));
     this.gripQ = jq('left_driver_joint');
-    this.mugMass = this.model.body_subtreemass[this.mugBody];
     // what each body is, for the contact visualisation: the mug, the table, the coffee machine, or the robot
     this.bodyKind = [];
     for (let b = 0; b < this.model.nbody; b++) {
@@ -73,8 +71,7 @@ export class EpisodeSim {
     this.mj.mj_resetData(m, d);
     d.qpos.set(this.ep.qpos0); d.qvel.set(this.ep.qvel0);
     this.setWeld(false);
-    this.frame = 0; this.sub = 0; this.weldBroken = false; this.poke = null;
-    d.xfrc_applied.fill(0);
+    this.frame = 0; this.sub = 0;
     this.applyFrame(0);
     this.mj.mj_forward(m, d);
   }
@@ -108,7 +105,7 @@ export class EpisodeSim {
     const ep = this.ep, n = ep.n, d = this.data;
     if (i < n) {
       if (this.welded && i === ep.release_frame) this.setWeld(false);
-      else if (!this.welded && !this.weldBroken && i === ep.weld_frame) this.engageWeld();
+      else if (!this.welded && i === ep.weld_frame) this.engageWeld();
     }
     const c = ep.ctrl[Math.min(i, n - 1)], ctrl = d.ctrl;
     for (let k = 0; k < 7; k++) ctrl[this.armAct[k]] = c[k];
@@ -120,7 +117,6 @@ export class EpisodeSim {
   get time() { return this.frame * this.ep.sub * this.ts + this.sub * this.ts; }
 
   step() {   // one physics step (2 ms); advances the episode frame every `sub` steps
-    if (this.poke) this.applyPoke();
     this.mj.mj_step(this.model, this.data);
     if (++this.sub >= this.ep.sub) {
       this.sub = 0; this.frame++;
@@ -170,39 +166,10 @@ export class EpisodeSim {
     return { f, left: pad(this.pads[0], this.pads[1]), right: pad(this.pads[2], this.pads[3]) };
   }
 
-  // --- poke: spring from a body-fixed anchor on the mug to a world target -----------------------------------------
   mugPose() {
     const d = this.data, b = this.mugBody;
     return { p: Array.from(d.xpos.subarray(3 * b, 3 * b + 3)), q: Array.from(d.xquat.subarray(4 * b, 4 * b + 4)) };
   }
-  startPoke(worldPoint) {
-    const { p, q } = this.mugPose();
-    this.poke = { local: qrot(qconj(q), [worldPoint[0] - p[0], worldPoint[1] - p[1], worldPoint[2] - p[2]]),
-                  target: worldPoint.slice(), prev: worldPoint.slice() };
-  }
-  movePoke(worldPoint) { if (this.poke) this.poke.target = worldPoint.slice(); }
-  endPoke() { this.poke = null; this.data.xfrc_applied.fill(0); }
-  anchorWorld() {
-    const { p, q } = this.mugPose(), a = qrot(q, this.poke.local);
-    return [p[0] + a[0], p[1] + a[1], p[2] + a[2]];
-  }
-  applyPoke() {
-    const d = this.data, b = this.mugBody, P = this.poke, a = this.anchorWorld();
-    const v = [(a[0] - P.prev[0]) / this.ts, (a[1] - P.prev[1]) / this.ts, (a[2] - P.prev[2]) / this.ts];
-    P.prev = a;
-    const kp = 900, kd = 45, m = this.mugMass, f = [0, 0, 0];
-    for (let k = 0; k < 3; k++) f[k] = m * (kp * (P.target[k] - a[k]) - kd * v[k]);
-    const fn = Math.hypot(f[0], f[1], f[2]), fmax = 60 * m * 9.81;
-    if (fn > fmax) for (let k = 0; k < 3; k++) f[k] *= fmax / fn;
-    // a hard pull opens the hand: the soft weld lets go when the mug is dragged 4 cm away from where the hand holds it
-    const stretch = Math.hypot(P.target[0] - a[0], P.target[1] - a[1], P.target[2] - a[2]);
-    if (this.welded && stretch > 0.04) { this.setWeld(false); this.weldBroken = true; }
-    const c = d.xipos.subarray(3 * b, 3 * b + 3), r = [a[0] - c[0], a[1] - c[1], a[2] - c[2]];
-    const x = d.xfrc_applied, o = 6 * b;
-    x[o] = f[0]; x[o + 1] = f[1]; x[o + 2] = f[2];
-    x[o + 3] = r[1] * f[2] - r[2] * f[1]; x[o + 4] = r[2] * f[0] - r[0] * f[2]; x[o + 5] = r[0] * f[1] - r[1] * f[0];
-  }
-
   // the generator's acceptance test: mug within 3 cm (xy) of the goal and tilted less than 20 degrees
   outcome() {
     const { p, q } = this.mugPose(), g = this.ep.goal;

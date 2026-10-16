@@ -401,10 +401,9 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   <p class="hero-cap"><b>Interactive: one of our generated MuJoCo episodes, simulated live.</b> MuJoCo, compiled to
   WebAssembly, re-simulates the scene the episode was generated in. The robot replays the episode's recorded joint
   targets at 10&nbsp;Hz while the mug, the table and the coffee machine are simulated with contact; as in our data
-  generation, a soft weld holds the mug once the finger pads close on the handle and releases it on the tray. Drag the
-  mug to push it. The replay is open loop, so a push before the grasp makes the robot miss, which is why the generator
-  keeps only episodes whose mug comes to rest on the tray. Each of the six object pairs ends on the tray when replayed
-  here. The arrows show the forces on the mug, longer for larger forces: from the fingers in red, the table in blue and
+  generation, a soft weld holds the mug once the finger pads close on the handle and releases it on the tray. The
+  generator keeps only episodes whose mug comes to rest on the tray, and each of the six object pairs ends on the tray
+  when replayed here. Drag to orbit. The arrows show the forces on the mug, longer for larger forces: from the fingers in red, the table in blue and
   the coffee machine in orange. While the hand carries the mug, the red arrows at the fingertips show the force the
   weld applies to hold it. The panel gives the totals; resting on the table or the tray, or carried at a steady pace,
   they add up to the mug's weight, 2.9&nbsp;N.</p>
