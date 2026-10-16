@@ -1,0 +1,20 @@
+/* correspondence probe: task + colour on top, part presets + sharpness below; a small plasma legend in the stage */
+.probe-bar{flex-direction:column; align-items:stretch}
+.probe-row{display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; justify-content:space-between}
+.probe-sharp{display:flex; align-items:center; gap:8px; flex:0 1 240px; min-width:150px}
+.probe-sharp .drange{flex:1 1 auto; min-width:0}
+.probe-legend{display:inline-flex; align-items:center; gap:6px}
+.probe-legend i{display:inline-block; width:64px; height:8px; border-radius:4px;
+  background:linear-gradient(90deg, #999ea8, #0d0887 18%, #7e03a8 38%, #cc4778 58%, #f89540 78%, #f0f921)}
+[data-demo="probe"] .demo-canvas{cursor:crosshair}
+@media (pointer:coarse){ .probe-sharp .drange{height:40px; background-clip:content-box; padding:18px 0; box-sizing:border-box} }
+@media (max-width:620px){
+  .probe-row .seg[aria-label="Task"]{flex:1 1 100%}
+  .probe-row .seg[aria-label="Task"] button{flex:1 1 0}
+  .probe-row .seg[aria-label="Colour"]{flex:1 1 auto}
+  .probe-row .seg[aria-label="Colour"] button{flex:1 1 0}
+  .probe-presets{flex:1 1 100%}
+  .probe-presets button{flex:1 1 0}
+  .probe-sharp{flex:1 1 100%}
+}
+@media (max-width:480px){ [data-demo="probe"] .demo-hud.bl .mut, .probe-legend .mut{display:none} .probe-legend i{width:48px} }

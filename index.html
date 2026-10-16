@@ -357,6 +357,16 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   to <b>DINOv3</b> to see the features. Splats are reduced to a few thousand Gaussians each so they load quickly. Drag to
   orbit.</p>
   <!-- /slot:align -->
+  <!-- slot:probe -->
+  <div class="demo wide" data-demo="probe">
+    <div class="demo-stage"><img class="demo-poster" src="static/demos/probe/poster.jpg" loading="lazy" alt="The demonstrated coffee machine and seven cousin machines as Gaussian splats in a grid, grey except for their trays, which glow yellow: the parts whose DINOv3 features best match the point clicked on the demonstrated machine's tray."></div>
+  </div>
+  <p class="hero-cap"><b>Interactive: click a part, see where every cousin has it.</b> The demonstrated object (blue ring) and
+  its cousins in their aligned poses. Click or tap any part of any object: every Gaussian is coloured by how similar its
+  distilled DINOv3 feature is to the clicked one, relative to each object's own best match, so the tray lights up on every
+  machine, the handle on every mug and the grip on every drill. The buttons pick a part for you, and <b>Sharpness</b> keeps only
+  the closest matches. Drag to orbit.</p>
+  <!-- /slot:probe -->
 
 
   <h3>From the human hand to the robot grasp</h3>
