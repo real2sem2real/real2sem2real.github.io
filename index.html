@@ -587,8 +587,9 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
     <div class="demo-fallback">Interactive calculator of demonstrations produced against wall-clock time. It needs JavaScript.</div>
   </div>
   <p class="hero-cap"><b>Interactive: what the data costs.</b> Demonstrations against wall-clock time at the rates in the
-  paper: teleoperation takes 35.1&nbsp;s per demonstration per operator, while R2R2R+ and R2Sem2R pay a one-time
-  10-minute setup and then generate an episode every 1.3&nbsp;s and 1.5&nbsp;s per GPU. Set the operators, the GPUs and
+  paper: teleoperation takes 35.1&nbsp;s per demonstration per operator, while R2R2R+ and R2Sem2R need about a minute of
+  human capture and about 70 minutes of GPU processing, then generate an episode every 1.3&nbsp;s and 1.5&nbsp;s per GPU, so
+  one GPU reaches 2,000 R2Sem2R episodes in about 2 hours. Robot setup, needed by every method, is not shown. Set the operators, the GPUs and
   the time, or drag across the chart; the chips give the demonstrations completed by then.</p>
   <!-- /slot:cost -->
   </details>

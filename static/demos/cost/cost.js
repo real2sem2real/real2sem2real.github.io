@@ -1,12 +1,12 @@
 // What the data costs: demonstrations produced against wall-clock time, with the model and rates of the paper's
 // throughput figure (results/make_figures.py): teleoperation 35.1 s per demonstration per operator; R2R2R+ and R2Sem2R
-// a one-time 10-minute setup, then 1.3 s and 1.5 s per episode per GPU. Set operators, GPUs and a time, or drag on
+// a one-time setup of about 70 minutes (1 min of human capture, then GPU processing), then 1.3 s and 1.5 s per episode per GPU. Set operators, GPUs and a time, or drag on
 // the plot; the chips read off the number of completed demonstrations at that time.
 import { h, s, log, onResize, swatch, injectCSS, fmt } from '../scaling/charts.js';
 
-const TELEOP_S = 35.1, R2R2R_S = 1.3, OURS_S = 1.5, SETUP_S = 600;
+const TELEOP_S = 35.1, R2R2R_S = 1.3, OURS_S = 1.5, SETUP_S = 4200;
 const T0 = 60, T1 = 86400, Y0 = 1, Y1 = 1e7;
-const GUIDES = [[600, '10 min', '10 min'], [3600, '1 hour', '1 h'], [43200, '12 hours', '12 h']];
+const GUIDES = [[3600, '1 hour', '1 h'], [7200, '2 hours', '2 h'], [43200, '12 hours', '12 h']];
 
 const LINES = [
   { id: 'teleop', name: 'Teleop', count: (t, st) => st.ops * t / TELEOP_S,
