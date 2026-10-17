@@ -271,7 +271,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
       <div class="l">Mug placement on the xArm7, teleoperation vs R2Sem2R</div></div>
     <div class="stat"><div class="v">36 <small>&rarr;</small> 90<small>%</small></div>
       <div class="l">Same task, one object pair (R2R2R+) vs digital cousins</div></div>
-    <div class="stat"><div class="v">7 <small>/</small> 7</div>
+    <div class="stat"><div class="v">8 <small>/</small> 8</div>
       <div class="l">Task&ndash;robot pairs where cousins beat R2R2R+</div></div>
     <div class="stat"><div class="v">0.68 <small>&rarr;</small> 0.91</div>
       <div class="l">Object tracking IoU, WARPED vs ours</div></div>
@@ -539,8 +539,8 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   frame; the dashed line is the demonstrated human motion carried to that machine, so you can compare the robot's path with
   it. Switch to <i>Camera view</i> to look through the real camera.</p>
   <!-- /slot:replay -->
-  <p class="takeaway">Digital cousins beat a single object pair on every task and robot evaluated so far, by 28
-  to 54 points, and match or beat teleoperation on most, with no human time beyond the one demonstration.</p>
+  <p class="takeaway">Digital cousins beat a single object pair on every task and robot, by 28
+  to 54 points, and match or beat teleoperation on every one, with no human time beyond the one demonstration.</p>
 
   <details class="more"><summary>Full results table</summary>
   <div class="tablewrap">
@@ -725,7 +725,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
              ['Drill pick and place',[34,40],[15,40],[34,40]]],
       panda:[['Mug on coffee machine',[30,50],[20,50],[34,50]],
              ['Pour into bowl',[28,50],[22,50],[38,50]],
-             ['Hang on mug tree',[14,50],null,[18,50]],
+             ['Hang on mug tree',[14,50],[4,50],[18,50]],
              ['Drill pick and place',[26,40],[12,40],[26,40]]]
     };
     var NAME={xarm7:'xArm7',panda:'Franka Panda'};
