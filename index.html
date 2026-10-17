@@ -587,7 +587,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
     <div class="demo-fallback">Interactive calculator of demonstrations produced against wall-clock time. It needs JavaScript.</div>
   </div>
   <p class="hero-cap"><b>Interactive: what the data costs.</b> Demonstrations against wall-clock time at the rates in the
-  paper: teleoperation takes 35.1&nbsp;s per demonstration per operator, while R2R2R+ and R2Sem2R need about a minute of
+  paper: teleoperation takes about 48&nbsp;s per demonstration per operator, including resets, while R2R2R+ and R2Sem2R need about a minute of
   human capture and about 70 minutes of GPU processing, then generate an episode every 1.3&nbsp;s and 1.5&nbsp;s per GPU, so
   one GPU reaches 2,000 R2Sem2R episodes in about 2 hours. Robot setup, needed by every method, is not shown. Set the operators, the GPUs and
   the time, or drag across the chart; the chips give the demonstrations completed by then.</p>
@@ -723,11 +723,11 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
       xarm7:[['Mug on coffee machine',[31,50],[18,50],[45,50]],
              ['Pour into bowl',[36,50],[23,50],[37,50]],
              ['Hang on mug tree',[29,50],[10,50],[31,50]],
-             ['Drill pick and place',[34,40],[15,40],[34,40]]],
+             ['Drill reorient',[34,40],[15,40],[34,40]]],
       panda:[['Mug on coffee machine',[30,50],[20,50],[34,50]],
              ['Pour into bowl',[28,50],[22,50],[38,50]],
              ['Hang on mug tree',[14,50],[5,50],[18,50]],
-             ['Drill pick and place',[26,40],[12,40],[26,40]]]
+             ['Drill reorient',[26,40],[12,40],[26,40]]]
     };
     var NAME={xarm7:'xArm7',panda:'Franka Panda'};
     window.R2Sem2R_RESULTS={methods:M, results:R, robots:NAME};   // read by the interactive demos (static/demos/*), so every number on the page comes from R

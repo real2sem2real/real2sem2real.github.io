@@ -7,7 +7,7 @@ const BASE = new URL('./', import.meta.url);
 const url = p => new URL(p, BASE).href;
 const ASPECT = { 'Franka Panda': '640 / 452', xArm7: '640 / 360' };
 const SHORT = { 'Franka Panda': 'Panda', xArm7: 'xArm7' };
-const TASK = { 'Mug on coffee machine': 'place', 'Pour into bowl': 'pour', 'Drill pick and place': 'drill' };
+const TASK = { 'Mug on coffee machine': 'place', 'Pour into bowl': 'pour', 'Drill reorient': 'drill' };
 
 export async function mount(el) {
   ensureCss(url('../tasks/loopkit.css')); ensureCss(url('ourfails.css'));

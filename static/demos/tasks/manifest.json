@@ -84,7 +84,7 @@
   },
   {
    "key": "drill",
-   "task": "Drill pick and place",
+   "task": "Drill reorient",
    "dur": 11.8,
    "clips": [
     {

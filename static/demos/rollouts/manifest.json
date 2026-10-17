@@ -23,7 +23,7 @@
   },
   {
    "robot": "xarm7",
-   "task": "Drill pick and place",
+   "task": "Drill reorient",
    "key": "drill",
    "pairs": [
     {

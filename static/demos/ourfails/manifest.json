@@ -104,7 +104,7 @@
   {
    "key": "panda_drill",
    "robot": "Franka Panda",
-   "task": "Drill pick and place",
+   "task": "Drill reorient",
    "recorded": 43,
    "failures": 10,
    "note": "All 43 recorded trials of a later four-drill checkpoint; the 65% in the paper's table is from an earlier one whose few recordings show a person adjusting the drill. Most recordings stop before the gripper lets go, so only failures before the release are counted.",
@@ -141,7 +141,7 @@
   {
    "key": "xarm_drill",
    "robot": "xArm7",
-   "task": "Drill pick and place",
+   "task": "Drill reorient",
    "recorded": 29,
    "failures": 7,
    "note": "29 recorded trials of the evaluated checkpoint (85% in the paper's table, 40 trials). Recordings that run several attempts back to back with a reset in between are left out.",
