@@ -203,6 +203,8 @@
     td.num, th.num{padding-left:6px}
   }
   @media (max-width:479px){ .pill small{display:none} }   /* phones: the three pills and the toggle fit on one row */
+  figure.plot img{background:none; border:0; border-radius:0}            /* the paper's charts, white made transparent */
+  :root[data-theme="dark"] figure.plot img{background:#fff; border-radius:10px}   /* dark ink needs a light card */
   .rgrid{display:grid; gap:10px; margin-top:14px; margin-bottom:4px}
   .rgrid.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rgrid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -385,15 +387,15 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
 <section id="results">
   <div class="eyebrow">02</div>
   <h2>Results</h2>
-  <figure class="narrow"><img src="static/images/success_rates.png" loading="lazy" alt="Bar chart of real-robot success rates of teleoperation, R2R2R+ and R2Sem2R on four tasks, mug on coffee machine, pour into bowl, hang on mug tree and drill reorient, on the xArm7 (top) and the Franka Panda (bottom), with Wilson 95% intervals.">
+  <figure class="narrow plot"><img src="static/images/success_rates.png" loading="lazy" alt="Bar chart of real-robot success rates of teleoperation, R2R2R+ and R2Sem2R on four tasks, mug on coffee machine, pour into bowl, hang on mug tree and drill reorient, on the xArm7 (top) and the Franka Panda (bottom), with Wilson 95% intervals.">
     <figcaption><b>Real-robot success rate</b> on the xArm7 (top) and Franka Panda (bottom). Whiskers: Wilson 95% interval.</figcaption></figure>
   <p class="takeaway">Digital cousins beat a single object pair on every task and robot, by 26
   to 54 points, and match or beat teleoperation on every one, with no human time beyond the one demonstration.</p>
-  <figure class="narrow"><img src="static/images/diversity_source.png" loading="lazy" alt="Bar chart for mug-to-coffee-machine placement comparing training on one object pair against several objects, for teleoperated and generated data, on both robots.">
+  <figure class="narrow plot"><img src="static/images/diversity_source.png" loading="lazy" alt="Bar chart for mug-to-coffee-machine placement comparing training on one object pair against several objects, for teleoperated and generated data, on both robots.">
     <figcaption><b>Object diversity versus data source</b> on placement. <i>One pair</i>: 150 teleop demos or 2,000 R2R2R+ episodes on the demonstrated pair. <i>Several objects</i>: teleop on 4&times;4 pairs, or R2Sem2R. Whiskers: Wilson 95% interval.</figcaption></figure>
-  <figure class="narrow"><img src="static/images/data_scaling.png" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, R2Sem2R across cousins, teleoperation on one pair, and R2R2R+ on one pair.">
+  <figure class="narrow plot"><img src="static/images/data_scaling.png" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, R2Sem2R across cousins, teleoperation on one pair, and R2R2R+ on one pair.">
     <figcaption><b>Success versus training-set size</b> on xArm7 placement. Solid: several objects; dashed: demonstrated pair; bands: Wilson 95% interval.</figcaption></figure>
-  <figure class="narrow"><img src="static/images/scaling_comparison.png" loading="lazy" alt="Log-log plot of demonstrations against wall-clock time for teleoperation with 1 and 10 operators and for R2Sem2R with 1 and 10 GPUs; R2Sem2R reaches 2,000 episodes at about 2 hours. Strips below show capture, processing and generation time.">
+  <figure class="narrow plot"><img src="static/images/scaling_comparison.png" loading="lazy" alt="Log-log plot of demonstrations against wall-clock time for teleoperation with 1 and 10 operators and for R2Sem2R with 1 and 10 GPUs; R2Sem2R reaches 2,000 episodes at about 2 hours. Strips below show capture, processing and generation time.">
     <figcaption><b>Demonstrations against wall-clock time</b> (log-log) for 1 and 10 teleoperators or GPUs; R2R2R+ coincides with R2Sem2R and is omitted. Strips show where each method&rsquo;s time goes, shaded as human or GPU time. Robot setup, shared by all methods, is not shown.</figcaption></figure>
 </section>
 
