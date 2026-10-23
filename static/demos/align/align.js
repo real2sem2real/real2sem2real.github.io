@@ -292,7 +292,7 @@ export async function mount(root) {
 
   if (new URLSearchParams(location.search).has('debug')) window.__align = { st, setTask, setCousin, goStage, pause, fitCamera };
   try {
-    await setTask(0, false);
+    await setTask(Math.max(0, tasks.findIndex(t => t.id === root.dataset.task)), false);   // data-task picks the first task
   } catch (e) { load.error('Could not load the splats.'); throw e; }
   load.set(1); load.done();
   v.start();

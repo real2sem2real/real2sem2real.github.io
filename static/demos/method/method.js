@@ -21,6 +21,14 @@ const STEPS = [
     cap: 'The grasp is retargeted from the human hand to a parallel-jaw gripper on the demonstrated mug. This is the grasp ' +
          'every generated episode uses, shown with the xArm7 gripper.',
     module: 'steps/grasp.js' },
+  { short: 'Alignment', title: 'Semantic alignment, stage by stage',
+    cap: 'Each cousin moves through the transforms our pipeline computed for it, over the demonstrated object (blue). ' +
+         'Semantic ICP pairs parts by their distilled DINOv3 features and learns the scale; the task-weighted stage ' +
+         'weights the region that matters 20&times; (pink: the part of the mug that touches the tree, the tray the mug is ' +
+         'placed on, the handle of the drill); the upright projection removes the tilt the weighted fit leaves. Pick a ' +
+         'task to see its cousins. <b>Click a part</b> colours every cousin by how similar its features ' +
+         'are to the point you click, so the handle lights up on every mug and the tray on every machine.',
+    mount: alignStep },
   { short: 'Other mugs', title: 'Cousin mugs, aligned by their semantics',
     cap: 'Digital cousins of the mug, each built from a few photos, are aligned to the demonstrated mug by semantic ICP on ' +
          'DINOv3 features, so the handles line up and the grasp carries over to every cousin.',
@@ -74,6 +82,28 @@ function inputStep(el) {
   b.append(h('figcaption', '', '<b>Phone scan</b> of the mug and the machine'));
   row.append(a, b); el.append(row);
   return { pause: () => pauseAll(el), resume: () => playAll(el) };
+}
+
+function alignStep(el) {                                           // the page's alignment and part-probe demos, one at a time
+  const views = [['align', 'Stage by stage'], ['probe', 'Click a part']];
+  const seg = h('div', 'seg mt-seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'View');
+  const boxes = views.map(([demo]) => { const b = h('div', 'demo wide mt-demo'); b.dataset.demo = demo; b.hidden = true; return b; });
+  boxes[0].dataset.task = 'hang';                                    // open on the mugs
+  const show = async k => {
+    seg.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', i === k));
+    boxes.forEach((b, i) => { b.hidden = i !== k; });
+    const box = boxes[k];
+    if (box.dataset.mounted) return; box.dataset.mounted = '1';
+    const name = views[k][0];
+    try {
+      const m = await import(new URL(`../${name}/${name}.js`, BASE).href); await m.mount(box);
+    }
+    catch (err) { console.error('method alignment ' + name, err); box.append(h('p', 'mt-fail', 'This view could not load in this browser.')); }
+  };
+  views.forEach(([, label], i) => { const b = h('button', '', label); b.type = 'button'; b.onclick = () => show(i); seg.append(b); });
+  el.append(seg, ...boxes);
+  show(0);
+  return null;                                                      // both demos pause themselves when hidden or off screen
 }
 
 function deployStep(el) {

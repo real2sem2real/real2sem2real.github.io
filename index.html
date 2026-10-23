@@ -184,8 +184,18 @@
   figure.plot figcaption{font-size:14px; color:var(--muted); line-height:1.65; margin-top:14px}
   .takeaway{margin-left:auto; margin-right:auto; max-width:680px}
 
+  /* alignment comparison: the clip grid, then the drop-test rates beside it */
+  .cmp{display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:clamp(20px,3.5vw,44px); align-items:start}
+  .cmp-head{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); text-align:center; font-size:13px; font-weight:600;
+            line-height:1.3; margin-bottom:8px}
+  .cmp-fig video{width:100%; height:auto; display:block; border-radius:10px; background:var(--line)}
+  .cmp-fig figcaption{font-size:13.5px; color:var(--muted); line-height:1.6; margin-top:10px}
+  .cmp .chart{margin:2px 0 0}
+  .chart .base{background:color-mix(in srgb, var(--muted) 55%, transparent)}
+  .chart .rl b{color:var(--ours)}
+
   @media (max-width:1000px){ .limits{grid-template-columns:repeat(2,minmax(0,1fr))} }
-  @media (max-width:860px){ .nav-links{display:none} #theme{margin-left:auto} .intro{grid-template-columns:1fr} }
+  @media (max-width:860px){ .nav-links{display:none} #theme{margin-left:auto} .intro{grid-template-columns:1fr} .cmp{grid-template-columns:1fr} }
   @media (max-width:620px){
     :root{--gut:16px}
     body{font-size:16px}
@@ -214,6 +224,7 @@
     <a class="brand" href="#top">Real<i>2</i>Sem<i>2</i>Real</a>
     <nav class="nav-links" aria-label="Sections">
       <a href="#method">Method</a>
+      <a href="#alignment">Alignment</a>
       <a href="#rollouts">Rollouts</a>
       <a href="#results">Results</a>
       <a href="#mujoco">MuJoCo</a>
@@ -282,9 +293,40 @@
 </div>
 </section>
 
-<section id="rollouts">
+<section id="alignment">
 <div class="in">
-  <p class="kicker"><b>02</b> Rollouts</p>
+  <p class="kicker"><b>02</b> Alignment</p>
+  <h2>Semantic alignment against SimFoundry and geometry-only ICP</h2>
+  <p class="lead">Each method aligns eight cousin coffee machines to the demonstrated one. The demonstrated mug is then
+  dropped in MuJoCo at the goal each alignment gives, and it has to land on the tray.</p>
+  <div class="cmp">
+    <figure class="cmp-fig">
+      <div class="cmp-head"><span>SimFoundry</span><span>Geometry-only ICP</span><span class="m ours">R2Sem2R (ours)</span></div>
+      <video class="lazyplay" muted loop playsinline preload="none" width="1212" height="912" poster="static/video/align_compare.jpg" data-src="static/video/align_compare.mp4"></video>
+      <figcaption>Three of the eight cousin machines, one per row. Each cousin is placed by the alignment in IsaacSim, then the
+      mug is released at the goal in MuJoCo. A tick marks a mug that comes to rest on the tray.</figcaption>
+    </figure>
+    <div>
+      <div class="chart">
+        <div class="row"><div class="rl">SimFoundry<span>23% (29/128)</span></div><div class="track"><div class="fill base" style="width:23%"></div></div></div>
+        <div class="row"><div class="rl">Geometry-only ICP<span>37% (47/128)</span></div><div class="track"><div class="fill base" style="width:37%"></div></div></div>
+        <div class="row"><div class="rl"><b>R2Sem2R (ours)</b><span>82% (105/128)</span></div><div class="track"><div class="fill ours" style="width:82%"></div></div></div>
+        <div class="axis">Mugs that rest on the tray: 8 cousin machines &times; 16 mugs per method. On the demonstrated machine
+        itself, 16 of 16.</div>
+      </div>
+      <p class="note"><b>SimFoundry</b>: its released code scales the cousin to the size of the demonstrated machine, picks
+      its front with a VLM and copies the demonstrated pose. <b>Geometry-only ICP</b>: bidirectional ICP on the splats,
+      without DINOv3 features. <b>R2Sem2R</b>: semantic ICP, tray-weighted ICP and the upright projection.</p>
+      <p class="note">A mug rests when it ends within 3&nbsp;cm of the goal across the tray and 2.5&nbsp;cm in height, tilted
+      less than 20&deg;. SimFoundry&rsquo;s front-picking step ran with a different VLM than the one in its release.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="rollouts" class="band">
+<div class="in">
+  <p class="kicker"><b>03</b> Rollouts</p>
   <h2>Real-robot rollouts</h2>
   <p class="lead">We fine-tune the &pi;<sub>0.5</sub> vision-language-action model on three kinds of data and evaluate on real
   robots: <b>teleoperation</b>, 150 real demonstrations collected across several objects; <b>R2R2R+</b>, 2,000
@@ -395,9 +437,9 @@
 </div>
 </section>
 
-<section id="results" class="band">
+<section id="results">
 <div class="in">
-  <p class="kicker"><b>03</b> Results</p>
+  <p class="kicker"><b>04</b> Results</p>
   <h2>Results</h2>
   <figure class="narrow plot"><img src="static/images/success_rates.png" loading="lazy" alt="Bar chart of real-robot success rates of teleoperation, R2R2R+ and R2Sem2R on four tasks, mug on coffee machine, pour into bowl, hang on mug tree and drill reorient, on the xArm7 (top) and the Franka Panda (bottom), with Wilson 95% intervals.">
     <figcaption><b>Real-robot success rate</b> on the xArm7 (top) and Franka Panda (bottom). Whiskers: Wilson 95% interval.</figcaption></figure>
@@ -412,9 +454,9 @@
 </div>
 </section>
 
-<section id="mujoco">
+<section id="mujoco" class="band">
 <div class="in">
-  <p class="kicker"><b>04</b> MuJoCo</p>
+  <p class="kicker"><b>05</b> MuJoCo</p>
   <h2>A generated episode, replayed live in MuJoCo</h2>
   <div class="demo wide" data-demo="physics">
     <div class="demo-stage"><img class="demo-poster" src="static/demos/physics/poster.jpg" loading="lazy" alt="The xArm7 carrying a mug to a coffee machine in MuJoCo."></div>
@@ -431,9 +473,9 @@
 </div>
 </section>
 
-<section id="limitations" class="band">
+<section id="limitations">
 <div class="in">
-  <p class="kicker"><b>05</b> Limitations</p>
+  <p class="kicker"><b>06</b> Limitations</p>
   <h2>Limitations</h2>
   <div class="limits">
     <div class="card"><div class="t">A photo per cousin</div>
@@ -546,7 +588,7 @@
 <script>
   // Rollout grids: each clip loads when it nears the viewport and plays only while on screen.
   (function(){
-    var vids=Array.prototype.slice.call(document.querySelectorAll('.rgrid video[data-src]'));
+    var vids=Array.prototype.slice.call(document.querySelectorAll('.rgrid video[data-src], video.lazyplay[data-src]'));
     var still=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function on(v){ if(!v.getAttribute('src')) v.src=v.dataset.src; if(still){ v.controls=true; return; } var p=v.play(); if(p&&p.catch) p.catch(function(){}); }
     if(!('IntersectionObserver' in window)){ vids.forEach(on); return; }
