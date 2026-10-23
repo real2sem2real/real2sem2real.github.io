@@ -1,0 +1,69 @@
+/* Real-robot comparison (static/demos/compare/compare.js). Builds on core/ui.css; colours from the page tokens. */
+.cp .cp-top{border-top:0; border-bottom:1px solid var(--line)}
+.cp-tasks .cp-s{display:none}
+.cp-stage{display:grid; grid-template-columns:repeat(var(--cols, 2), minmax(0, 1fr)); gap:10px; padding:12px;
+          background:color-mix(in srgb, var(--line) 22%, var(--surface))}
+.cp-stage[data-n="1"]{--cols:1} .cp-stage[data-n="2"]{--cols:2} .cp-stage[data-n="3"]{--cols:3} .cp-stage[data-n="4"]{--cols:2}
+.cp-stage[data-n="1"] .cp-panel{width:min(100%, 640px); justify-self:center}
+.cp-stage[data-n="4"]{grid-template-columns:repeat(2, minmax(0, 340px)); justify-content:center}
+.cp-panel{margin:0; min-width:0}
+.cp-frame{position:relative; width:100%; border-radius:10px; overflow:hidden; background:#0b0d12;
+          border:1px solid color-mix(in srgb, var(--line) 80%, transparent)}
+.cp-frame video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; border:0; border-radius:0}
+.cp-mixed .cp-panel[data-m="ours"] .cp-frame{box-shadow:0 0 0 2px var(--ours)}
+.cp-panel.done video{filter:saturate(.9) brightness(.94); transition:filter .4s}
+.cp-prog{position:absolute; left:0; right:0; bottom:0; height:3px; background:rgba(255,255,255,.16); z-index:2}
+.cp-prog i{display:block; height:100%; width:0}
+.cp-panel[data-m="teleop"] .cp-prog i{background:var(--teleop)}
+.cp-panel[data-m="r2r2r"] .cp-prog i{background:var(--r2r2r)}
+.cp-panel[data-m="ours"] .cp-prog i{background:var(--ours)}
+.cp-out{color:#fff; border-color:transparent; transition:transform .3s}
+.cp-out.ok{background:color-mix(in srgb, var(--green) 90%, #000 0%)}
+.cp-out.no{background:color-mix(in srgb, var(--red) 90%, #000 0%)}
+.cp-out.ok::before{content:"\2713\00a0"} .cp-out.no::before{content:"\2715\00a0"}
+.cp-panel.done .cp-out{transform:scale(1.06)}
+.cp-frame .demo-hud.bl{bottom:12px}
+
+.cp-bar{border-top:1px solid var(--line)}
+.cp-play{flex:none; width:36px; height:36px; padding:0; display:grid; place-items:center}
+.cp-play svg{margin:0; width:14px; height:14px}
+.cp-mode[hidden]{display:none}
+.cp-trials{display:flex; align-items:center; gap:8px; min-width:0}
+.cp-trials .seg{flex-wrap:wrap; border-radius:18px}
+
+.cp-res{padding:14px 16px 16px; border-top:1px solid var(--line)}
+.cp-rh{display:flex; flex-wrap:wrap; justify-content:space-between; gap:2px 12px; font-size:13px; margin-bottom:10px}
+.cp-rh span{color:var(--muted)}
+.cp-rows{display:grid; gap:9px}
+.cp-row{display:grid; grid-template-columns:minmax(0, 270px) minmax(0, 1fr) 104px; align-items:center; gap:14px}
+.cp-rl{font-size:13px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cp-rl b{font-weight:600}
+.cp-rl small{font-size:12px; color:var(--muted)}
+.cp-dot{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:8px; vertical-align:0}
+.cp-track{height:12px; border-radius:3px; overflow:hidden; background:color-mix(in srgb, var(--line) 55%, transparent)}
+.cp-track i{display:block; height:100%; border-radius:3px; min-width:2px; transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.cp-rv{font-size:13px; text-align:right; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap}
+.cp-rv b{color:var(--ink); font-weight:600}
+.cp-row[data-m="teleop"] .cp-dot, .cp-row[data-m="teleop"] .cp-track i{background:var(--teleop)}
+.cp-row[data-m="r2r2r"] .cp-dot, .cp-row[data-m="r2r2r"] .cp-track i{background:var(--r2r2r)}
+.cp-row[data-m="ours"] .cp-dot, .cp-row[data-m="ours"] .cp-track i{background:var(--ours)}
+.cp-row[data-m="ours"] .cp-rl b, .cp-row[data-m="ours"] .cp-rv b{color:var(--ours)}
+.cp-note{font-size:12.5px}
+
+@media (max-width:760px){
+  .cp-tasks .cp-l{display:none} .cp-tasks .cp-s{display:inline}
+}
+@media (max-width:620px){
+  .cp-stage{grid-template-columns:repeat(2, minmax(0, 1fr)) !important; padding:10px; gap:8px}
+  .cp-stage .cp-panel{grid-column:auto; width:auto}
+  .cp-stage .cp-panel.cp-first, .cp-stage .cp-panel.cp-full, .cp-stage[data-n="1"] .cp-panel{grid-column:1 / -1}
+  .cp-mixed .cp-panel[data-m="ours"]{order:-1}
+  .cp-stage .cp-panel:not(.cp-first):not(.cp-full) .demo-hud .hud{font-size:10.5px; padding:4px 7px}
+  .cp-stage .cp-panel:not(.cp-first):not(.cp-full) .demo-hud.tr{display:none}
+  .cp-frame .demo-hud.bl{bottom:9px}
+  .cp-row{grid-template-columns:minmax(0, 1fr) auto; gap:5px 10px}
+  .cp-row .cp-track{grid-column:1 / -1; grid-row:2}
+  .cp-rl small{display:none}
+  .cp-bar{gap:8px}
+}
+@media (pointer:coarse){ .cp-play{width:40px; height:40px} }

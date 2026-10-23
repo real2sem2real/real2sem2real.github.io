@@ -16,160 +16,158 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  /* Layout and styling follow the VisTacAlign project page (vis-tac-align.github.io) so the two read as siblings. */
+  /* One idea per section: a short kicker, a heading that states it, a lead line, then one wide figure.
+     Colour carries meaning only: the three training-data sources, in every chart, clip and demo on the page. */
   :root{
-    --bg:#e8f0fb; --ink:#2e2d29; --muted:#5d6370; --line:#cfdcef; --surface:#fbfdff;
-    --accent:#0062d6; --g1:#0062d6; --g2:#2f92ff; --g3:#00c2ff;
-    --grad:linear-gradient(115deg,var(--g1) 0%,var(--g2) 46%,var(--g3) 100%);
+    --bg:#f5f5f2; --band:#ffffff; --surface:#ffffff; --ink:#15171c; --muted:#5b616c; --line:#e2e2dc;
+    --accent:#15171c; --on-accent:#ffffff; --grad:#15171c; --brand:#c51d38;
+    --g1:#c51d38; --g2:#c51d38; --g3:#c51d38;
     --green:#2f8f5b; --red:#c0392b; --orange:#d98324;
     /* one colour per method, the same as in every chart image on this page */
     --teleop:#2a78d6; --r2r2r:#8a9099; --ours:#c51d38;
-    --sans:'DM Sans',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    --col:720px;
+    --text:700px; --fig:1080px; --gut:24px;
   }
   /* light is the default; dark is opt-in via the header toggle */
   :root[data-theme="dark"]{
-    --bg:#060a14; --ink:#f5f5f7; --muted:#a1a1a6; --line:#27324a; --surface:#0f1622;
-    --accent:#2997ff; --g1:#2997ff; --g2:#5ac8fa; --g3:#64d2ff; --green:#5fd08f; --red:#ff7b6b; --orange:#f0a04b;
+    --bg:#0e0f12; --band:#15171b; --surface:#1b1d22; --ink:#ececee; --muted:#a2a6af; --line:#2c2f36;
+    --accent:#ececee; --on-accent:#0e0f12; --grad:#ececee; --brand:#ef5a6f;
+    --g1:#ef5a6f; --g2:#ef5a6f; --g3:#ef5a6f; --green:#5fd08f; --red:#ff7b6b; --orange:#f0a04b;
     --teleop:#2a78d6; --r2r2r:#8a9099; --ours:#d63650;
   }
   *{box-sizing:border-box}
-  body::before{content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
-    background:
-      radial-gradient(900px 620px at 12% -8%, rgba(0,113,227,.26), transparent 64%),
-      radial-gradient(760px 560px at 92% 12%, rgba(0,194,255,.22), transparent 66%),
-      radial-gradient(1000px 700px at 50% 108%, rgba(47,146,255,.22), transparent 68%);}
-  :root[data-theme="dark"] body::before{
-    background:
-      radial-gradient(900px 620px at 12% -8%, rgba(41,151,255,.34), transparent 64%),
-      radial-gradient(760px 560px at 92% 12%, rgba(100,210,255,.22), transparent 66%),
-      radial-gradient(1000px 700px at 50% 108%, rgba(41,151,255,.24), transparent 68%);}
-  html{scroll-behavior:smooth; scroll-padding-top:28px}
-  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:15.5px;
-       font-weight:400; line-height:1.7; font-synthesis:none;
-       -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
-  a{color:var(--accent); text-decoration:none}
-  a:hover{text-decoration:underline}
+  html{scroll-behavior:smooth; scroll-padding-top:68px}
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:16.5px; font-weight:400;
+       line-height:1.65; font-synthesis:none; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+       font-feature-settings:"cv11","ss01"}
+  a{color:inherit; text-decoration:underline; text-decoration-color:color-mix(in srgb, var(--ink) 30%, transparent);
+    text-underline-offset:3px}
+  a:hover{text-decoration-color:var(--ink)}
   p{margin:0 0 16px}
-  b{font-weight:600}
+  b, strong{font-weight:600}
 
-  .topbar{height:3px; background:var(--grad)}
-  .header{display:flex; align-items:center; justify-content:space-between; gap:16px;
-          padding:14px clamp(20px,4.5vw,56px); border-bottom:1px solid var(--line)}
-  .header .brand{font-weight:600; font-size:15px; letter-spacing:-.01em}
-  .header .pills{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
-  .pill{font-size:13px; font-weight:500; background:var(--surface); color:var(--ink);
-        border-radius:40px; padding:7px 14px; white-space:nowrap}
-  .pill small{font-size:12px; font-weight:400; color:var(--muted)}
-  a.pill{text-decoration:none}
-  #theme{flex:none; background:var(--surface); border:0; color:var(--muted); width:32px; height:32px;
-         border-radius:40px; cursor:pointer; display:grid; place-items:center; padding:0}
-  #theme:hover{color:var(--ink)}
-  @media (pointer:coarse){ #theme{position:relative} #theme::after{content:""; position:absolute; inset:-5px} }   /* 42 px tap area, same layout */
-  #theme svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.9;
-             stroke-linecap:round; stroke-linejoin:round}
+  /* top bar: name, sections, theme */
+  .nav{position:sticky; top:0; z-index:20; border-bottom:1px solid var(--line);
+       background:color-mix(in srgb, var(--bg) 84%, transparent);
+       -webkit-backdrop-filter:saturate(1.6) blur(14px); backdrop-filter:saturate(1.6) blur(14px)}
+  .nav-in{max-width:calc(var(--fig) + 2 * var(--gut)); margin:0 auto; padding:0 var(--gut); height:56px;
+          display:flex; align-items:center; gap:22px}
+  .brand{font-weight:650; font-size:15px; letter-spacing:-.01em; text-decoration:none; white-space:nowrap}
+  .brand i{font-style:normal; color:var(--brand)}
+  .nav-links{display:flex; gap:4px; margin-left:auto}
+  .nav-links a{font-size:14px; color:var(--muted); text-decoration:none; padding:6px 10px; border-radius:8px; white-space:nowrap;
+               transition:color .2s, background .2s}
+  .nav-links a:hover{color:var(--ink); background:color-mix(in srgb, var(--line) 60%, transparent)}
+  .nav-links a.on{color:var(--ink); font-weight:550}
+  #theme{flex:none; background:transparent; border:1px solid var(--line); color:var(--muted); width:34px; height:34px;
+         border-radius:40px; cursor:pointer; display:grid; place-items:center; padding:0; margin-left:6px}
+  #theme:hover{color:var(--ink); border-color:var(--muted)}
+  @media (pointer:coarse){ #theme{position:relative} #theme::after{content:""; position:absolute; inset:-5px} }
+  #theme svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round}
   #theme .moon{display:none}
   :root[data-theme="dark"] #theme .sun{display:none}
   :root[data-theme="dark"] #theme .moon{display:block}
 
-  #chapters{display:none}
-  @media (min-width:1180px){
-    #chapters{display:block; position:fixed; left:clamp(18px,2.4vw,44px); top:108px; width:150px; z-index:5}
-    #chapters a{display:grid; grid-template-columns:24px 1fr; align-items:baseline; padding:7px 0;
-                font-size:12.5px; line-height:1.35; color:var(--muted)}
-    #chapters a i{font-style:normal; font-size:10.5px; opacity:.75; font-variant-numeric:tabular-nums}
-    #chapters a:hover{color:var(--ink); text-decoration:none}
-    #chapters a.on{color:var(--accent); font-weight:600}
-  }
+  /* sections alternate between the page tone and a plain band, so each one reads as its own block */
+  section{padding:clamp(56px,9vh,96px) 0}
+  section.band{background:var(--band); border-top:1px solid var(--line); border-bottom:1px solid var(--line)}
+  .in{max-width:calc(var(--fig) + 2 * var(--gut)); margin:0 auto; padding:0 var(--gut)}
+  .kicker{display:flex; align-items:center; gap:10px; font-size:12.5px; font-weight:600; letter-spacing:.09em;
+          text-transform:uppercase; color:var(--muted); margin:0 0 14px}
+  .kicker b{color:var(--brand); font-variant-numeric:tabular-nums}
+  h2{font-weight:650; letter-spacing:-.028em; line-height:1.15; font-size:clamp(1.65rem,3.4vw,2.35rem);
+     margin:0 0 14px; max-width:820px; text-wrap:balance}
+  .lead{font-size:18px; line-height:1.6; color:var(--muted); max-width:var(--text); margin:0 0 28px}
+  .lead b{color:var(--ink)}
+  .note{font-size:14px; line-height:1.65; color:var(--muted); max-width:var(--text); margin:16px 0 0}
+  .note b{color:var(--ink)}
+  details.more{max-width:var(--text); margin:16px 0 0; font-size:14px; color:var(--muted); line-height:1.65}
+  details.more > summary{cursor:pointer; list-style:none; display:inline-flex; gap:8px; align-items:baseline; font-weight:550;
+                         color:var(--ink)}
+  details.more > summary::-webkit-details-marker{display:none}
+  details.more > summary::before{content:"+"; color:var(--muted); width:10px}
+  details.more[open] > summary::before{content:"\2212"}
+  details.more p{margin:10px 0 0}
 
-  .wrap{max-width:calc(var(--col) + 40px); margin:0 auto; padding:0 20px}
-  header{text-align:center; padding:clamp(40px,7vh,68px) 0 30px}
-  h1{font-weight:500; letter-spacing:-.025em; line-height:1.2; margin:0 0 20px;
-     font-size:clamp(1.7rem,3.6vw,2.3rem); text-wrap:balance}
-  h1 .name, .stat .v{background:var(--grad); -webkit-background-clip:text; background-clip:text;
-                     color:transparent; -webkit-text-fill-color:transparent}
-  .stat .v small{-webkit-text-fill-color:var(--muted)}
-  .authors{font-size:15.5px; margin:0 0 4px}
-  .venue{font-size:13.5px; color:var(--muted); margin:0}
+  /* method colours, as chips */
+  .key{display:flex; flex-wrap:wrap; gap:8px 18px; margin:-8px 0 24px; font-size:14px}
+  .key span{display:inline-flex; align-items:center; gap:8px}
+  .key i{width:10px; height:10px; border-radius:3px; background:var(--c)}
+  .key small{color:var(--muted); font-size:13px}
+  .m.ours{color:var(--ours)} .m.teleop{color:var(--teleop)} .m.r2r2r{color:var(--r2r2r)}
 
-  /* wide figure: wider than the reading column, clear of the chapter list */
-  .wide{display:block; width:min(880px, 100vw - 40px); margin-left:50%; transform:translateX(-50%)}
-  @media (min-width:1180px){ .wide{width:min(880px, 100vw - 440px)} }
-  .checks{margin:0 0 6px; padding:0 0 0 20px}
+  /* hero */
+  .top{padding:clamp(48px,8vh,84px) 0 clamp(56px,9vh,96px); text-align:center}
+  h1{margin:0 auto 18px; max-width:900px; font-weight:700; letter-spacing:-.035em; line-height:1.08;
+     font-size:clamp(2.1rem,5vw,3.4rem); text-wrap:balance}
+  h1 .name{color:var(--brand)}
+  h1 .sub{display:block; margin-top:14px; font-size:clamp(1.05rem,2.1vw,1.45rem); font-weight:500; letter-spacing:-.015em;
+          line-height:1.35; color:var(--ink)}
+  .authors{font-size:15.5px; color:var(--muted); margin:0 0 22px}
+  .links{display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin:0 0 40px}
+  .btn{display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 18px; border-radius:40px; font-size:14.5px;
+       font-weight:550; text-decoration:none; border:1px solid var(--line); background:var(--surface); color:var(--ink);
+       white-space:nowrap; transition:border-color .2s, transform .15s}
+  .btn svg{width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+  a.btn:hover{border-color:var(--ink); transform:translateY(-1px)}
+  .btn.solid{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+  .btn.off{color:var(--muted); cursor:default}
+  .btn.off small{font-size:12.5px; font-weight:400}
+  .top .demo{margin:0; text-align:left}
+  .hero-cap{font-size:14px; line-height:1.65; color:var(--muted); max-width:820px; margin:16px auto 0; text-align:center}
+  .hero-cap b{color:var(--ink)}
+
+  .intro{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.08fr); gap:clamp(24px,4vw,56px); align-items:center;
+         text-align:left; margin-top:clamp(48px,8vh,80px)}
+  .tldr{font-size:17px; line-height:1.65; margin:0}
+  .tldr .t{display:block; font-size:12.5px; font-weight:650; letter-spacing:.09em; text-transform:uppercase; color:var(--brand);
+           margin-bottom:8px}
+  .facts{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; margin:24px 0 0; border-top:1px solid var(--line)}
+  .fact{padding:14px 12px 0 0}
+  .fact .v{font-size:22px; font-weight:650; letter-spacing:-.02em; line-height:1.15; font-variant-numeric:tabular-nums}
+  .fact .l{font-size:13px; color:var(--muted); line-height:1.45; margin-top:4px}
+  .intro figure{margin:0}
+  .intro video{width:100%; height:auto; display:block; border-radius:14px; border:1px solid var(--line); background:#000}
+  .intro figcaption{font-size:13.5px; color:var(--muted); margin-top:10px; line-height:1.6}
+
+  figure{margin:0}
+  figcaption b{color:var(--ink)}
+  .wide{display:block; width:100%}
+  .demo{box-shadow:0 1px 2px rgba(0,0,0,.04), 0 20px 50px -34px rgba(0,0,0,.35)}
+
+  /* results: one paper chart at a time, picked from a segmented control */
+  .figtabs{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 18px}
+  .figtabs .seg{flex-wrap:wrap; border-radius:20px}
+  .figpanel{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:clamp(16px,3vw,32px)}
+  .figpanel figure[hidden]{display:none}
+  .figpanel img{display:block; width:100%; max-width:640px; height:auto; margin:0 auto}
+  :root[data-theme="dark"] .figpanel img{background:#fff; border-radius:10px}   /* the charts' dark ink needs a light card */
+  .figpanel figcaption{font-size:14px; color:var(--muted); line-height:1.65; max-width:760px; margin:16px auto 0}
+  .takeaway{font-size:19px; line-height:1.55; font-weight:500; letter-spacing:-.01em; max-width:var(--text);
+            border-left:3px solid var(--brand); padding:2px 0 2px 18px; margin:28px 0 0}
+
+  .limits{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 20px}
+  .card .t{font-weight:600; margin-bottom:6px; line-height:1.35}
+  .card p{font-size:14px; margin:0; color:var(--muted); line-height:1.6}
+
+  .checks{margin:0; padding:22px 22px 22px 42px}
   .checks li{margin:0 0 7px; padding-left:4px}
-  .checks li::marker{color:var(--accent)}
 
-  section{padding:clamp(44px,7vh,68px) 0 0; margin-top:clamp(44px,7vh,68px); border-top:1px solid var(--line)}
-  .eyebrow{font-size:12px; font-weight:600; letter-spacing:.08em; color:var(--accent); margin:0 0 8px;
-           font-variant-numeric:tabular-nums}
-  h2{font-weight:500; letter-spacing:-.02em; line-height:1.2; color:var(--accent);
-     font-size:clamp(1.5rem,3vw,1.9rem); margin:0 0 20px; text-wrap:balance}
-  h3{font-weight:500; font-size:1.25rem; letter-spacing:-.01em; line-height:1.3; margin:44px 0 10px;
-     color:var(--accent)}
+  footer{border-top:1px solid var(--line); padding:28px 0 56px; font-size:13px; color:var(--muted); text-align:center}
 
-  figure{margin:24px 0 8px}
-  figure img, figure video{width:100%; height:auto; display:block; border-radius:10px;
-                           border:1px solid var(--line); background:#fff}
-  figure.narrow{max-width:560px; margin-left:auto; margin-right:auto}
-  figcaption, .hero-cap{font-size:13px; color:var(--muted); margin-top:12px; line-height:1.65}
-  figcaption b, .hero-cap b{color:var(--ink)}
-
-  .stats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:30px 0 0;
-         border:1px solid var(--line); border-radius:10px; background:var(--surface)}
-  .stat{padding:16px 16px 15px; border-left:1px solid var(--line)}
-  .stat:first-child{border-left:0}
-  .stat .v{font-size:22px; font-weight:500; letter-spacing:-.02em; line-height:1.15; color:var(--accent);
-           font-variant-numeric:tabular-nums}
-  .stat .v small{font-size:14px; font-weight:400; color:var(--muted)}
-  .stat .l{font-size:12.5px; color:var(--muted); margin-top:6px; line-height:1.5}
-
-  .pull, .takeaway{border-left:2px solid var(--accent); padding:2px 0 2px 16px; margin:22px 0}
-  .pull{font-size:17px; line-height:1.55}
-
-  .cards, .limits{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:22px 0}
-  .card{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
-  .card .n{font-size:11.5px; color:var(--accent); letter-spacing:.06em; font-weight:600; margin-bottom:4px;
-           text-transform:uppercase}
-  .card .t{font-weight:600; margin-bottom:5px}
-  .card p{font-size:13.5px; margin:0; color:var(--muted); line-height:1.65}
-
-  .figgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:24px 18px; margin-top:6px}
-  .figgrid figure{margin:0}
-  .figgrid a{display:block; cursor:zoom-in}
-  .figgrid figcaption{font-size:12.5px}
-  dialog.lightbox{border:0; padding:0; background:transparent; max-width:none; max-height:none}
-  dialog.lightbox::backdrop{background:rgba(8,12,20,.84)}
-  dialog.lightbox img{display:block; max-width:96vw; max-height:92vh; width:auto; height:auto; border-radius:8px;
-                      background:#fff; cursor:zoom-out}
-  dialog.lightbox button{position:fixed; top:12px; right:12px; width:44px; height:44px; border:0; border-radius:50%;
-                         background:rgba(255,255,255,.92); color:#222; font-size:26px; line-height:44px; cursor:pointer}
-  details.more{margin:12px 0}
-  details.more > summary{background:var(--surface); border-radius:10px; padding:11px 16px; font-size:13px;
-                         color:var(--ink); font-weight:500}
-  details.more[open] > summary{margin-bottom:14px}
-  summary{cursor:pointer; list-style:none; display:flex; gap:10px; align-items:baseline}
-  summary::-webkit-details-marker{display:none}
-  summary::before{content:"+"; color:var(--muted); flex:none; width:10px; text-align:center}
-  details[open] > summary::before{content:"\2212"}
-  summary:hover{color:var(--accent)}
-  #qa details{border-top:1px solid var(--line); padding:15px 0}
-  #qa details:last-of-type{border-bottom:1px solid var(--line)}
-  #qa summary{font-weight:500; padding:15px 0; margin:-15px 0}   /* the whole row is tappable; layout unchanged */
-  #qa details p{margin:12px 0 2px; padding-left:20px; font-size:14.5px; color:var(--muted)}
-
+  /* kept for content that may come back (charts, tables, Q&A, gallery) */
   .tablewrap{overflow-x:auto; margin:18px 0; -webkit-overflow-scrolling:touch}
   table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:440px}
   th,td{padding:9px 12px 9px 0; text-align:left; border-bottom:1px solid var(--line)}
   th{font-weight:600; white-space:nowrap; border-bottom-color:var(--ink)}
   td.num, th.num{text-align:right; padding-right:0; padding-left:12px; font-variant-numeric:tabular-nums}
-  td.best{font-weight:600; color:var(--accent)}
-  caption{caption-side:bottom; text-align:left; font-size:12.5px; color:var(--muted); padding-top:10px;
-          line-height:1.6}
-
-  /* bar charts: one card per task, one row per method (data in the script at the bottom) */
+  td.best{font-weight:600; color:var(--ours)}
+  caption{caption-side:bottom; text-align:left; font-size:12.5px; color:var(--muted); padding-top:10px; line-height:1.6}
   .chart{margin:22px 0 10px}
   .chart .legend{display:flex; gap:6px 18px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); margin-bottom:10px}
   .chart .legend i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px}
@@ -185,36 +183,20 @@
   .chart .pending .rl span{font-style:italic}
   .chart .axis{font-size:12px; color:var(--muted); margin-top:10px; line-height:1.6}
 
-  footer{border-top:1px solid var(--line); margin-top:clamp(52px,8vh,84px); padding:26px 0 52px;
-         font-size:12.5px; color:var(--muted); text-align:center}
-
+  @media (max-width:1000px){ .limits{grid-template-columns:repeat(2,minmax(0,1fr))} }
+  @media (max-width:860px){ .nav-links{display:none} #theme{margin-left:auto} .intro{grid-template-columns:1fr} }
   @media (max-width:620px){
-    body{font-size:15px}
-    .cards, .limits{grid-template-columns:1fr}
-    .stats{grid-template-columns:1fr 1fr}
-    .stat:nth-child(odd){border-left:0}
-    .stat:nth-child(n+3){border-top:1px solid var(--line)}
-    .header .brand{display:none}
-    .header .pills{flex-wrap:nowrap; justify-content:space-between; width:100%}
-    #theme{margin-left:auto}
+    :root{--gut:16px}
+    body{font-size:16px}
+    .lead{font-size:16.5px}
+    .limits{grid-template-columns:1fr}
+    .facts{grid-template-columns:1fr 1fr 1fr}
+    .fact .v{font-size:19px}
+    .takeaway{font-size:17px}
     table{min-width:0; font-size:12.5px}
     th{white-space:normal}
-    th,td{padding:8px 8px 8px 0}
-    td.num, th.num{padding-left:6px}
   }
-  @media (max-width:479px){ .pill small{display:none} }   /* phones: the three pills and the toggle fit on one row */
-  figure.plot img{background:none; border:0; border-radius:0}            /* the paper's charts, white made transparent */
-  :root[data-theme="dark"] figure.plot img{background:#fff; border-radius:10px}   /* dark ink needs a light card */
-  .rgrid{display:grid; gap:10px; margin-top:14px; margin-bottom:4px}
-  .rgrid.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .rgrid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .rgrid.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
-  .rgrid figure{margin:0}
-  .rgrid video{border-radius:8px; background:var(--line)}
-  .rgrid figcaption{font-size:12px; margin-top:6px; line-height:1.45}
-  .m.ours{color:var(--ours)} .m.teleop{color:var(--teleop)} .m.r2r2r{color:var(--r2r2r)}
-  .rates{font-size:13px; margin:6px 0 0; line-height:1.65}
-  @media (max-width:620px){ .rgrid.c3, .rgrid.c4{grid-template-columns:repeat(2,minmax(0,1fr))} }
+  @media (max-width:400px){ .btn{padding:0 14px; font-size:14px} .btn.off small{display:none} }
 </style>
 <link rel="stylesheet" href="static/demos/core/ui.css">
 <script type="importmap">
@@ -225,201 +207,172 @@
 </head>
 <body>
 
-<div class="topbar"></div>
-<div class="header">
-  <span class="brand">Real2Sem2Real</span>
-  <div class="pills">
-    <a class="pill" href="#video">Video</a>
-    <span class="pill">Paper <small>&middot; coming soon</small></span>
-    <span class="pill">Code <small>&middot; coming soon</small></span>
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="#top">Real<i>2</i>Sem<i>2</i>Real</a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#method">Method</a>
+      <a href="#tracking">Tracking</a>
+      <a href="#robots">Real robots</a>
+      <a href="#results">Results</a>
+      <a href="#physics">Physics</a>
+      <a href="#limitations">Limitations</a>
+    </nav>
     <button id="theme" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
       <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.3M12 19.3v2.3M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.4 12h2.3M19.3 12h2.3M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
       <svg class="moon" viewBox="0 0 24 24"><path d="M20.5 14.5A8.6 8.6 0 0 1 9.5 3.5a8.6 8.6 0 1 0 11 11z"/></svg>
     </button>
   </div>
-</div>
-
-<nav id="chapters" aria-label="Sections">
-  <a href="#top"><i>00</i>Overview</a>
-  <a href="#rollouts"><i>01</i>Rollouts</a>
-  <a href="#results"><i>02</i>Results</a>
-  <a href="#mujoco"><i>03</i>MuJoCo</a>
-  <a href="#limitations"><i>04</i>Limitations</a>
-</nav>
-
-<div class="wrap">
-
-<header id="top">
-  <h1><span class="name">Real2Sem2Real:</span> 3D Semantic Augmentations for Robot Learning from a Single Human RGB Demonstration</h1>
-  <p class="authors">Anonymous Authors</p>
 </header>
 
-<div class="demo wide hero-demo" data-demo="hero">
-  <div class="demo-stage"><img class="demo-poster" src="static/demos/hero/poster.jpg" alt="An xArm7 in simulation placing a cousin mug on a cousin coffee machine, with the human demonstration video inset."></div>
+<section class="top" id="top">
+<div class="in">
+  <h1><span class="name">Real2Sem2Real</span>
+    <span class="sub">3D Semantic Augmentations for Robot Learning from a Single Human RGB Demonstration</span></h1>
+  <p class="authors">Anonymous Authors</p>
+  <div class="links">
+    <a class="btn solid" href="#video"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg>Video</a>
+    <span class="btn off"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>Paper <small>&middot; coming soon</small></span>
+    <span class="btn off"><svg viewBox="0 0 24 24"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/></svg>Code <small>&middot; coming soon</small></span>
+  </div>
+
+  <div class="demo wide hero-demo" data-demo="hero">
+    <div class="demo-stage"><img class="demo-poster" src="static/demos/hero/poster.jpg" alt="An xArm7 in simulation placing a cousin mug on a cousin coffee machine, with the human demonstration video inset."></div>
+  </div>
+  <p class="hero-cap"><b>Live in your browser:</b> episodes our pipeline generated in IsaacSim, on the xArm7. <b>R2R2R+</b>
+  varies only the poses of the one demonstrated mug and coffee machine; <b>R2Sem2R</b> also swaps in digital cousins. In
+  every episode the carry replays the mug path tracked from the human video (inset). Drag to orbit.</p>
+
+  <div class="intro">
+    <div>
+      <p class="tldr"><span class="t">TL;DR</span>Teleoperation pays for every demonstration, and every new object instance
+      pays again. Real2Sem2Real (R2Sem2R) turns <b>one human RGB video</b> into thousands of robot demonstrations across
+      the object instances of a category, with no depth sensor and no teleoperation. It tracks the demonstrated objects,
+      generates <b>digital cousins</b> of them from photographs, aligns the cousins to the demonstration by their
+      semantics, and replays the demonstration for every cousin pairing in simulation.</p>
+      <div class="facts">
+        <div class="fact"><div class="v">1 video</div><div class="l">human RGB demonstration per task</div></div>
+        <div class="fact"><div class="v">2,000+</div><div class="l">robot episodes in about two hours</div></div>
+        <div class="fact"><div class="v">2 &times; 4</div><div class="l">real robots &times; tasks</div></div>
+      </div>
+    </div>
+    <figure id="video">
+      <video controls preload="none" playsinline poster="static/video/hero.jpg">
+        <source src="static/video/hero.mp4" type="video/mp4">
+      </video>
+      <figcaption><b>Overview</b> (55 s, no audio). The full <a href="static/video/overview.mp4">5-minute narrated
+      supplementary video</a> covers tracking, semantic alignment, generation in IsaacSim and MuJoCo, and every
+      real-robot task.</figcaption>
+    </figure>
+  </div>
 </div>
-<p class="hero-cap"><b>Live: one human video, thousands of robot demonstrations.</b> Episodes our pipeline generated in
-IsaacSim, replayed in your browser on the xArm7. Switch between <b>R2R2R+</b>, which varies only the poses of the one
-demonstrated mug and coffee machine, and <b>R2Sem2R</b>, which also swaps in digital cousins, and run nine environments in
-parallel. In every episode the carry replays the mug trajectory tracked from the single human video (inset). Drag to orbit.</p>
+</section>
 
-<div class="hero">
-  <p>Teleoperation pays for every demonstration, and every new object instance pays again. Real2Sem2Real (R2Sem2R) turns
-  <b>one human RGB video</b> into thousands of robot demonstrations across the object instances of a category,
-  with no depth sensor and no teleoperation. It tracks the demonstrated objects, generates
-  <b>digital cousins</b> of them from photographs, aligns the cousins to the demonstration by their semantics,
-  and replays the demonstration for every cousin pairing in simulation.</p>
+<section id="method" class="band">
+<div class="in">
+  <p class="kicker"><b>01</b> Method</p>
+  <h2>From one human video to thousands of robot demonstrations</h2>
+  <p class="lead">Step through the pipeline. Most steps are live 3D: drag to orbit, or use the arrow keys to move between steps.</p>
+  <div class="wide" data-demo="method">
+    <ol class="checks">
+      <li>One human RGB video of the task and a phone scan of the objects.</li>
+      <li>Each object becomes a Gaussian splat with DINOv3 features, tracked through the video from RGB alone.</li>
+      <li>The human grasp is retargeted to a parallel-jaw gripper on the demonstrated mug.</li>
+      <li>Cousin mugs are aligned to it by semantic ICP, and the grasp carries over.</li>
+      <li>Coffee machines are aligned on the tray with task-weighted ICP.</li>
+      <li>Thousands of episodes are generated in IsaacSim and MuJoCo.</li>
+      <li>A policy trained on them runs on a real xArm7 and Franka Panda.</li>
+    </ol>
+  </div>
 </div>
+</section>
 
-<figure id="video">
-  <video controls preload="none" playsinline poster="static/video/hero.jpg">
-    <source src="static/video/hero.mp4" type="video/mp4">
-  </video>
-  <figcaption><b>Overview</b> (55 s, no audio). One human video, the four steps of the pipeline, real rollouts on both
-  robots and the results. The full <a href="static/video/overview.mp4">5-minute narrated supplementary video</a> covers
-  tracking, semantic alignment, generation in IsaacSim and MuJoCo, and every real-robot task.</figcaption>
-</figure>
-
-
-<section id="rollouts">
-  <div class="eyebrow">01</div>
-  <h2>Real-robot rollouts</h2>
-  <p>We fine-tune the &pi;<sub>0.5</sub> vision-language-action model on three kinds of data and evaluate on real
-  robots: <b>teleoperation</b>, 150 real demonstrations collected across several objects; <b>R2R2R+</b>, 2,000
-  generated episodes of the single demonstrated object pair, a strengthened Real2Render2Real run through our
-  tracker, grasp selection and simulators; and <b>R2Sem2R</b>, 2,000 generated episodes across digital cousins.</p>
-  <p class="hero-cap">Clips are sped up (the factor is under each clip), skip trials in which a person steps into view, and
-  end before the scene is reset. The rates under each grid count every real-robot trial of the evaluated policies, 50
-  per policy and 40 for the drill; a few clips come from other runs of the same method.</p>
-
-  <h3>On the real xArm7, ours sets the mug on the machine.</h3>
-  <div class="rgrid c2">
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_ours_white_black.jpg" data-src="static/slides_rollouts/x_ours_white_black.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; success &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="360" poster="static/slides_rollouts/x_teleop_white_black.jpg" data-src="static/slides_rollouts/x_teleop_white_black.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; success &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_1x1_white_black.jpg" data-src="static/slides_rollouts/x_1x1_white_black.mp4"></video><figcaption><b class="m r2r2r">R2R2R+</b> &middot; fails: never places &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_1x1_red_teal.jpg" data-src="static/slides_rollouts/x_1x1_red_teal.mp4"></video><figcaption><b class="m r2r2r">R2R2R+</b> &middot; fails: shoves the machine &middot; 3&times;</figcaption></figure>
+<section id="tracking">
+<div class="in">
+  <p class="kicker"><b>02</b> Tracking</p>
+  <h2>Tracking objects from RGB alone, more accurately than the alternatives</h2>
+  <p class="lead">Each tracker's pose is rendered over the human video, frame by frame. On the seven objects of our four
+  tasks, our tracker has a mean mask IoU of <b>0.913</b>, against 0.681 for WARPED, 0.629 for FoundationPose with
+  monocular metric depth and 0.415 for RSRD.</p>
+  <div class="demo wide" data-demo="tracking">
+    <div class="demo-stage"><img class="demo-poster" src="static/demos/tracking/poster.jpg" loading="lazy" alt="The mug tracked through the human video, outlined by each method's estimate."></div>
   </div>
-  <p class="hero-cap">Mug on coffee machine. The demonstrated pair is the white mug and the black Keurig. Each success ends with the mug upright on the tray and the gripper released.</p>
-  <p class="rates" data-rates="xarm7:0"></p>
+</div>
+</section>
 
-  <h3>Other mugs on other coffee machines.</h3>
-  <div class="rgrid wide c3">
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_white_beige.jpg" data-src="static/slides_rollouts/x_cous_white_beige.mp4"></video><figcaption>Cream · white &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_pink_white.jpg" data-src="static/slides_rollouts/x_cous_pink_white.mp4"></video><figcaption>Cream · pink &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_red_navy.jpg" data-src="static/slides_rollouts/x_cous_red_navy.mp4"></video><figcaption>Navy · red &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_brown_navy.jpg" data-src="static/slides_rollouts/x_cous_brown_navy.mp4"></video><figcaption>Navy · brown &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_red_teal.jpg" data-src="static/slides_rollouts/x_cous_red_teal.mp4"></video><figcaption>Teal · red &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_pink_red.jpg" data-src="static/slides_rollouts/x_cous_pink_red.mp4"></video><figcaption>Red · pink &middot; 3&times;</figcaption></figure>
+<section id="robots" class="band">
+<div class="in">
+  <p class="kicker"><b>03</b> Real robots</p>
+  <h2>Three kinds of training data, side by side on two real robots</h2>
+  <p class="lead">We fine-tune the &pi;<sub>0.5</sub> vision-language-action model on each and run it on a real xArm7 and a
+  real Franka Panda. Pick a robot and a task.</p>
+  <div class="key">
+    <span style="--c:var(--teleop)"><i></i><b>Teleop</b> <small>150 real demonstrations, several objects</small></span>
+    <span style="--c:var(--r2r2r)"><i></i><b>R2R2R+</b> <small>2,000 generated episodes, the one demonstrated pair</small></span>
+    <span style="--c:var(--ours)"><i></i><b>R2Sem2R (ours)</b> <small>2,000 generated episodes across digital cousins</small></span>
   </div>
-  <p class="hero-cap">R2Sem2R policies on cousin mugs and coffee machines (labels: machine &middot; mug), trained on 1,320 to 2,000 generated episodes from IsaacSim and MuJoCo. Every clip ends with the mug upright on the tray and the gripper released.</p>
-
-  <h3>Hanging a mug by its handle on the tree.</h3>
-  <div class="rgrid c2">
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_white.jpg" data-src="static/slides_rollouts/x_hang_white.mp4"></video><figcaption>White mug &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_navy.jpg" data-src="static/slides_rollouts/x_hang_navy.mp4"></video><figcaption>Navy mug &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_red.jpg" data-src="static/slides_rollouts/x_hang_red.mp4"></video><figcaption>Red mug &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_pink.jpg" data-src="static/slides_rollouts/x_hang_pink.mp4"></video><figcaption>Pink mug &middot; 3&times;</figcaption></figure>
+  <div class="demo wide" data-demo="compare">
+    <div class="demo-stage"><img class="demo-poster" src="static/slides_rollouts/x_ours_white_black.jpg" loading="lazy" alt="The real xArm7 placing the demonstrated mug on the coffee machine."></div>
   </div>
-  <p class="hero-cap">Success: the mug hangs on the blue branch after the gripper releases it.</p>
-  <p class="rates" data-rates="xarm7:2"></p>
-
-  <h3>Pouring, and setting the drill upright.</h3>
-  <div class="rgrid wide c3">
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_pour_teal.jpg" data-src="static/slides_rollouts/x_pour_teal.mp4"></video><figcaption>Pour into the bowl &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_drill_a.jpg" data-src="static/slides_rollouts/x_drill_a.mp4"></video><figcaption>Drill set upright &middot; 5&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_drill_b.jpg" data-src="static/slides_rollouts/x_drill_b.mp4"></video><figcaption>Drill set upright &middot; 2&times;</figcaption></figure>
-  </div>
-  <p class="hero-cap">The pour clip comes from an R2Sem2R policy trained on MuJoCo-generated data. Each drill clip ends with the drill upright and released.</p>
-  <p class="rates" data-rates="xarm7:1,xarm7:3"></p>
-
-  <h3>The same pipeline on the Franka Panda.</h3>
-  <div class="rgrid c2">
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_ours_white_black.jpg" data-src="static/slides_rollouts/p_ours_white_black.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; success &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_teleop_white_black.jpg" data-src="static/slides_rollouts/p_teleop_white_black.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; success &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_1x1_white_black.jpg" data-src="static/slides_rollouts/p_1x1_white_black.mp4"></video><figcaption><b class="m r2r2r">R2R2R+</b> &middot; fails: never lifts &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_1x1_red_black.jpg" data-src="static/slides_rollouts/p_1x1_red_black.mp4"></video><figcaption><b class="m r2r2r">R2R2R+</b> &middot; fails: knocks it over &middot; 2&times;</figcaption></figure>
-  </div>
-  <p class="hero-cap">The same human video and generation pipeline on a second robot.</p>
-  <p class="rates" data-rates="panda:0"></p>
-
-  <h3>On the Panda too, other mugs on other machines.</h3>
-  <div class="rgrid wide c4">
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_orange_black.jpg" data-src="static/slides_rollouts/p_cous_orange_black.mp4"></video><figcaption>Keurig · orange &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_pink_black.jpg" data-src="static/slides_rollouts/p_cous_pink_black.mp4"></video><figcaption>Small black · pink &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_white_teal.jpg" data-src="static/slides_rollouts/p_cous_white_teal.mp4"></video><figcaption>Teal · white &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_navy_teal.jpg" data-src="static/slides_rollouts/p_cous_navy_teal.mp4"></video><figcaption>Teal · navy &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_orange_white.jpg" data-src="static/slides_rollouts/p_cous_orange_white.mp4"></video><figcaption>Cream · orange &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_black_white.jpg" data-src="static/slides_rollouts/p_cous_black_white.mp4"></video><figcaption>Cream · black &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_black_navy.jpg" data-src="static/slides_rollouts/p_cous_black_navy.mp4"></video><figcaption>Navy · black &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_pink_navy.jpg" data-src="static/slides_rollouts/p_cous_pink_navy.mp4"></video><figcaption>Navy · pink &middot; 4&times;</figcaption></figure>
-  </div>
-  <p class="hero-cap">Eight cousin pairs, all from the same R2Sem2R policy (labels: machine &middot; mug). Each ends with the mug upright on the tray and the gripper released.</p>
-
-  <h3>Hanging a mug on the Panda: the same mugs for both methods.</h3>
-  <div class="rgrid c2">
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_tree_white.jpg" data-src="static/slides_rollouts/p_tree_white.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; on the branch &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_tree_tele_white.jpg" data-src="static/slides_rollouts/p_tree_tele_white.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; hangs it &middot; 2&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_tree_brown.jpg" data-src="static/slides_rollouts/p_tree_brown.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; hangs it &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_tree_tele_brown.jpg" data-src="static/slides_rollouts/p_tree_tele_brown.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; hangs it &middot; 2&times;</figcaption></figure>
-  </div>
-  <p class="hero-cap">Top: the white mug. Bottom: a brown mug. Success: the handle hooks over the low blue branch. Our white-mug recording stops with the handle on the branch, before the gripper opens.</p>
-  <p class="rates" data-rates="panda:2"></p>
-
-  <h3>Pouring on the Panda: the same mug and bowl for both methods.</h3>
-  <div class="rgrid c2">
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_pour_white_cyan.jpg" data-src="static/slides_rollouts/p_pour_white_cyan.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; pours &middot; 2&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_pour_tele_white_cyan.jpg" data-src="static/slides_rollouts/p_pour_tele_white_cyan.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; pours &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_pour_navy_pink.jpg" data-src="static/slides_rollouts/p_pour_navy_pink.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; pours &middot; 2&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_pour_tele_navy_pink.jpg" data-src="static/slides_rollouts/p_pour_tele_navy_pink.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; never lifts it &middot; 2&times;</figcaption></figure>
-  </div>
-  <p class="hero-cap">Top: the white mug and light-blue bowl from the human video. Bottom: a navy mug and a pink bowl.</p>
-  <p class="rates" data-rates="panda:1"></p>
-
-  <h3>Setting the drill upright: the same drills for both methods.</h3>
-  <div class="rgrid c2">
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_drill_red.jpg" data-src="static/slides_rollouts/p_drill_red.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; upright &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_drill_tele_red.jpg" data-src="static/slides_rollouts/p_drill_tele_red.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; upright &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_drill_yellow.jpg" data-src="static/slides_rollouts/p_drill_yellow.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; upright &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_drill_tele_yellow.jpg" data-src="static/slides_rollouts/p_drill_tele_yellow.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; upright &middot; 2&times;</figcaption></figure>
-  </div>
-  <p class="hero-cap">Top: the demonstrated red drill. Bottom: a yellow cousin drill. Successes end with the drill upright and the gripper released.</p>
-  <p class="rates" data-rates="panda:3"></p>
+  <p class="note">R2R2R+ is a strengthened Real2Render2Real: it keeps only the demonstrated objects but runs through our
+  tracker, grasp selection and simulators. Each policy is evaluated for 50 real trials, 40 for the drill. The clips
+  skip trials in which a person steps into view and end before the scene is reset; a few come from other runs of the
+  same method.</p>
+</div>
 </section>
 
 <section id="results">
-  <div class="eyebrow">02</div>
-  <h2>Results</h2>
-  <figure class="narrow plot"><img src="static/images/success_rates.png" loading="lazy" alt="Bar chart of real-robot success rates of teleoperation, R2R2R+ and R2Sem2R on four tasks, mug on coffee machine, pour into bowl, hang on mug tree and drill reorient, on the xArm7 (top) and the Franka Panda (bottom), with Wilson 95% intervals.">
-    <figcaption><b>Real-robot success rate</b> on the xArm7 (top) and Franka Panda (bottom). Whiskers: Wilson 95% interval.</figcaption></figure>
+<div class="in">
+  <p class="kicker"><b>04</b> Results</p>
+  <h2>Digital cousins beat a single object pair on every task</h2>
+  <p class="lead">The paper's charts. Pick one.</p>
+  <div class="figtabs">
+    <div class="seg" role="group" aria-label="Chart">
+      <button type="button" data-fig="0" aria-pressed="true">Success rate</button>
+      <button type="button" data-fig="1" aria-pressed="false">Objects vs data source</button>
+      <button type="button" data-fig="2" aria-pressed="false">Training-set size</button>
+      <button type="button" data-fig="3" aria-pressed="false">Wall-clock time</button>
+    </div>
+  </div>
+  <div class="figpanel">
+    <figure><img src="static/images/success_rates.png" loading="lazy" alt="Bar chart of real-robot success rates of teleoperation, R2R2R+ and R2Sem2R on four tasks, mug on coffee machine, pour into bowl, hang on mug tree and drill reorient, on the xArm7 (top) and the Franka Panda (bottom), with Wilson 95% intervals.">
+      <figcaption><b>Real-robot success rate</b> on the xArm7 (top) and Franka Panda (bottom). Whiskers: Wilson 95% interval.</figcaption></figure>
+    <figure hidden><img src="static/images/diversity_source.png" loading="lazy" alt="Bar chart for mug-to-coffee-machine placement comparing training on one object pair against several objects, for teleoperated and generated data, on both robots.">
+      <figcaption><b>Object diversity versus data source</b> on placement. <i>One pair</i>: 150 teleop demos or 2,000 R2R2R+ episodes on the demonstrated pair. <i>Several objects</i>: teleop on 4&times;4 pairs, or R2Sem2R. Whiskers: Wilson 95% interval.</figcaption></figure>
+    <figure hidden><img src="static/images/data_scaling.png" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, R2Sem2R across cousins, teleoperation on one pair, and R2R2R+ on one pair.">
+      <figcaption><b>Success versus training-set size</b> on xArm7 placement. Solid: several objects; dashed: demonstrated pair; bands: Wilson 95% interval.</figcaption></figure>
+    <figure hidden><img src="static/images/scaling_comparison.png" loading="lazy" alt="Log-log plot of demonstrations against wall-clock time for teleoperation with 1 and 10 operators and for R2Sem2R with 1 and 10 GPUs; R2Sem2R reaches 2,000 episodes at about 2 hours. Strips below show capture, processing and generation time.">
+      <figcaption><b>Demonstrations against wall-clock time</b> (log-log) for 1 and 10 teleoperators or GPUs; R2R2R+ coincides with R2Sem2R and is omitted. Strips show where each method&rsquo;s time goes, shaded as human or GPU time. Robot setup, shared by all methods, is not shown.</figcaption></figure>
+  </div>
   <p class="takeaway">Digital cousins beat a single object pair on every task and robot, by 26
   to 54 points, and match or beat teleoperation on every one, with no human time beyond the one demonstration.</p>
-  <figure class="narrow plot"><img src="static/images/diversity_source.png" loading="lazy" alt="Bar chart for mug-to-coffee-machine placement comparing training on one object pair against several objects, for teleoperated and generated data, on both robots.">
-    <figcaption><b>Object diversity versus data source</b> on placement. <i>One pair</i>: 150 teleop demos or 2,000 R2R2R+ episodes on the demonstrated pair. <i>Several objects</i>: teleop on 4&times;4 pairs, or R2Sem2R. Whiskers: Wilson 95% interval.</figcaption></figure>
-  <figure class="narrow plot"><img src="static/images/data_scaling.png" loading="lazy" alt="Line chart of success against the number of training episodes on a log scale, for teleoperation on several objects, R2Sem2R across cousins, teleoperation on one pair, and R2R2R+ on one pair.">
-    <figcaption><b>Success versus training-set size</b> on xArm7 placement. Solid: several objects; dashed: demonstrated pair; bands: Wilson 95% interval.</figcaption></figure>
-  <figure class="narrow plot"><img src="static/images/scaling_comparison.png" loading="lazy" alt="Log-log plot of demonstrations against wall-clock time for teleoperation with 1 and 10 operators and for R2Sem2R with 1 and 10 GPUs; R2Sem2R reaches 2,000 episodes at about 2 hours. Strips below show capture, processing and generation time.">
-    <figcaption><b>Demonstrations against wall-clock time</b> (log-log) for 1 and 10 teleoperators or GPUs; R2R2R+ coincides with R2Sem2R and is omitted. Strips show where each method&rsquo;s time goes, shaded as human or GPU time. Robot setup, shared by all methods, is not shown.</figcaption></figure>
+</div>
 </section>
 
-<section id="mujoco">
-  <div class="eyebrow">03</div>
+<section id="physics" class="band">
+<div class="in">
+  <p class="kicker"><b>05</b> Physics</p>
   <h2>A generated episode, replayed live in MuJoCo</h2>
+  <p class="lead">MuJoCo, compiled to WebAssembly, re-simulates the scene one of our generated episodes was made in, with
+  contact. Drag to orbit.</p>
   <div class="demo wide" data-demo="physics">
     <div class="demo-stage"><img class="demo-poster" src="static/demos/physics/poster.jpg" loading="lazy" alt="The xArm7 carrying a mug to a coffee machine in MuJoCo."></div>
   </div>
-  <p class="hero-cap"><b>Interactive: one of our generated MuJoCo episodes, simulated live.</b> MuJoCo, compiled to
-  WebAssembly, re-simulates the scene the episode was generated in. The robot replays the episode's recorded joint
-  targets at 10&nbsp;Hz while the mug, the table and the coffee machine are simulated with contact; as in our data
-  generation, a soft weld holds the mug once the finger pads close on the handle and releases it on the tray. The
-  generator keeps only episodes whose mug comes to rest on the tray, and each of the six object pairs ends on the tray
-  when replayed here. Drag to orbit. The arrows show the forces on the mug, longer for larger forces: from the fingers in red, the table in blue and
-  the coffee machine in orange. While the hand carries the mug, the red arrows at the fingertips show the force the
-  weld applies to hold it. The panel gives the totals; resting on the table or the tray, or carried at a steady pace,
-  they add up to the mug's weight, 2.9&nbsp;N.</p>
+  <details class="more"><summary>How the replay works, and what the arrows show</summary>
+  <p>The robot replays the episode's recorded joint targets at 10&nbsp;Hz while the mug, the table and the
+  coffee machine are simulated with contact; as in our data generation, a soft weld holds the mug once the finger pads
+  close on the handle and releases it on the tray. The generator keeps only episodes whose mug comes to rest on the tray,
+  and each of the six object pairs ends on the tray when replayed here. The arrows show the forces on the mug, longer for
+  larger forces: from the fingers in red, the table in blue and the coffee machine in orange. While the hand carries the
+  mug, the red arrows at the fingertips show the force the weld applies to hold it. The panel gives the totals; resting
+  on the table or the tray, or carried at a steady pace, they add up to the mug's weight, 2.9&nbsp;N.</p></details>
+</div>
 </section>
 
 <section id="limitations">
-  <div class="eyebrow">04</div>
-  <h2>Limitations</h2>
+<div class="in">
+  <p class="kicker"><b>06</b> Limitations</p>
+  <h2>What it needs, and what it does not handle yet</h2>
   <div class="limits">
     <div class="card"><div class="t">A photo per cousin</div>
       <p>Every cousin needs at least one photograph. Generating a category from text alone is future work.</p></div>
@@ -433,13 +386,13 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
       <p>The tracker estimates one rigid pose per object, so soft and deformable objects are not supported.
       Articulated objects such as drawers, doors and cabinets are the natural next step.</p></div>
   </div>
+</div>
 </section>
 
 <footer>
   Anonymous project page. Paper and code coming soon.
 </footer>
 
-</div>
 <script>
   // Results charts and table, from the project's results tracker (successes / trials per condition).
   // To update: edit R below. null = evaluation still running.
@@ -496,7 +449,7 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
 </script>
 <script>
   (function(){
-    var links=Array.prototype.slice.call(document.querySelectorAll('#chapters a'));
+    var links=Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
     if(!links.length || !('IntersectionObserver' in window)) return;
     var io=new IntersectionObserver(function(es){
       es.forEach(function(e){
@@ -529,28 +482,13 @@ parallel. In every episode the carry replays the mug trajectory tracked from the
   })();
 </script>
 <script>
-  // Rollout grids: each clip loads when it nears the viewport and plays only while on screen.
+  // Results: the segmented control shows one chart at a time.
   (function(){
-    var vids=Array.prototype.slice.call(document.querySelectorAll('.rgrid video[data-src]'));
-    var still=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function on(v){ if(!v.getAttribute('src')) v.src=v.dataset.src; if(still){ v.controls=true; return; } var p=v.play(); if(p&&p.catch) p.catch(function(){}); }
-    if(!('IntersectionObserver' in window)){ vids.forEach(on); return; }
-    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting) on(e.target); else e.target.pause(); }); },{rootMargin:'200px 0px'});
-    vids.forEach(function(v){ io.observe(v); });
-  })();
-  // Success rates under each rollout grid, from the results table R above (rows given as robot:index).
-  (function(){
-    var D=window.R2Sem2R_RESULTS; if(!D) return;
-    var ORDER=['ours','teleop','r2r2r'], NM={ours:'R2Sem2R (ours)', teleop:'Teleop', r2r2r:'R2R2R+'};
-    function pct(c){ var x=100*c[0]/c[1], f=Math.floor(x); if (Math.abs(x-f-0.5)<1e-9) return f%2===0 ? f : f+1; return Math.round(x); }
-    document.querySelectorAll('.rates[data-rates]').forEach(function(el){
-      el.innerHTML=el.dataset.rates.split(',').map(function(k){
-        var p=k.split(':'), row=D.results[p[0]][+p[1]];
-        var cells=ORDER.map(function(m){ var i=D.methods.map(function(x){ return x[0]; }).indexOf(m), c=row[i+1];
-          return c ? '<b class="m '+m+'">'+NM[m]+'</b> '+pct(c)+'% ('+c[0]+'/'+c[1]+')' : ''; }).filter(Boolean);
-        return '<b>'+D.robots[p[0]]+', '+row[0].toLowerCase()+'.</b> Success: '+cells.join(' &middot; ');
-      }).join('<br>');
-    });
+    var bs=Array.prototype.slice.call(document.querySelectorAll('[data-fig]')), fs=document.querySelectorAll('.figpanel figure');
+    bs.forEach(function(b){ b.addEventListener('click', function(){
+      bs.forEach(function(x){ x.setAttribute('aria-pressed', x===b); });
+      fs.forEach(function(f,i){ f.hidden = i !== +b.dataset.fig; });
+    }); });
   })();
 </script>
 <script type="module">

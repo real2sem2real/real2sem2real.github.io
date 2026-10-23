@@ -2,7 +2,7 @@
    --muted, the method colours --teleop / --r2r2r / --ours), so light and dark mode follow the page toggle. */
 
 .demo{position:relative; margin-top:26px; margin-bottom:10px; background:var(--surface); border:1px solid var(--line); border-radius:14px;
-      overflow:hidden; box-shadow:0 1px 0 rgba(0,0,0,.02), 0 18px 50px -32px rgba(0,60,140,.35)}
+      overflow:hidden; box-shadow:0 1px 0 rgba(0,0,0,.02), 0 18px 50px -32px rgba(0,0,0,.3)}
 .demo.wide{border-radius:14px}
 .demo-stage{position:relative; width:100%; aspect-ratio:16/9; overflow:hidden; touch-action:pan-y;
             background:
@@ -36,7 +36,7 @@
 .seg button:hover{color:var(--ink)}
 .seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .seg button[aria-pressed="true"] i{display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:6px; vertical-align:0}
-.dbtn{font:inherit; font-size:13px; font-weight:600; border:0; color:#fff; background:var(--grad); padding:8px 16px;
+.dbtn{font:inherit; font-size:13px; font-weight:600; border:0; color:var(--on-accent, #fff); background:var(--grad); padding:8px 16px;
       border-radius:40px; cursor:pointer; white-space:nowrap; box-shadow:0 6px 18px -8px color-mix(in srgb, var(--accent) 80%, transparent);
       transition:transform .15s, box-shadow .2s, filter .2s}
 .dbtn:hover{transform:translateY(-1px); filter:saturate(1.15)}
@@ -78,7 +78,7 @@
 /* "start" gate for heavy demos (a big play button over a poster) */
 .demo-gate{position:absolute; inset:0; z-index:4; display:grid; place-items:center; cursor:pointer;
            background:linear-gradient(180deg, transparent 40%, color-mix(in srgb, var(--surface) 35%, transparent))}
-.demo-gate .go{display:flex; align-items:center; gap:10px; font-size:14px; font-weight:600; color:#fff; background:var(--grad);
+.demo-gate .go{display:flex; align-items:center; gap:10px; font-size:14px; font-weight:600; color:var(--on-accent, #fff); background:var(--grad);
                padding:12px 20px 12px 16px; border-radius:40px; box-shadow:0 12px 30px -10px color-mix(in srgb, var(--accent) 90%, transparent);
                transition:transform .2s}
 .demo-gate:hover .go{transform:scale(1.04)}
@@ -144,7 +144,7 @@
 .mm-hint{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; text-align:center; padding:20px}
 .mm-drop{display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--muted); max-width:240px}
 .mm-drop b{color:var(--ink); font-size:14px; font-weight:600}
-.mm-tapme{font-size:13px; font-weight:600; color:#fff; background:var(--grad); padding:8px 14px; border-radius:30px;
+.mm-tapme{font-size:13px; font-weight:600; color:var(--on-accent, #fff); background:var(--grad); padding:8px 14px; border-radius:30px;
           box-shadow:0 8px 24px -10px color-mix(in srgb, var(--accent) 80%, transparent); animation:mmpulse 1.6s ease-in-out infinite}
 @keyframes mmpulse{0%,100%{transform:scale(1)} 50%{transform:scale(1.05)}}
 .mm-stage{aspect-ratio:auto; height:100%; min-height:100%}
