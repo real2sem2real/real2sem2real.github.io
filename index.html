@@ -166,6 +166,16 @@
   .rgrid video{width:100%; height:auto; display:block; border-radius:10px; background:var(--line)}
   .rgrid figcaption{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.45}
   .rates{font-size:13.5px; line-height:1.65; margin:8px 0 0}
+  details.fold{margin-top:56px}
+  details.fold > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px 14px; flex-wrap:wrap}
+  details.fold > summary::-webkit-details-marker{display:none}
+  details.fold > summary h3{margin:0}
+  details.fold > summary + h3{margin-top:28px}
+  .fold-btn{font-size:13.5px; font-weight:550; color:var(--muted); background:var(--surface); border:1px solid var(--line);
+            border-radius:40px; padding:4px 14px; white-space:nowrap; transition:color .2s, border-color .2s}
+  .fold-btn::after{content:"+\2002" attr(data-show)}
+  details.fold[open] > summary .fold-btn::after{content:"\2212\2002Hide"}
+  details.fold > summary:hover .fold-btn{color:var(--ink); border-color:var(--muted)}
 
   /* results: the paper's charts, white made transparent */
   figure.plot{max-width:680px; margin:36px auto 0}
@@ -184,6 +194,7 @@
     .takeaway{font-size:17px}
     .rgrid.c3, .rgrid.c4{grid-template-columns:repeat(2,minmax(0,1fr))}
     h3{margin-top:44px}
+    details.fold{margin-top:44px}
     table{min-width:0; font-size:12.5px}
     th{white-space:normal}
   }
@@ -245,7 +256,7 @@
         <source src="static/video/hero.mp4" type="video/mp4">
       </video>
       <figcaption><b>Overview.</b> One human video, the four steps of the pipeline, real rollouts on both
-      robots and the results. The full <a href="static/video/overview.mp4">5-minute narrated supplementary video</a> covers
+      robots and the results. The full <a href="static/video/overview.mp4">supplementary video</a> covers
       tracking, semantic alignment, generation in IsaacSim and MuJoCo, and every real-robot task.</figcaption>
     </figure>
   </div>
@@ -279,72 +290,18 @@
   robots: <b>teleoperation</b>, 150 real demonstrations collected across several objects; <b>R2R2R+</b>, 2,000
   generated episodes of the single demonstrated object pair, a strengthened Real2Render2Real run through our
   tracker, grasp selection and simulators; and <b>R2Sem2R</b>, 2,000 generated episodes across digital cousins.</p>
-  <p class="note">Clips are sped up (the factor is under each clip), skip trials in which a person steps into view, and
-  end before the scene is reset. The rates under each grid count every real-robot trial of the evaluated policies, 50
-  per policy and 40 for the drill; a few clips come from other runs of the same method.</p>
+  <p class="note">Clips are sped up (the factor is under each clip). The rates under each grid count every real-robot
+  trial of the evaluated policies, 50 per policy and 40 for the drill.</p>
 
-  <h3>On the real xArm7, ours sets the mug on the machine.</h3>
-  <div class="rgrid c2">
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_ours_white_black.jpg" data-src="static/slides_rollouts/x_ours_white_black.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; success &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="360" poster="static/slides_rollouts/x_teleop_white_black.jpg" data-src="static/slides_rollouts/x_teleop_white_black.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; success &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_1x1_white_black.jpg" data-src="static/slides_rollouts/x_1x1_white_black.mp4"></video><figcaption><b class="m r2r2r">R2R2R+</b> &middot; fails: never places &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_1x1_red_teal.jpg" data-src="static/slides_rollouts/x_1x1_red_teal.mp4"></video><figcaption><b class="m r2r2r">R2R2R+</b> &middot; fails: shoves the machine &middot; 3&times;</figcaption></figure>
-  </div>
-  <p class="note">Mug on coffee machine. The demonstrated pair is the white mug and the black Keurig. Each success ends with the mug upright on the tray and the gripper released.</p>
-  <p class="rates" data-rates="xarm7:0"></p>
-
-  <h3>Other mugs on other coffee machines.</h3>
-  <div class="rgrid c3">
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_white_beige.jpg" data-src="static/slides_rollouts/x_cous_white_beige.mp4"></video><figcaption>Cream · white &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_pink_white.jpg" data-src="static/slides_rollouts/x_cous_pink_white.mp4"></video><figcaption>Cream · pink &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_red_navy.jpg" data-src="static/slides_rollouts/x_cous_red_navy.mp4"></video><figcaption>Navy · red &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_brown_navy.jpg" data-src="static/slides_rollouts/x_cous_brown_navy.mp4"></video><figcaption>Navy · brown &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_red_teal.jpg" data-src="static/slides_rollouts/x_cous_red_teal.mp4"></video><figcaption>Teal · red &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_pink_red.jpg" data-src="static/slides_rollouts/x_cous_pink_red.mp4"></video><figcaption>Red · pink &middot; 3&times;</figcaption></figure>
-  </div>
-  <p class="note">R2Sem2R policies on cousin mugs and coffee machines (labels: machine &middot; mug), trained on 1,320 to 2,000 generated episodes from IsaacSim and MuJoCo. Every clip ends with the mug upright on the tray and the gripper released.</p>
-
-  <h3>Hanging a mug by its handle on the tree.</h3>
-  <div class="rgrid c2">
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_white.jpg" data-src="static/slides_rollouts/x_hang_white.mp4"></video><figcaption>White mug &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_navy.jpg" data-src="static/slides_rollouts/x_hang_navy.mp4"></video><figcaption>Navy mug &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_red.jpg" data-src="static/slides_rollouts/x_hang_red.mp4"></video><figcaption>Red mug &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_pink.jpg" data-src="static/slides_rollouts/x_hang_pink.mp4"></video><figcaption>Pink mug &middot; 3&times;</figcaption></figure>
-  </div>
-  <p class="note">Success: the mug hangs on the blue branch after the gripper releases it.</p>
-  <p class="rates" data-rates="xarm7:2"></p>
-
-  <h3>Pouring, and setting the drill upright.</h3>
-  <div class="rgrid c3">
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_pour_teal.jpg" data-src="static/slides_rollouts/x_pour_teal.mp4"></video><figcaption>Pour into the bowl &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_drill_a.jpg" data-src="static/slides_rollouts/x_drill_a.mp4"></video><figcaption>Drill set upright &middot; 5&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_drill_b.jpg" data-src="static/slides_rollouts/x_drill_b.mp4"></video><figcaption>Drill set upright &middot; 2&times;</figcaption></figure>
-  </div>
-  <p class="note">The pour clip comes from an R2Sem2R policy trained on MuJoCo-generated data. Each drill clip ends with the drill upright and released.</p>
-  <p class="rates" data-rates="xarm7:1,xarm7:3"></p>
-
-  <h3>The same pipeline on the Franka Panda.</h3>
+  <h3>On the real Franka Panda, ours sets the mug on the machine.</h3>
   <div class="rgrid c2">
     <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_ours_white_black.jpg" data-src="static/slides_rollouts/p_ours_white_black.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; success &middot; 3&times;</figcaption></figure>
     <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_teleop_white_black.jpg" data-src="static/slides_rollouts/p_teleop_white_black.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; success &middot; 3&times;</figcaption></figure>
     <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_1x1_white_black.jpg" data-src="static/slides_rollouts/p_1x1_white_black.mp4"></video><figcaption><b class="m r2r2r">R2R2R+</b> &middot; fails: never lifts &middot; 3&times;</figcaption></figure>
     <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_1x1_red_black.jpg" data-src="static/slides_rollouts/p_1x1_red_black.mp4"></video><figcaption><b class="m r2r2r">R2R2R+</b> &middot; fails: knocks it over &middot; 2&times;</figcaption></figure>
   </div>
-  <p class="note">The same human video and generation pipeline on a second robot.</p>
+  <p class="note">Mug on coffee machine. The demonstrated pair is the white mug and the black Keurig.</p>
   <p class="rates" data-rates="panda:0"></p>
-
-  <h3>On the Panda too, other mugs on other machines.</h3>
-  <div class="rgrid c4">
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_orange_black.jpg" data-src="static/slides_rollouts/p_cous_orange_black.mp4"></video><figcaption>Keurig · orange &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_pink_black.jpg" data-src="static/slides_rollouts/p_cous_pink_black.mp4"></video><figcaption>Small black · pink &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_white_teal.jpg" data-src="static/slides_rollouts/p_cous_white_teal.mp4"></video><figcaption>Teal · white &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_navy_teal.jpg" data-src="static/slides_rollouts/p_cous_navy_teal.mp4"></video><figcaption>Teal · navy &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_orange_white.jpg" data-src="static/slides_rollouts/p_cous_orange_white.mp4"></video><figcaption>Cream · orange &middot; 4&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_black_white.jpg" data-src="static/slides_rollouts/p_cous_black_white.mp4"></video><figcaption>Cream · black &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_black_navy.jpg" data-src="static/slides_rollouts/p_cous_black_navy.mp4"></video><figcaption>Navy · black &middot; 3&times;</figcaption></figure>
-    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_pink_navy.jpg" data-src="static/slides_rollouts/p_cous_pink_navy.mp4"></video><figcaption>Navy · pink &middot; 4&times;</figcaption></figure>
-  </div>
-  <p class="note">Eight cousin pairs, all from the same R2Sem2R policy (labels: machine &middot; mug). Each ends with the mug upright on the tray and the gripper released.</p>
 
   <h3>Hanging a mug on the Panda: the same mugs for both methods.</h3>
   <div class="rgrid c2">
@@ -353,7 +310,7 @@
     <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_tree_brown.jpg" data-src="static/slides_rollouts/p_tree_brown.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; hangs it &middot; 4&times;</figcaption></figure>
     <figure><video muted loop playsinline preload="none" width="640" height="452" poster="static/slides_rollouts/p_tree_tele_brown.jpg" data-src="static/slides_rollouts/p_tree_tele_brown.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; hangs it &middot; 2&times;</figcaption></figure>
   </div>
-  <p class="note">Top: the white mug. Bottom: a brown mug. Success: the handle hooks over the low blue branch. Our white-mug recording stops with the handle on the branch, before the gripper opens.</p>
+  <p class="note">Top: the white mug. Bottom: a brown mug. Success: the handle hooks over the low blue branch.</p>
   <p class="rates" data-rates="panda:2"></p>
 
   <h3>Pouring on the Panda: the same mug and bowl for both methods.</h3>
@@ -375,6 +332,66 @@
   </div>
   <p class="note">Top: the demonstrated red drill. Bottom: a yellow cousin drill. Successes end with the drill upright and the gripper released.</p>
   <p class="rates" data-rates="panda:3"></p>
+
+  <details class="fold">
+  <summary><h3>Other mugs on other coffee machines.</h3><span class="fold-btn" data-show="Show 8 clips"></span></summary>
+  <div class="rgrid c4">
+    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_orange_black.jpg" data-src="static/slides_rollouts/p_cous_orange_black.mp4"></video><figcaption>Keurig · orange &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_pink_black.jpg" data-src="static/slides_rollouts/p_cous_pink_black.mp4"></video><figcaption>Small black · pink &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_white_teal.jpg" data-src="static/slides_rollouts/p_cous_white_teal.mp4"></video><figcaption>Teal · white &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_navy_teal.jpg" data-src="static/slides_rollouts/p_cous_navy_teal.mp4"></video><figcaption>Teal · navy &middot; 4&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_orange_white.jpg" data-src="static/slides_rollouts/p_cous_orange_white.mp4"></video><figcaption>Cream · orange &middot; 4&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_black_white.jpg" data-src="static/slides_rollouts/p_cous_black_white.mp4"></video><figcaption>Cream · black &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_black_navy.jpg" data-src="static/slides_rollouts/p_cous_black_navy.mp4"></video><figcaption>Navy · black &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="340" poster="static/slides_rollouts/p_cous_pink_navy.jpg" data-src="static/slides_rollouts/p_cous_pink_navy.mp4"></video><figcaption>Navy · pink &middot; 4&times;</figcaption></figure>
+  </div>
+  <p class="note">Eight cousin pairs, all from the same R2Sem2R policy (labels: machine &middot; mug). Each ends with the mug upright on the tray and the gripper released.</p>
+  </details>
+
+  <details class="fold">
+  <summary><h3>The same tasks on the xArm7.</h3><span class="fold-btn" data-show="Show the xArm7 clips"></span></summary>
+  <h3>On the real xArm7, ours sets the mug on the machine.</h3>
+  <div class="rgrid c2">
+    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_ours_white_black.jpg" data-src="static/slides_rollouts/x_ours_white_black.mp4"></video><figcaption><b class="m ours">R2Sem2R (ours)</b> &middot; success &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="640" height="360" poster="static/slides_rollouts/x_teleop_white_black.jpg" data-src="static/slides_rollouts/x_teleop_white_black.mp4"></video><figcaption><b class="m teleop">Teleop</b> &middot; success &middot; 4&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_1x1_white_black.jpg" data-src="static/slides_rollouts/x_1x1_white_black.mp4"></video><figcaption><b class="m r2r2r">R2R2R+</b> &middot; fails: never places &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_1x1_red_teal.jpg" data-src="static/slides_rollouts/x_1x1_red_teal.mp4"></video><figcaption><b class="m r2r2r">R2R2R+</b> &middot; fails: shoves the machine &middot; 3&times;</figcaption></figure>
+  </div>
+  <p class="note">Mug on coffee machine. The demonstrated pair is the white mug and the black Keurig. Each success ends with the mug upright on the tray and the gripper released.</p>
+  <p class="rates" data-rates="xarm7:0"></p>
+
+  <details class="fold">
+  <summary><h3>Other mugs on other coffee machines.</h3><span class="fold-btn" data-show="Show 6 clips"></span></summary>
+  <div class="rgrid c3">
+    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_white_beige.jpg" data-src="static/slides_rollouts/x_cous_white_beige.mp4"></video><figcaption>Cream · white &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_pink_white.jpg" data-src="static/slides_rollouts/x_cous_pink_white.mp4"></video><figcaption>Cream · pink &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_red_navy.jpg" data-src="static/slides_rollouts/x_cous_red_navy.mp4"></video><figcaption>Navy · red &middot; 4&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_brown_navy.jpg" data-src="static/slides_rollouts/x_cous_brown_navy.mp4"></video><figcaption>Navy · brown &middot; 4&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_red_teal.jpg" data-src="static/slides_rollouts/x_cous_red_teal.mp4"></video><figcaption>Teal · red &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_cous_pink_red.jpg" data-src="static/slides_rollouts/x_cous_pink_red.mp4"></video><figcaption>Red · pink &middot; 3&times;</figcaption></figure>
+  </div>
+  <p class="note">R2Sem2R policies on cousin mugs and coffee machines (labels: machine &middot; mug), trained on 1,320 to 2,000 generated episodes from IsaacSim and MuJoCo. Every clip ends with the mug upright on the tray and the gripper released.</p>
+  </details>
+
+  <h3>Hanging a mug by its handle on the tree.</h3>
+  <div class="rgrid c2">
+    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_white.jpg" data-src="static/slides_rollouts/x_hang_white.mp4"></video><figcaption>White mug &middot; 4&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_navy.jpg" data-src="static/slides_rollouts/x_hang_navy.mp4"></video><figcaption>Navy mug &middot; 4&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_red.jpg" data-src="static/slides_rollouts/x_hang_red.mp4"></video><figcaption>Red mug &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="640" height="368" poster="static/slides_rollouts/x_hang_pink.jpg" data-src="static/slides_rollouts/x_hang_pink.mp4"></video><figcaption>Pink mug &middot; 3&times;</figcaption></figure>
+  </div>
+  <p class="note">Success: the mug hangs on the blue branch after the gripper releases it.</p>
+  <p class="rates" data-rates="xarm7:2"></p>
+
+  <h3>Pouring, and setting the drill upright.</h3>
+  <div class="rgrid c3">
+    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_pour_teal.jpg" data-src="static/slides_rollouts/x_pour_teal.mp4"></video><figcaption>Pour into the bowl &middot; 3&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_drill_a.jpg" data-src="static/slides_rollouts/x_drill_a.mp4"></video><figcaption>Drill set upright &middot; 5&times;</figcaption></figure>
+    <figure><video muted loop playsinline preload="none" width="480" height="276" poster="static/slides_rollouts/x_drill_b.jpg" data-src="static/slides_rollouts/x_drill_b.mp4"></video><figcaption>Drill set upright &middot; 2&times;</figcaption></figure>
+  </div>
+  <p class="note">The pour clip comes from an R2Sem2R policy trained on MuJoCo-generated data. Each drill clip ends with the drill upright and released.</p>
+  <p class="rates" data-rates="xarm7:1,xarm7:3"></p>
+  </details>
 </div>
 </section>
 

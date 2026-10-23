@@ -10,7 +10,7 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const STEPS = [
   { short: 'Input', title: 'One human video and a phone scan',
     cap: 'A person does the task once in front of a phone: RGB only, no depth sensor, no robot. A short phone scan of the ' +
-         'mug and the coffee machine gives their shape. (The room around the objects is blurred here.)',
+         'mug and the coffee machine gives their shape.',
     mount: inputStep },
   { short: 'Splats & tracking', title: 'Gaussian splats, tracked from RGB alone',
     cap: 'Each scanned object becomes a metric Gaussian splat with DINOv3 features distilled into it. We track the mug ' +
@@ -68,7 +68,7 @@ function inputStep(el) {
   const row = h('div', 'mt-input');
   const a = h('figure', 'mt-vid mt-wide');
   a.append(video(url('media/human.mp4'), url('media/human.webp')));
-  a.append(h('figcaption', '', '<b>Human demonstration</b> · phone RGB video, 10 s'));
+  a.append(h('figcaption', '', '<b>Human demonstration</b> · phone RGB video'));
   const b = h('figure', 'mt-vid mt-square');
   b.append(video(url('media/scan.mp4'), url('media/scan.webp')));
   b.append(h('figcaption', '', '<b>Phone scan</b> of the mug and the machine'));

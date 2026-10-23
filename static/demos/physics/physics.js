@@ -16,7 +16,6 @@ const PAIRS = {
 };
 const PHASE = { HOME: 'Reach', PREGRASP_SLEW: 'Reach', APPROACH: 'Approach', GRASP_HOLD: 'Grasp', EXEC: 'Carry',
                 PLACE_HOLD: 'Place', RETREAT: 'Release', SETTLE: 'Settle', DONE: 'Done' };
-const WASM_MB = 10;
 const ICON = {
   play: '<svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>',
   pause: '<svg viewBox="0 0 16 16"><path d="M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z"/></svg>',
@@ -30,8 +29,7 @@ export async function mount(el) {
   const gate = document.createElement('div');
   gate.className = 'demo-gate';
   gate.setAttribute('role', 'button'); gate.tabIndex = 0;
-  gate.innerHTML = `<div class="go"><svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>Run live physics</div>
-    <div class="sub">Loads the MuJoCo physics engine (${WASM_MB} MB) into this page</div>`;
+  gate.innerHTML = `<div class="go"><svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>Run live physics</div>`;
   stage.appendChild(gate);
   const start = () => { gate.remove(); run(el, stage, poster).catch(err => { console.error(err); }); };
   gate.addEventListener('click', start, { once: true });
